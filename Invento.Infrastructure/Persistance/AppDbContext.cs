@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Invento.Domain.Entities;
 
-namespace Invento.Infrastructure
+namespace Invento.Infrastructure.Persistance
 {
     public class AppDbContext : DbContext
     {
