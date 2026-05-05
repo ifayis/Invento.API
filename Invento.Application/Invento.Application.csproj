@@ -10,12 +10,6 @@
     <ProjectReference Include="..\Invento.Domain\Invento.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Common\Interfaces\" />
-    <Folder Include="Common\Behaviour\" />
-    <Folder Include="Features\" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
