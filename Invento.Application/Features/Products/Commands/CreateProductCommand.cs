@@ -17,8 +17,8 @@ namespace Invento.Application.Features.Products.Commands
         public decimal SellingPrice { get; set; }
         public decimal TaxRate { get; set; }
 
-        public int StockQuanity { get; set; }
-        public string? ImageUrl { get; set; }
+        public int StockQuantity { get; set; }
+        public Guid CategoryId { get; set; }
 
     }
 }
