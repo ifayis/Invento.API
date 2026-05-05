@@ -1,4 +1,7 @@
+using Invento.API.Middleware;
+using Invento.Application.Common.Interface;
 using Invento.Infrastructure.Data;
+using Invento.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,8 @@ builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
+builder.Services.AddScoped<TenantProvider>();
+builder.Services.AddScoped<ITenantProvider>(sp => sp.GetRequiredService<TenantProvider>());
 
 var app = builder.Build();
 
@@ -19,6 +24,10 @@ var app = builder.Build();
 //}
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+
+app.UseMiddleware<TenantMiddleware>();
 
 app.UseAuthorization();
 
