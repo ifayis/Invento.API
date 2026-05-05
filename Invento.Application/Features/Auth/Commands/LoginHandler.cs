@@ -36,7 +36,7 @@ namespace Invento.Application.Features.Auth.Commands
             if (!PasswordHasher.Verify(request.Password, user.PasswordHash))
                 throw new Exception("Invalid credentials");
 
-            return _jwt.GenerateToken(user.Id, user.TenantId, user.Role, user.Email);
+            return _jwt.GenerateToken(user.userId, user.TenantId, user.Role, user.Email);
         }
     }
 }

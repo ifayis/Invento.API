@@ -1,21 +1,39 @@
 ﻿using Invento.Application.Common.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
-namespace Invento.Infrastructure.Services
+namespace Invento.Infrastructure.Services;
+
+public class TenantProvider : ITenantProvider
 {
-    public class TenantProvider : ITenantProvider
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public TenantProvider(IHttpContextAccessor httpContextAccessor)
     {
-        private Guid _tenantId;
-        private Guid _userId;
+        _httpContextAccessor = httpContextAccessor;
+    }
 
-        public void SetTenantId(Guid TenantId) => _tenantId = TenantId;
-        public void SetUserId(Guid UserId) => _userId = UserId;
+    public Guid GetTenantId()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
 
-        public Guid GetTenantId() => _tenantId;
-        public Guid GetUserId() => _userId;
+        var tenantClaim = user?.FindFirst("Name")?.Value;
+
+        if (tenantClaim == null)
+            throw new UnauthorizedAccessException("Tenant not found in token");
+
+        return Guid.Parse(tenantClaim);
+    }
+
+    public Guid GetUserId()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+
+        var userClaim = user?.FindFirst("UserId")?.Value;
+
+        if (userClaim == null)
+            throw new UnauthorizedAccessException("UserId not found in token");
+
+        return Guid.Parse(userClaim);
     }
 }
