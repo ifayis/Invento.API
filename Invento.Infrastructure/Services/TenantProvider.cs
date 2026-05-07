@@ -17,7 +17,7 @@ public class TenantProvider : ITenantProvider
     {
         var user = _httpContextAccessor.HttpContext?.User;
 
-        var tenantClaim = user?.FindFirst("Name")?.Value;
+        var tenantClaim = user?.FindFirst("TenantId")?.Value;
 
         if (tenantClaim == null)
             throw new UnauthorizedAccessException("Tenant not found in token");

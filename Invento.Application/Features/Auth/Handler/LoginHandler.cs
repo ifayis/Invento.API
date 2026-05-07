@@ -1,5 +1,5 @@
 ﻿using Invento.Application.Common.Interface;
-using Invento.Application.Common.Secuirity;
+using Invento.Application.Common.Security;
 using Invento.Application.Data;
 using MediatR;
 using Dapper;
@@ -8,8 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Invento.Application.Features.Auth.Commands;
 
-namespace Invento.Application.Features.Auth.Commands
+namespace Invento.Application.Features.Auth.Handler
 {
     public class LoginHandler : IRequestHandler<LoginCommand, string>
     {

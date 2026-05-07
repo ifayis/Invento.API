@@ -1,19 +1,19 @@
-using Invento.API.Middleware;
 using Invento.Application.Common.Interface;
-using Invento.Application.Common.Secuirity;
+using Invento.Application.Common.Security;
 using Invento.Application.Features.Products.Validators;
 using Invento.Infrastructure.Data;
 using Invento.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
 
@@ -41,24 +41,21 @@ builder.Services.AddAuthentication(options =>
 
 
 builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
-builder.Services.AddScoped<TenantProvider>();
-builder.Services.AddScoped<ITenantProvider>(sp => sp.GetRequiredService<TenantProvider>());
+builder.Services.AddScoped<ITenantProvider, TenantProvider>(); 
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
+//Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-
-app.UseMiddleware<TenantMiddleware>();
 
 app.UseAuthorization();
 

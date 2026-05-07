@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Invento.Application.Common.Interface;
 using Microsoft.Extensions.Configuration;
 
-namespace Invento.Application.Common.Secuirity
+namespace Invento.Application.Common.Security
 {
     public class JwtService : IJwtService
     {
