@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using Invento.Application.Features.Products.Commands;
 
-
-namespace Invento.Application.Features.Products.Commands
+namespace Invento.Application.Features.Products.Handler
 {
     public class CreateProductHandler : IRequestHandler<CreateProductCommand, Guid>
     {

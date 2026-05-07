@@ -1,6 +1,7 @@
 using Invento.API.Middleware;
 using Invento.Application.Common.Interface;
 using Invento.Application.Common.Secuirity;
+using Invento.Application.Features.Products.Validators;
 using Invento.Infrastructure.Data;
 using Invento.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,6 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
 
 builder.Services.AddAuthentication(options =>
 {

@@ -1,4 +1,5 @@
 ﻿using Invento.Infrastructure.Services;
+using Invento.Application.Common.Interface;
 
 namespace Invento.API.Middleware
 {
@@ -13,14 +14,6 @@ namespace Invento.API.Middleware
 
         public async Task invoke(HttpContext context, TenantProvider tenantProvider)
         {
-            var user = context.User;
-
-            if (user.Identity?.IsAuthenticated == true)
-            {
-                tenantProvider.SetTenantId(Guid.Parse(user.FindFirst("Name")!.Value));
-                tenantProvider.SetUserId(Guid.Parse(user.FindFirst("UserId")!.Value));
-            }
-
             await _next(context);
         }
     }
