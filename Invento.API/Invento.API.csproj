@@ -23,8 +23,4 @@
     <ProjectReference Include="..\Invento.Infrastructure\Invento.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Middleware\" />
-  </ItemGroup>
-
 </Project>

@@ -1,3 +1,5 @@
+using FluentValidation;
+using Invento.API.Middleware;
 using Invento.Application.Common.Interface;
 using Invento.Application.Common.Security;
 using Invento.Application.Features.Products.Validators;
@@ -6,7 +8,6 @@ using Invento.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +55,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthentication();
 

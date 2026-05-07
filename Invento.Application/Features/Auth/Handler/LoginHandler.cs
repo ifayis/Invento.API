@@ -32,10 +32,10 @@ namespace Invento.Application.Features.Auth.Handler
                 new { request.Email });
 
             if (user == null)
-                throw new Exception("Invalid credentials");
+                throw new UnauthorizedAccessException("Invalid credentials");
 
             if (!PasswordHasher.Verify(request.Password, user.PasswordHash))
-                throw new Exception("Invalid credentials");
+                throw new UnauthorizedAccessException("Invalid credentials");
 
             return _jwt.GenerateToken(user.userId, user.TenantId, user.Role, user.Email);
         }
