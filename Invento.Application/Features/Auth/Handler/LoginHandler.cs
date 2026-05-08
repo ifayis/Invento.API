@@ -1,14 +1,11 @@
-﻿using Invento.Application.Common.Interface;
-using Invento.Application.Common.Security;
-using Invento.Application.Data;
+﻿using Dapper;
 using MediatR;
-using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Invento.Application.Common.Interface;
+using Invento.Application.Common.Security;
 using Invento.Application.Features.Auth.Commands;
+using Invento.Domain.Entities;
+using Invento.Application.Data;
+
 
 namespace Invento.Application.Features.Auth.Handler
 {
@@ -27,17 +24,26 @@ namespace Invento.Application.Features.Auth.Handler
         {
             var connection = _db.CreateConnection();
 
-            var user = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                "SELECT * FROM Users WHERE Email=@Email",
+            var user = await connection.QueryFirstOrDefaultAsync<User>(
+                @"SELECT Id, TenantId, Email, PasswordHash, Role
+                  FROM Users 
+                  WHERE Email = @Email",
                 new { request.Email });
 
             if (user == null)
                 throw new UnauthorizedAccessException("Invalid credentials");
 
-            if (!PasswordHasher.Verify(request.Password, user.PasswordHash))
+            var isValid = PasswordHasher.Verify(request.Password, user.PasswordHash);
+
+            if (!isValid)
                 throw new UnauthorizedAccessException("Invalid credentials");
 
-            return _jwt.GenerateToken(user.userId, user.TenantId, user.Role, user.Email);
+            return _jwt.GenerateToken(
+                user.Id,
+                user.TenantId,
+                user.Role,
+                user.Email
+            );
         }
     }
 }

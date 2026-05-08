@@ -5,76 +5,104 @@ using Invento.Application.Data;
 using Invento.Application.Features.Auth.Commands;
 using Invento.Domain.Entities;
 using MediatR;
+using System.Data;
 
-public class RegisterHandler : IRequestHandler<RegisterCommand, string>
+namespace Invento.Application.Features.Auth.Handler
 {
-    private readonly IDbConnectionFactory _db;
-    private readonly IJwtService _jwt;
-
-    public RegisterHandler(IDbConnectionFactory db, IJwtService jwt)
+    public class RegisterHandler : IRequestHandler<RegisterCommand, string>
     {
-        _db = db;
-        _jwt = jwt;
-    }
+        private readonly IDbConnectionFactory _db;
+        private readonly IJwtService _jwt;
 
-    public async Task<string> Handle(RegisterCommand request, CancellationToken cancellationToken)
-    {
-        using var connection = _db.CreateConnection();
-        connection.Open();
-
-        using var transaction = connection.BeginTransaction();
-
-        var tenant = await connection.QueryFirstOrDefaultAsync<Tenant>(
-            @"SELECT * FROM Tenants WHERE CompanyCode = @CompanyCode",
-            new { request.CompanyCode }, transaction);
-
-        Guid tenantId;
-
-        if (tenant == null)
+        public RegisterHandler(IDbConnectionFactory db, IJwtService jwt)
         {
-            tenantId = Guid.NewGuid();
-
-            await connection.ExecuteAsync(
-                @"INSERT INTO Tenants (Id, Name, CompanyCode, CreatedAt)
-              VALUES (@Id, @Name, @CompanyCode, GETUTCDATE())",
-                new
-                {
-                    Id = tenantId,
-                    Name = request.CompanyName,
-                    CompanyCode = request.CompanyCode
-                }, transaction);
-        }
-        else
-        {
-            tenantId = tenant.Id;
+            _db = db;
+            _jwt = jwt;
         }
 
-        var exists = await connection.ExecuteScalarAsync<int>(
-            @"SELECT COUNT(1) FROM Users WHERE Email = @Email",
-            new { request.Email }, transaction);
+        public async Task<string> Handle(RegisterCommand request, CancellationToken cancellationToken)
+        {
+            using var connection = _db.CreateConnection();
 
-        if (exists > 0)
-            throw new Exception("User already exists");
+            if (connection.State != ConnectionState.Open)
+                connection.Open();
 
-        var userId = Guid.NewGuid();
-        var hash = PasswordHasher.Hash(request.Password);
+            using var transaction = connection.BeginTransaction();
 
-        await connection.ExecuteAsync(
-            @"INSERT INTO Users 
-          (Id, TenantId, Email, PasswordHash, Role, CreatedAt)
-          VALUES 
-          (@Id, @TenantId, @Email, @PasswordHash, @Role, GETUTCDATE())",
-            new
+            try
             {
-                Id = userId,
-                TenantId = tenantId,
-                Email = request.Email,
-                PasswordHash = hash,
-                Role = "Admin"
-            }, transaction);
+                var email = request.Email.Trim().ToLower();
+                var companyCode = request.CompanyCode.Trim().ToUpper();
 
-        transaction.Commit();
+                var tenant = await connection.QueryFirstOrDefaultAsync<Tenant>(
+                    @"SELECT Id, Name, CompanyCode 
+                      FROM Tenants 
+                      WHERE CompanyCode = @CompanyCode",
+                    new { CompanyCode = companyCode }, transaction);
 
-        return _jwt.GenerateToken(userId, tenantId, "Admin", request.Email);
+                Guid tenantId;
+
+                if (tenant == null)
+                {
+                    tenantId = Guid.NewGuid();
+
+                    await connection.ExecuteAsync(
+                        @"INSERT INTO Tenants 
+                          (Id, Name, CompanyCode, BusinessPurpose, LogoUrl, CreatedAt)
+                          VALUES 
+                          (@Id, @Name, @CompanyCode, @BusinessPurpose, @LogoUrl, GETUTCDATE())",
+                        new
+                        {
+                            Id = tenantId,
+                            Name = request.CompanyName,
+                            CompanyCode = companyCode,
+                            request.BusinessPurpose,
+                            request.LogoUrl
+                        },
+                        transaction);
+                }
+                else
+                {
+                    tenantId = tenant.Id;
+                }
+
+                var exists = await connection.ExecuteScalarAsync<int>(
+                    @"SELECT COUNT(1) 
+                      FROM Users 
+                      WHERE Email = @Email",
+                    new { Email = email },
+                    transaction);
+
+                if (exists > 0)
+                    throw new InvalidOperationException("User already exists");
+
+                var userId = Guid.NewGuid();
+                var hash = PasswordHasher.Hash(request.Password);
+
+                await connection.ExecuteAsync(
+                    @"INSERT INTO Users 
+                      (Id, TenantId, Email, PasswordHash, Role, CreatedAt)
+                      VALUES 
+                      (@Id, @TenantId, @Email, @PasswordHash, @Role, GETUTCDATE())",
+                    new
+                    {
+                        Id = userId,
+                        TenantId = tenantId,
+                        Email = email,
+                        PasswordHash = hash,
+                        Role = "Admin"
+                    },
+                    transaction);
+
+                transaction.Commit();
+
+                return _jwt.GenerateToken(userId, tenantId, "Admin", email);
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
     }
 }

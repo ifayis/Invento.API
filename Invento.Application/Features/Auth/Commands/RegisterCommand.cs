@@ -1,17 +1,19 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Invento.Application.Features.Auth.Commands
 {
     public class RegisterCommand : IRequest<string>
     {
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
-        public string CompanyName { get; set; } = "";
-        public string CompanyCode { get; set; } = "";
+        public string Email { get; set; } = string.Empty;
+
+        public string Password { get; set; } = string.Empty;
+
+        public string CompanyName { get; set; } = string.Empty;
+
+        public string CompanyCode { get; set; } = string.Empty;
+
+        public string? LogoUrl { get; set; }
+
+        public string? BusinessPurpose { get; set; }
     }
 }

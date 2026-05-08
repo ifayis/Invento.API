@@ -20,7 +20,7 @@ namespace Invento.Domain.Entities
         public decimal SellingPrice { get; set; }
         public decimal TaxRate { get; set; }
 
-        public int StockQuanity { get; set; }
+        public int StockQuantity { get; set; }
         public string? ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; } 
     }
