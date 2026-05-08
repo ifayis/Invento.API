@@ -12,10 +12,19 @@ namespace Invento.Application.Features.Auth.Validator
     {
         public RegisterValidator()
         {
-            RuleFor(x => x.Email).NotEmpty().EmailAddress();
-            RuleFor(x => x.Password).MinimumLength(6);
-            RuleFor(x => x.CompanyCode).NotEmpty();
-            RuleFor(x => x.CompanyName).NotEmpty();
+            RuleFor(x => x.Email)
+                .NotEmpty()
+                .EmailAddress();
+
+            RuleFor(x => x.Password)
+                .NotEmpty()
+                .MinimumLength(6);
+
+            RuleFor(x => x.CompanyCode)
+                .NotEmpty();
+
+            RuleFor(x => x.CompanyName)
+                .NotEmpty();
         }
     }
 }

@@ -3,6 +3,7 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Common.Security;
 using Invento.Application.Data;
 using Invento.Application.Features.Auth.Commands;
+using Invento.Domain.Entities;
 using MediatR;
 
 public class RegisterHandler : IRequestHandler<RegisterCommand, string>
@@ -18,17 +19,14 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, string>
 
     public async Task<string> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        var connection = _db.CreateConnection();
+        using var connection = _db.CreateConnection();
+        connection.Open();
 
-        if (string.IsNullOrWhiteSpace(request.Email))
-            throw new Exception("Email required");
+        using var transaction = connection.BeginTransaction();
 
-        if (request.Password.Length < 6)
-            throw new Exception("Password too short");
-
-        var tenant = await connection.QueryFirstOrDefaultAsync<dynamic>(
-            "SELECT * FROM Tenants WHERE CompanyCode = @Code",
-            new { Code = request.CompanyCode });
+        var tenant = await connection.QueryFirstOrDefaultAsync<Tenant>(
+            @"SELECT * FROM Tenants WHERE CompanyCode = @CompanyCode",
+            new { request.CompanyCode }, transaction);
 
         Guid tenantId;
 
@@ -37,8 +35,14 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, string>
             tenantId = Guid.NewGuid();
 
             await connection.ExecuteAsync(
-                "INSERT INTO Tenants (Id, Name, CompanyCode, CreatedAt) VALUES (@Id,@Name,@Code,GETUTCDATE())",
-                new { Id = tenantId, Name = request.CompanyName, Code = request.CompanyCode });
+                @"INSERT INTO Tenants (Id, Name, CompanyCode, CreatedAt)
+              VALUES (@Id, @Name, @CompanyCode, GETUTCDATE())",
+                new
+                {
+                    Id = tenantId,
+                    Name = request.CompanyName,
+                    CompanyCode = request.CompanyCode
+                }, transaction);
         }
         else
         {
@@ -46,26 +50,30 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, string>
         }
 
         var exists = await connection.ExecuteScalarAsync<int>(
-            "SELECT COUNT(1) FROM Users WHERE Email=@Email",
-            new { request.Email });
+            @"SELECT COUNT(1) FROM Users WHERE Email = @Email",
+            new { request.Email }, transaction);
 
         if (exists > 0)
             throw new Exception("User already exists");
 
         var userId = Guid.NewGuid();
-
         var hash = PasswordHasher.Hash(request.Password);
 
         await connection.ExecuteAsync(
-            @"INSERT INTO Users (Id, TenantId, Email, PasswordHash, Role, CreatedAt)
-              VALUES (@Id,@TenantId,@Email,@Hash,'Admin',GETUTCDATE())",
+            @"INSERT INTO Users 
+          (Id, TenantId, Email, PasswordHash, Role, CreatedAt)
+          VALUES 
+          (@Id, @TenantId, @Email, @PasswordHash, @Role, GETUTCDATE())",
             new
             {
                 Id = userId,
                 TenantId = tenantId,
-                request.Email,
-                Hash = hash
-            });
+                Email = request.Email,
+                PasswordHash = hash,
+                Role = "Admin"
+            }, transaction);
+
+        transaction.Commit();
 
         return _jwt.GenerateToken(userId, tenantId, "Admin", request.Email);
     }
