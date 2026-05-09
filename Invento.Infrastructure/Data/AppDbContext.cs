@@ -19,6 +19,7 @@ namespace Invento.Infrastructure.Data
         public DbSet<User> Users => Set<User>();
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<Product> Products => Set<Product>();
+        public DbSet<RefreshToken> RefreshToken => Set<RefreshToken>(); 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

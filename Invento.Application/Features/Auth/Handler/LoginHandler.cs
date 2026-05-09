@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using Invento.Application.Common.Interface;
 using Invento.Application.Common.Security;
-using Invento.Application.Data;
 using Invento.Application.Features.Auth.Commands;
 using Invento.Application.Features.Auth.Models;
 using Invento.Domain.Entities;

@@ -2,9 +2,11 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Invento.Application.Common.Interface;
 using Invento.Application.Common.Security;
+using Invento.Application.Features.Auth.Commands;
 using Invento.Application.Features.Products.Validators;
 using Invento.Infrastructure.Data;
 using Invento.Infrastructure.Services;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -42,6 +44,8 @@ builder.Services.AddAuthentication(options =>
         RoleClaimType = "Role"
     };
 });
+
+builder.Services.AddMediatR(typeof(RegisterCommand).Assembly);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

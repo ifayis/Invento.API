@@ -1,5 +1,4 @@
 ﻿using Invento.Application.Common.Interface;
-using Invento.Application.Data;
 using Invento.Application.Features.Categories.Queries;
 using MediatR;
 using Dapper;

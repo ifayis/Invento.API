@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Invento.Application.Common.Interface;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
