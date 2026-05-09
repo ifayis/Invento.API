@@ -8,6 +8,7 @@ namespace Invento.Application.Features.Auth.Commands
         public string Email { get; set; } = string.Empty;
 
         public string Password { get; set; } = string.Empty;
+        public string Phone { get; set; }
 
         public string CompanyName { get; set; } = string.Empty;
 

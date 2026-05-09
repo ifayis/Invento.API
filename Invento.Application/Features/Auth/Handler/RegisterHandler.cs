@@ -49,13 +49,15 @@ namespace Invento.Application.Features.Auth.Handler
 
                     await connection.ExecuteAsync(
                         @"INSERT INTO Tenants 
-                          (Id, Name, CompanyCode, BusinessPurpose, LogoUrl, CreatedAt)
+                          (Id, Name,Email, Phone, CompanyCode, BusinessPurpose, LogoUrl, CreatedAt)
                           VALUES 
-                          (@Id, @Name, @CompanyCode, @BusinessPurpose, @LogoUrl, GETUTCDATE())",
+                          (@Id, @Name,@Email, @Phone, @CompanyCode, @BusinessPurpose, @LogoUrl, GETUTCDATE())",
                         new
                         {
                             Id = tenantId,
                             Name = request.CompanyName,
+                            Email = request.Email,
+                            Phone = request.Phone,
                             CompanyCode = companyCode,
                             request.BusinessPurpose,
                             request.LogoUrl
@@ -99,7 +101,7 @@ namespace Invento.Application.Features.Auth.Handler
                 var refreshHash = RefreshTokenService.Hash(refreshToken);
 
                 await connection.ExecuteAsync(
-                    @"INSERT INTO RefreshTokens 
+                    @"INSERT INTO RefreshToken
                       (Id, UserId, TokenHash, ExpiresAt, IsRevoked, CreatedAt)
                       VALUES 
                       (@Id, @UserId, @TokenHash, @ExpiresAt, 0, GETUTCDATE())",

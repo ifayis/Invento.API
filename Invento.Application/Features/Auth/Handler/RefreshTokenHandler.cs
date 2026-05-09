@@ -57,7 +57,7 @@ namespace Invento.Application.Features.Auth.Handler
                                  ExpiresAt,
                                  IsRevoked,
                                  CreatedAt
-                          FROM RefreshTokens
+                          FROM RefreshToken
                           WHERE TokenHash = @TokenHash
                           AND IsRevoked = 0",
                         parameters: new
@@ -79,7 +79,7 @@ namespace Invento.Application.Features.Auth.Handler
                 var affected = await connection.ExecuteAsync(
                     new CommandDefinition(
                         commandText:
-                        @"UPDATE RefreshTokens
+                        @"UPDATE RefreshToken
                           SET IsRevoked = 1
                           WHERE Id = @Id
                           AND IsRevoked = 0",
@@ -141,7 +141,7 @@ namespace Invento.Application.Features.Auth.Handler
                 await connection.ExecuteAsync(
                     new CommandDefinition(
                         commandText:
-                        @"INSERT INTO RefreshTokens
+                        @"INSERT INTO RefreshToken
                           (
                               Id,
                               UserId,

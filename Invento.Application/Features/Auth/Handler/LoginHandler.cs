@@ -59,7 +59,7 @@ namespace Invento.Application.Features.Auth.Handler
                 var refreshHash = RefreshTokenService.Hash(refreshToken);
 
                 await connection.ExecuteAsync(
-                    @"INSERT INTO RefreshTokens 
+                    @"INSERT INTO RefreshToken
                       (Id, UserId, TokenHash, ExpiresAt, IsRevoked, CreatedAt)
                       VALUES 
                       (@Id, @UserId, @TokenHash, @ExpiresAt, 0, GETUTCDATE())",
