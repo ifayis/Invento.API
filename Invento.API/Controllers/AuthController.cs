@@ -28,5 +28,12 @@ namespace Invento.API.Controllers
             var token = await _mediator.Send(command);
             return Ok(token);
         }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
     }
 }

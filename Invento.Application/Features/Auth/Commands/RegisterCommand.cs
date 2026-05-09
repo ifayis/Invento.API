@@ -1,8 +1,9 @@
-﻿using MediatR;
+﻿using Invento.Application.Features.Auth.Models;
+using MediatR;
 
 namespace Invento.Application.Features.Auth.Commands
 {
-    public class RegisterCommand : IRequest<string>
+    public class RegisterCommand : IRequest<AuthResponse>
     {
         public string Email { get; set; } = string.Empty;
 

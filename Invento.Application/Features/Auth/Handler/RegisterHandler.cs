@@ -3,13 +3,14 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Common.Security;
 using Invento.Application.Data;
 using Invento.Application.Features.Auth.Commands;
+using Invento.Application.Features.Auth.Models;
 using Invento.Domain.Entities;
 using MediatR;
 using System.Data;
 
 namespace Invento.Application.Features.Auth.Handler
 {
-    public class RegisterHandler : IRequestHandler<RegisterCommand, string>
+    public class RegisterHandler : IRequestHandler<RegisterCommand, AuthResponse>
     {
         private readonly IDbConnectionFactory _db;
         private readonly IJwtService _jwt;
@@ -20,7 +21,7 @@ namespace Invento.Application.Features.Auth.Handler
             _jwt = jwt;
         }
 
-        public async Task<string> Handle(RegisterCommand request, CancellationToken cancellationToken)
+        public async Task<AuthResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
             using var connection = _db.CreateConnection();
 
@@ -38,7 +39,8 @@ namespace Invento.Application.Features.Auth.Handler
                     @"SELECT Id, Name, CompanyCode 
                       FROM Tenants 
                       WHERE CompanyCode = @CompanyCode",
-                    new { CompanyCode = companyCode }, transaction);
+                    new { CompanyCode = companyCode },
+                    transaction);
 
                 Guid tenantId;
 
@@ -67,9 +69,7 @@ namespace Invento.Application.Features.Auth.Handler
                 }
 
                 var exists = await connection.ExecuteScalarAsync<int>(
-                    @"SELECT COUNT(1) 
-                      FROM Users 
-                      WHERE Email = @Email",
+                    @"SELECT COUNT(1) FROM Users WHERE Email = @Email",
                     new { Email = email },
                     transaction);
 
@@ -77,7 +77,7 @@ namespace Invento.Application.Features.Auth.Handler
                     throw new InvalidOperationException("User already exists");
 
                 var userId = Guid.NewGuid();
-                var hash = PasswordHasher.Hash(request.Password);
+                var passwordHash = PasswordHasher.Hash(request.Password);
 
                 await connection.ExecuteAsync(
                     @"INSERT INTO Users 
@@ -89,14 +89,37 @@ namespace Invento.Application.Features.Auth.Handler
                         Id = userId,
                         TenantId = tenantId,
                         Email = email,
-                        PasswordHash = hash,
+                        PasswordHash = passwordHash,
                         Role = "Admin"
+                    },
+                    transaction);
+
+                var accessToken = _jwt.GenerateToken(userId, tenantId, "Admin", email);
+
+                var refreshToken = RefreshTokenService.GenerateToken();
+                var refreshHash = RefreshTokenService.Hash(refreshToken);
+
+                await connection.ExecuteAsync(
+                    @"INSERT INTO RefreshTokens 
+                      (Id, UserId, TokenHash, ExpiresAt, IsRevoked, CreatedAt)
+                      VALUES 
+                      (@Id, @UserId, @TokenHash, @ExpiresAt, 0, GETUTCDATE())",
+                    new
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = userId,
+                        TokenHash = refreshHash,
+                        ExpiresAt = DateTime.UtcNow.AddDays(7)
                     },
                     transaction);
 
                 transaction.Commit();
 
-                return _jwt.GenerateToken(userId, tenantId, "Admin", email);
+                return new AuthResponse
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken
+                };
             }
             catch
             {
