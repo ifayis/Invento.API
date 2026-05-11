@@ -1,74 +1,59 @@
-﻿//using Invento.API.Common;
-//using System.Net;
-//using FluentValidation;
-//using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
+using FluentValidation;
+using Invento.Application.Common.Models;
 
-//namespace Invento.API.Middleware
-//{
-//    public class ExceptionMiddleware
-//    {
-//        private readonly RequestDelegate _next;
-//        private readonly ILogger<ExceptionMiddleware> _logger;
+namespace Invento.API.Middlewares;
 
-//        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
-//        {
-//            _next = next;
-//            _logger = logger;
-//        }
+public class ExceptionMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
 
-//        public async Task Invoke(HttpContext context)
-//        {
-//            try
-//            {
-//                await _next(context);
-//            }
-//            catch (Exception ex)
-//            {
-//                await HandleException(context, ex);
-//            }
-//        }
+    public ExceptionMiddleware(
+        RequestDelegate next,
+        ILogger<ExceptionMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
 
-//        private async Task HandleException(HttpContext context, Exception ex)
-//        {
-//            _logger.LogError(ex, ex.Message);
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (ValidationException ex)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-//            var response = new ErrorResponse();
+            var response = ApiResponse<object>.FailureResponse(
+                "Validation failed",
+                ex.Errors.Select(x => x.ErrorMessage).ToList());
 
-//            switch (ex)
-//            {
-//                case ValidationException validationEx:
-//                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-//                    response.Message = "Validation failed";
-//                    response.Errors = validationEx.Errors
-//                        .GroupBy(e => e.PropertyName)
-//                        .ToDictionary(
-//                            g => g.Key,
-//                            g => g.Select(e => e.ErrorMessage).ToArray()
-//                        );
-//                    break;
+            await context.Response.WriteAsJsonAsync(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
 
-//                case UnauthorizedAccessException:
-//                    response.StatusCode = (int)HttpStatusCode.Unauthorized;
-//                    response.Message = ex.Message;
-//                    break;
+            var response = ApiResponse<object>.FailureResponse(
+                ex.Message);
 
-//                case KeyNotFoundException:
-//                    response.StatusCode = (int)HttpStatusCode.NotFound;
-//                    response.Message = ex.Message;
-//                    break;
+            await context.Response.WriteAsJsonAsync(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exception");
 
-//                default:
-//                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
-//                    response.Message = "Something went wrong";
-//                    break;
-//            }
+            context.Response.StatusCode =
+                (int)HttpStatusCode.InternalServerError;
 
-//            context.Response.ContentType = "application/json";
-//            context.Response.StatusCode = response.StatusCode;
+            var response = ApiResponse<object>.FailureResponse(
+                "Internal server error");
 
-//            var json = JsonSerializer.Serialize(response);
-
-//            await context.Response.WriteAsync(json);
-//        }
-//    }
-//}
+            await context.Response.WriteAsJsonAsync(response);
+        }
+    }
+}

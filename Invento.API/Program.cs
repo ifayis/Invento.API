@@ -6,6 +6,7 @@ using Invento.Application.Features.Auth.Commands;
 using Invento.Application.Features.Products.Validators;
 using Invento.Infrastructure.Data;
 using Invento.Infrastructure.Services;
+using Invento.API.Middlewares;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -98,7 +99,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-//app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthentication();
 

@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Products.Commands;
+﻿using Invento.Application.Common.Models;
+using Invento.Application.Features.Products.Commands;
 using Invento.Application.Features.Products.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -18,35 +19,99 @@ namespace Invento.API.Controllers
             _mediator = mediator;
         }
 
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
-            => Ok(await _mediator.Send(new GetProductsQuery()));
+        {
+            var result = await _mediator.Send(new GetProductsQuery());
+
+            var response = ApiResponse<object>.SuccessResponse(
+                result,
+                "Products fetched successfully");
+
+            return Ok(response);
+        }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
-            => Ok(await _mediator.Send(new GetProductByIdQuery { Id = id }));
+        {
+            var result = await _mediator.Send(
+                new GetProductByIdQuery
+                {
+                    Id = id
+                });
+
+            var response = ApiResponse<object>.SuccessResponse(
+                result,
+                "Product fetched successfully");
+
+            return Ok(response);
+        }
+
 
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string q)
-            => Ok(await _mediator.Send(new SearchProductsQuery { Search = q }));
+        {
+            var result = await _mediator.Send(
+                new SearchProductsQuery
+                {
+                    Search = q
+                });
+
+            var response = ApiResponse<object>.SuccessResponse(
+                result,
+                "Product search completed");
+
+            return Ok(response);
+        }
+
 
         [HttpPost("add")]
-        public async Task<IActionResult> Create(CreateProductCommand cmd)
-            => Ok(await _mediator.Send(cmd));
+        public async Task<IActionResult> Create(
+            [FromBody] CreateProductCommand cmd)
+        {
+            var result = await _mediator.Send(cmd);
+
+            var response = ApiResponse<object>.SuccessResponse(
+                result,
+                "Product created successfully");
+
+            return Ok(response);
+        }
+
 
         [HttpPatch("update/{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateProductCommand cmd)
+        public async Task<IActionResult> Update(
+            Guid id,
+            [FromBody] UpdateProductCommand cmd)
         {
             cmd.Id = id;
+
             await _mediator.Send(cmd);
-            return NoContent();
+
+            var response = ApiResponse<object>.SuccessResponse(
+                null,
+                "Product updated successfully");
+
+            return Ok(response);
         }
+
 
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _mediator.Send(new DeleteProductCommand { Id = id });
-            return NoContent();
+            await _mediator.Send(
+                new DeleteProductCommand
+                {
+                    Id = id
+                });
+
+            var response = ApiResponse<object>.SuccessResponse(
+                null,
+                "Product deleted successfully");
+
+            return Ok(response);
         }
     }
 }
