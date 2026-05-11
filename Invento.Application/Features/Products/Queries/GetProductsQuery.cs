@@ -7,7 +7,11 @@ using System.Threading.Tasks;
 
 namespace Invento.Application.Features.Products.Queries
 {
-    public class GetProductsQuery : IRequest<IEnumerable<ProductDto>> { }
+    public class GetProductsQuery : IRequest<IEnumerable<ProductDto>> 
+    {
+        public string? Search { get; set; }
+
+    }
 
     public class ProductDto
     {

@@ -1,38 +1,67 @@
-﻿using Invento.Application.Common.Interface;
-using Invento.Application.Features.Products.Queries;
+﻿using Dapper;
+using Invento.Application.Common.Interface;
+using Invento.Domain.Entities;
 using MediatR;
-using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Invento.Application.Features.Products.Handler
+namespace Invento.Application.Features.Products.Queries
 {
-    public class GetProductsHandler : IRequestHandler<GetProductsQuery, IEnumerable<ProductDto>>
+    public class GetProductsHandler
+        : IRequestHandler<GetProductsQuery, IEnumerable<ProductDto>>
     {
         private readonly IDbConnectionFactory _db;
-        private readonly ITenantProvider _tenant;
+        private readonly ITenantProvider _tenantProvider;
 
-        public GetProductsHandler(IDbConnectionFactory db, ITenantProvider tenant)
+        public GetProductsHandler(
+            IDbConnectionFactory db,
+            ITenantProvider tenantProvider)
         {
             _db = db;
-            _tenant = tenant;
+            _tenantProvider = tenantProvider;
         }
 
-        public async Task<IEnumerable<ProductDto>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProductDto>> Handle(
+            GetProductsQuery request,
+            CancellationToken cancellationToken)
         {
-            var connection = _db.CreateConnection();
+            using var connection = _db.CreateConnection();
 
-            var sql = @"SELECT Id, Name, SellingPrice, StockQuantity
-                    FROM Products
-                    WHERE TenantId = @TenantId";
+            var tenantId = _tenantProvider.GetTenantId();
 
-            return await connection.QueryAsync<ProductDto>(sql, new
+            string sql = @"
+                SELECT 
+                    p.Id,
+                    p.Name,
+                    p.TagNumber,
+                    p.StockQuantity,
+                    p.SellingPrice,
+                    c.Name AS CategoryName
+                FROM Products p
+                INNER JOIN Categories c
+                    ON p.CategoryId = c.Id
+                WHERE p.TenantId = @TenantId
+            ";
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
             {
-                TenantId = _tenant.GetTenantId()
-            });
+                sql += @"
+                    AND (
+                        p.Name LIKE @Search
+                        OR p.TagNumber LIKE @Search
+                    )
+                ";
+            }
+
+            sql += " ORDER BY p.CreatedAt DESC";
+
+            var products = await connection.QueryAsync(
+                sql,
+                new
+                {
+                    TenantId = tenantId,
+                    Search = $"%{request.Search}%"
+                });
+
+            return products;
         }
     }
 }

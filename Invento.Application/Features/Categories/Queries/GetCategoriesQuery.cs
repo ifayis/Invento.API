@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 
 namespace Invento.Application.Features.Categories.Queries
 {
-    public class GetCategoriesQuery : IRequest<IEnumerable<CategoryDto>> { }
+    public class GetCategoriesQuery : IRequest<IEnumerable<CategoryDto>> 
+    {
+        public string? Search { get; set; }
+    }
 
     public class CategoryDto
     {

@@ -21,30 +21,17 @@ namespace Invento.API.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            var result = await _mediator.Send(new GetCategoriesQuery());
-
-            var response = ApiResponse<object>.SuccessResponse(
-                result,
-                "Categories fetched successfully");
-
-            return Ok(response);
-        }
-
-
-        [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string q)
+        public async Task<IActionResult> Get([FromQuery] string? q)
         {
             var result = await _mediator.Send(
-                new SearchCategoryQuery
+                new GetCategoriesQuery
                 {
                     Search = q
                 });
 
             var response = ApiResponse<object>.SuccessResponse(
                 result,
-                "Categories search completed");
+                "Categories fetched successfully");
 
             return Ok(response);
         }

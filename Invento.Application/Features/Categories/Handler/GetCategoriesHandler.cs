@@ -1,38 +1,56 @@
-﻿using Invento.Application.Common.Interface;
-using Invento.Application.Features.Categories.Queries;
+﻿using Dapper;
+using Invento.Application.Common.Interface;
 using MediatR;
-using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Invento.Application.Features.Categories.Handler
+namespace Invento.Application.Features.Categories.Queries
 {
-    public class GetCategoriesHandler : IRequestHandler<GetCategoriesQuery, IEnumerable<CategoryDto>>
+    public class GetCategoriesHandler
+        : IRequestHandler<GetCategoriesQuery, IEnumerable<CategoryDto>>
     {
         private readonly IDbConnectionFactory _db;
-        private readonly ITenantProvider _tenant;
+        private readonly ITenantProvider _tenantProvider;
 
-        public GetCategoriesHandler(IDbConnectionFactory db, ITenantProvider tenant)
+        public GetCategoriesHandler(
+            IDbConnectionFactory db,
+            ITenantProvider tenantProvider)
         {
             _db = db;
-            _tenant = tenant;
+            _tenantProvider = tenantProvider;
         }
 
-        public async Task<IEnumerable<CategoryDto>> Handle(GetCategoriesQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<CategoryDto>> Handle(
+            GetCategoriesQuery request,
+            CancellationToken cancellationToken)
         {
-            var connection = _db.CreateConnection();
+            using var connection = _db.CreateConnection();
 
-            var sql = @"SELECT Id, Name
-                    FROM Categories
-                    WHERE TenantId = @TenantId";
+            var tenantId = _tenantProvider.GetTenantId();
 
-            return await connection.QueryAsync<CategoryDto>(sql, new
+            string sql = @"
+                SELECT 
+                    Id,
+                    Name,
+                    CreatedAt
+                FROM Categories
+                WHERE TenantId = @TenantId
+            ";
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
             {
-                TenantId = _tenant.GetTenantId()
-            });
+                sql += " AND Name LIKE @Search";
+            }
+
+            sql += " ORDER BY CreatedAt DESC";
+
+            var categories = await connection.QueryAsync(
+                sql,
+                new
+                {
+                    TenantId = tenantId,
+                    Search = $"%{request.Search}%"
+                });
+
+            return categories;
         }
     }
 }

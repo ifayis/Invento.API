@@ -21,9 +21,13 @@ namespace Invento.API.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> Get([FromQuery] string? q)
         {
-            var result = await _mediator.Send(new GetProductsQuery());
+            var result = await _mediator.Send(
+                new GetProductsQuery
+                {
+                    Search = q
+                });
 
             var response = ApiResponse<object>.SuccessResponse(
                 result,
@@ -31,7 +35,6 @@ namespace Invento.API.Controllers
 
             return Ok(response);
         }
-
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
@@ -45,23 +48,6 @@ namespace Invento.API.Controllers
             var response = ApiResponse<object>.SuccessResponse(
                 result,
                 "Product fetched successfully");
-
-            return Ok(response);
-        }
-
-
-        [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string q)
-        {
-            var result = await _mediator.Send(
-                new SearchProductsQuery
-                {
-                    Search = q
-                });
-
-            var response = ApiResponse<object>.SuccessResponse(
-                result,
-                "Product search completed");
 
             return Ok(response);
         }
