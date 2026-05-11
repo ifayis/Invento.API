@@ -42,7 +42,7 @@ namespace Invento.Application.Features.Categories.Queries
 
             sql += " ORDER BY CreatedAt DESC";
 
-            var categories = await connection.QueryAsync(
+            var categories = await connection.QueryAsync<CategoryDto>(
                 sql,
                 new
                 {

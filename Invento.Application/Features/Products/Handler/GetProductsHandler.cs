@@ -53,7 +53,7 @@ namespace Invento.Application.Features.Products.Queries
 
             sql += " ORDER BY p.CreatedAt DESC";
 
-            var products = await connection.QueryAsync(
+            var products = await connection.QueryAsync<ProductDto>(
                 sql,
                 new
                 {

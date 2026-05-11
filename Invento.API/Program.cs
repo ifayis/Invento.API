@@ -75,7 +75,18 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
 
         IssuerSigningKey = new SymmetricSecurityKey(
-        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine("JWT ERROR:");
+            Console.WriteLine(context.Exception.Message);
+
+            return Task.CompletedTask;
+        }
     };
 });
 

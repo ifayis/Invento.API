@@ -20,20 +20,22 @@ namespace Invento.Application.Common.Security
         {
             var claims = new[]
             {
-                new Claim("UserId", userId.ToString()),
-                new Claim("TenantId",tenantId.ToString()),
-                new Claim("Role", role),
-                new Claim("Email", email)
-            };
+        new Claim("UserId", userId.ToString()),
+        new Claim("TenantId", tenantId.ToString()),
+        new Claim(ClaimTypes.Role, role),
+        new Claim(ClaimTypes.Email, email)
+    };
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var creds = new SigningCredentials(
+                key,
+                SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
