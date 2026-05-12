@@ -90,7 +90,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddMediatR(typeof(RegisterCommand).Assembly);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<DbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
