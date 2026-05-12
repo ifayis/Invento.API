@@ -1,5 +1,4 @@
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Invento.Application.Common.Interface;
 using Invento.Application.Common.Security;
 using Invento.Application.Features.Auth.Commands;
@@ -57,7 +56,6 @@ builder.Services.AddSwaggerGen(options =>
 }); 
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
 
 builder.Services.AddAuthentication(options =>
