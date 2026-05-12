@@ -1,11 +1,12 @@
 using Invento.Persistence.Extensions;
+using Invento.Application.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddApplicationServices();
 builder.Services.AddPersistenceServices(
     builder.Configuration);
 
