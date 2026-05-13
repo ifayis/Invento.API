@@ -1,4 +1,5 @@
-﻿using Invento.Domain.Entities;
+﻿using Invento.Application.Interfaces;
+using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace Invento.persistance.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext
+        : DbContext, IApplicationDbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)

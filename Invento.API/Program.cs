@@ -1,6 +1,8 @@
-using Invento.Persistence.Extensions;
 using Invento.Application.Common;
+using Invento.Application.Interfaces;
 using Invento.Infrastructure.Extensions;
+using Invento.persistance.Data;
+using Invento.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -15,6 +17,11 @@ builder.Services.AddInfrastructureServices();
 
 builder.Services.AddPersistenceServices(
     builder.Configuration);
+
+builder.Services.AddDbContext<AppDbContext>();
+
+builder.Services.AddScoped<IApplicationDbContext>(
+    provider => provider.GetRequiredService<AppDbContext>());
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
