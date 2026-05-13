@@ -21,7 +21,11 @@ namespace Invento.Domain.Entities
 
         public decimal TaxRate { get; set; }
 
+        public int CurrentStock { get; set; }
+
         public Guid CategoryId { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
 
         public Category Category { get; set; } = default!;
 

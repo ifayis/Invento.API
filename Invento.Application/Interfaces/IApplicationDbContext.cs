@@ -16,6 +16,10 @@ namespace Invento.Application.Interfaces
 
         DbSet<RefreshToken> RefreshTokens { get; }
 
+        DbSet<Product> Products { get; }
+
+        DbSet<Category> Categories { get; }
+
         Task<int> SaveChangesAsync(
             CancellationToken cancellationToken);
     }

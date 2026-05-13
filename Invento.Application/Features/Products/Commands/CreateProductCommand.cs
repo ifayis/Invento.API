@@ -1,0 +1,28 @@
+﻿using Invento.Application.Abstractions;
+using Invento.Application.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Invento.Application.Features.Products.Commands
+{
+    public class CreateProductCommand
+        : ICommand<ApiResponse<Guid>>
+    {
+        public string Name { get; set; }
+            = string.Empty;
+
+        public string SKU { get; set; }
+            = string.Empty;
+
+        public decimal CostPrice { get; set; }
+
+        public decimal SellingPrice { get; set; }
+
+        public int CurrentStock { get; set; }
+
+        public Guid CategoryId { get; set; }
+    }
+}
