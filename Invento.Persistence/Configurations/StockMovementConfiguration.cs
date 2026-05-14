@@ -1,44 +1,36 @@
 ﻿using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Invento.Persistence.Configurations
+namespace Invento.Persistence.Configurations;
+
+public class StockMovementConfiguration
+    : IEntityTypeConfiguration<StockMovement>
 {
-    public class StockMovementConfiguration
-        : IEntityTypeConfiguration<StockMovement>
+    public void Configure(
+        EntityTypeBuilder<StockMovement> builder)
     {
-        public void Configure(EntityTypeBuilder<StockMovement> builder)
-        {
-            builder.ToTable("StockMovements");
+        builder.ToTable("StockMovements");
 
-            builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.ReferenceType)
-                .HasMaxLength(100);
+        builder.Property(x => x.MovementType)
+            .HasMaxLength(50)
+            .IsRequired();
 
-            builder.Property(x => x.Notes)
-                .HasMaxLength(1000);
+        builder.Property(x => x.ReferenceNumber)
+            .HasMaxLength(100);
 
-            builder.HasIndex(x =>
-                new
-                {
-                    x.TenantId,
-                    x.ProductId
-                });
+        builder.Property(x => x.Remarks)
+            .HasMaxLength(1000);
 
-            builder.HasIndex(x => x.CreatedAt);
+        builder.HasIndex(x => x.ProductId);
 
-            builder.HasOne(x => x.Product)
-                .WithMany(x => x.StockMovements)
-                .HasForeignKey(x => x.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(x => x.Product)
+            .WithMany(x => x.StockMovements)
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasQueryFilter(x => !x.IsDeleted);
-        }
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

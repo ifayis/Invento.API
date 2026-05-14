@@ -1,0 +1,145 @@
+﻿using Dapper;
+using Invento.Application.Abstractions;
+using Invento.Application.Common;
+using Invento.Application.Common.Interface;
+using Invento.Application.Features.StockMovements.DTOs;
+using Invento.Application.Interfaces;
+
+namespace Invento.Application.Features.StockMovements.Queries;
+
+public class GetStockMovementsQueryHandler
+    : IQueryHandler<
+        GetStockMovementsQuery,
+        ApiResponse<
+            PagedResponse<StockMovementDto>>>
+{
+    private readonly IDbConnectionFactory _connectionFactory;
+
+    public GetStockMovementsQueryHandler(
+        IDbConnectionFactory connectionFactory)
+    {
+        _connectionFactory = connectionFactory;
+    }
+
+    public async Task<
+        ApiResponse<
+            PagedResponse<StockMovementDto>>> Handle(
+        GetStockMovementsQuery request,
+        CancellationToken cancellationToken)
+    {
+        using var connection =
+            _connectionFactory.CreateConnection();
+
+        var sql = @"
+        SELECT
+            sm.Id,
+            sm.ProductId,
+            p.Name AS ProductName,
+            sm.Quantity,
+            sm.MovementType,
+            sm.Remarks,
+            sm.ReferenceNumber,
+            sm.CreatedAt
+        FROM StockMovements sm
+        INNER JOIN Products p
+            ON sm.ProductId = p.Id
+        WHERE sm.IsDeleted = 0
+        AND
+        (
+            @ProductId IS NULL
+            OR sm.ProductId = @ProductId
+        )
+        AND
+        (
+            @MovementType IS NULL
+            OR sm.MovementType = @MovementType
+        )
+        AND
+        (
+            @Search IS NULL
+            OR p.Name LIKE '%' + @Search + '%'
+        )
+        AND
+        (
+            @FromDate IS NULL
+            OR sm.CreatedAt >= @FromDate
+        )
+        AND
+        (
+            @ToDate IS NULL
+            OR sm.CreatedAt <= @ToDate
+        )
+        ORDER BY sm.CreatedAt DESC
+        OFFSET @Offset ROWS
+        FETCH NEXT @PageSize ROWS ONLY;
+
+        SELECT COUNT(*)
+        FROM StockMovements sm
+        INNER JOIN Products p
+            ON sm.ProductId = p.Id
+        WHERE sm.IsDeleted = 0
+        AND
+        (
+            @ProductId IS NULL
+            OR sm.ProductId = @ProductId
+        )
+        AND
+        (
+            @MovementType IS NULL
+            OR sm.MovementType = @MovementType
+        )
+        AND
+        (
+            @Search IS NULL
+            OR p.Name LIKE '%' + @Search + '%'
+        )
+        AND
+        (
+            @FromDate IS NULL
+            OR sm.CreatedAt >= @FromDate
+        )
+        AND
+        (
+            @ToDate IS NULL
+            OR sm.CreatedAt <= @ToDate
+        );
+        ";
+
+        var parameters = new
+        {
+            request.ProductId,
+            request.Search,
+            request.MovementType,
+            request.FromDate,
+            request.ToDate,
+            Offset =
+                (request.PageNumber - 1)
+                * request.PageSize,
+            request.PageSize
+        };
+
+        using var multi =
+            await connection.QueryMultipleAsync(
+                sql,
+                parameters);
+
+        var items =
+            await multi.ReadAsync<StockMovementDto>();
+
+        var totalRecords =
+            await multi.ReadFirstAsync<int>();
+
+        var response =
+            new PagedResponse<StockMovementDto>
+            {
+                Items = items,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalRecords = totalRecords
+            };
+
+        return ApiResponse<
+            PagedResponse<StockMovementDto>>
+            .SuccessResponse(response);
+    }
+}

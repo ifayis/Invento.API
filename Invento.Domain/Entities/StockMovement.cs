@@ -1,27 +1,23 @@
-﻿using Invento.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Invento.Shared.Common;
+﻿using Invento.Shared.Common;
 
-namespace Invento.Domain.Entities
+namespace Invento.Domain.Entities;
+
+public class StockMovement : BaseEntity
 {
-    public class StockMovement : AuditableEntity
-    {
-        public Guid ProductId { get; set; }
+    public Guid ProductId { get; set; }
 
-        public Product Product { get; set; } = default!;
+    public Product Product { get; set; } = null!;
 
-        public StockMovementType Type { get; set; }
+    public int Quantity { get; set; }
 
-        public int Quantity { get; set; }
+    public string MovementType { get; set; }
+        = string.Empty;
 
-        public string ReferenceType { get; set; } = string.Empty;
+    public string? Remarks { get; set; }
 
-        public Guid? ReferenceId { get; set; }
+    public string? ReferenceNumber { get; set; }
 
-        public string? Notes { get; set; }
-    }
+    public Guid? CreatedByUserId { get; set; }
+
+    public bool IsDeleted { get; set; } = false;
 }

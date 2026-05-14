@@ -12,6 +12,8 @@ namespace Invento.Domain.Enums
         Sale = 2,
         Return = 3,
         Damage = 4,
-        Adjustment = 5
+        Adjustment = 5,
+        StockIn = 1,
+        StockOut = 2
     }
 }

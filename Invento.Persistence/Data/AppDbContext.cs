@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +44,11 @@ namespace Invento.persistance.Data
 
             modelBuilder.ApplyConfigurationsFromAssembly(
                 typeof(AppDbContext).Assembly);
+        }
+
+        public async Task<IDbContextTransaction>BeginTransactionAsync()
+        {
+            return await Database.BeginTransactionAsync();
         }
     }
 }

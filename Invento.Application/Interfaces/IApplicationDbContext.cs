@@ -1,5 +1,6 @@
 ﻿using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,12 @@ namespace Invento.Application.Interfaces
 
         DbSet<Category> Categories { get; }
 
+        DbSet<StockMovement> StockMovements { get; }
+
         Task<int> SaveChangesAsync(
             CancellationToken cancellationToken);
+
+        Task<IDbContextTransaction>
+            BeginTransactionAsync();
     }
 }
