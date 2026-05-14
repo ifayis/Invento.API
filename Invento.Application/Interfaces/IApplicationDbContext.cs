@@ -23,6 +23,10 @@ namespace Invento.Application.Interfaces
 
         DbSet<StockMovement> StockMovements { get; }
 
+        DbSet<Sale> Sales { get; }
+
+        DbSet<SaleItem> SaleItems { get; }
+
         Task<int> SaveChangesAsync(
             CancellationToken cancellationToken);
 

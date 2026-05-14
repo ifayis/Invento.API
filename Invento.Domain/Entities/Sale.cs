@@ -1,29 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Invento.Shared.Common;
+﻿using Invento.Shared.Common;
 
-namespace Invento.Domain.Entities
+namespace Invento.Domain.Entities;
+
+public class Sale : BaseEntity
 {
-    public class Sale : AuditableEntity
-    {
-        public string SaleNumber { get; set; } = string.Empty;
+    public string InvoiceNumber { get; set; }
+        = string.Empty;
 
-        public Guid CustomerId { get; set; }
+    public DateTime SaleDate { get; set; }
 
-        public Customer Customer { get; set; } = default!;
+    public decimal SubTotal { get; set; }
 
-        public DateTime SaleDate { get; set; }
+    public decimal TaxAmount { get; set; }
 
-        public decimal SubTotal { get; set; }
+    public decimal DiscountAmount { get; set; }
 
-        public decimal TaxAmount { get; set; }
+    public decimal TotalAmount { get; set; }
 
-        public decimal TotalAmount { get; set; }
+    public decimal ProfitAmount { get; set; }
 
-        public ICollection<SaleItem> Items { get; set; }
-            = new List<SaleItem>();
-    }
+    public bool IsDeleted { get; set; } = false;
+
+    public ICollection<SaleItem> SaleItems
+    { get; set; }
+        = new List<SaleItem>();
 }
