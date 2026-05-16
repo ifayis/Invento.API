@@ -1,8 +1,10 @@
 ﻿using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
-using Invento.Application.Features.Products.DTOs;
 using Invento.Application.Common.Interface;
+using Invento.Application.Features.Products.DTOs;
+using Invento.Application.Interfaces;
+
 namespace Invento.Application.Features.Products.Queries
 {
     public class GetProductsQueryHandler
@@ -11,11 +13,14 @@ namespace Invento.Application.Features.Products.Queries
             ApiResponse<PagedResponse<ProductDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ICurrentTenantService _currentTenant;
 
         public GetProductsQueryHandler(
-            IDbConnectionFactory connectionFactory)
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
         {
             _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
         }
 
         public async Task<
@@ -27,61 +32,79 @@ namespace Invento.Application.Features.Products.Queries
                 _connectionFactory.CreateConnection();
 
             var sql = @"
-            SELECT
-                p.Id,
-                p.Name,
-                p.SKU,
-                p.CostPrice,
-                p.SellingPrice,
-                p.CurrentStock,
-                c.Name AS CategoryName,
-                p.CreatedAt
-            FROM Products p
-            INNER JOIN Categories c
-                ON p.CategoryId = c.Id
-            WHERE p.IsDeleted = 0
+        SELECT
+            p.Id,
+            p.Name,
+            p.SKU,
+            p.CostPrice,
+            p.SellingPrice,
+            p.CurrentStock,
+            p.LowStockThreshold,
+            p.ImageUrl,
+            c.Name AS CategoryName,
+            p.CreatedAt
+        FROM Products p
+        INNER JOIN Categories c
+            ON p.CategoryId = c.Id
+        WHERE
+            p.IsDeleted = 0
+            AND p.TenantId = @TenantId
+            AND c.TenantId = @TenantId
             AND
-                (@Search IS NULL
+            (
+                @Search IS NULL
                 OR p.Name LIKE '%' + @Search + '%'
-                OR p.SKU LIKE '%' + @Search + '%')
-            ORDER BY p.CreatedAt DESC
-            OFFSET @Offset ROWS
-            FETCH NEXT @PageSize ROWS ONLY;
+                OR p.SKU LIKE '%' + @Search + '%'
+            )
+        ORDER BY p.CreatedAt DESC
+        OFFSET @Offset ROWS
+        FETCH NEXT @PageSize ROWS ONLY;
 
-            SELECT COUNT(*)
-            FROM Products p
-            WHERE p.IsDeleted = 0
+        SELECT COUNT(*)
+        FROM Products p
+        WHERE
+            p.IsDeleted = 0
+            AND p.TenantId = @TenantId
             AND
-                (@Search IS NULL
+            (
+                @Search IS NULL
                 OR p.Name LIKE '%' + @Search + '%'
-                OR p.SKU LIKE '%' + @Search + '%');
-            ";
+                OR p.SKU LIKE '%' + @Search + '%'
+            );
+        ";
 
             var parameters = new
             {
+                TenantId = _currentTenant.TenantId,
+
                 Search = request.Search,
+
                 Offset =
                     (request.PageNumber - 1)
                     * request.PageSize,
+
                 request.PageSize
             };
 
-            using var multi = await connection
-                .QueryMultipleAsync(sql, parameters);
+            using var multi =
+                await connection.QueryMultipleAsync(
+                    sql,
+                    parameters);
 
-            var products = await multi
-                .ReadAsync<ProductDto>();
+            var products =
+                await multi.ReadAsync<ProductDto>();
 
             var totalRecords =
                 await multi.ReadFirstAsync<int>();
 
-            var response = new PagedResponse<ProductDto>
-            {
-                Items = products,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize,
-                TotalRecords = totalRecords
-            };
+            var response =
+                new PagedResponse<ProductDto>
+                {
+                    Items = products.ToList(),
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize,
+                    TotalRecords = totalRecords
+                };
 
             return ApiResponse<
                 PagedResponse<ProductDto>>

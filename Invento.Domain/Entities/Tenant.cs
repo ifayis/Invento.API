@@ -9,6 +9,8 @@ namespace Invento.Domain.Entities
 {
     public class Tenant : BaseEntity
     {
+        public Guid TenantId { get; set; }
+
         public string CompanyName { get; set; } = string.Empty;
 
         public string BusinessPurpose { get; set; } = string.Empty;

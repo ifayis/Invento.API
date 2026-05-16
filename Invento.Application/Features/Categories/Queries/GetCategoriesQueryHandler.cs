@@ -13,11 +13,14 @@ namespace Invento.Application.Features.Categories.Queries
             ApiResponse<PagedResponse<CategoryDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ICurrentTenantService _currentTenant;
 
         public GetCategoriesQueryHandler(
-            IDbConnectionFactory connectionFactory)
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
         {
             _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
         }
 
         public async Task<
@@ -35,6 +38,7 @@ namespace Invento.Application.Features.Categories.Queries
             CreatedAt
         FROM Categories
         WHERE IsDeleted = 0
+        AND TenantId = @TenantId
         AND
         (
             @Search IS NULL
@@ -47,6 +51,7 @@ namespace Invento.Application.Features.Categories.Queries
         SELECT COUNT(*)
         FROM Categories
         WHERE IsDeleted = 0
+        AND TenantId = @TenantId
         AND
         (
             @Search IS NULL
@@ -56,6 +61,7 @@ namespace Invento.Application.Features.Categories.Queries
 
             var parameters = new
             {
+                TenantId = _currentTenant.TenantId,
                 request.Search,
                 Offset =
                     (request.PageNumber - 1)

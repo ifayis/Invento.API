@@ -13,11 +13,14 @@ public class GetCategoryByIdQueryHandler
         ApiResponse<CategoryDto>>
 {
     private readonly IDbConnectionFactory _connectionFactory;
+    private readonly ICurrentTenantService _currentTenant;
 
     public GetCategoryByIdQueryHandler(
-        IDbConnectionFactory connectionFactory)
+        IDbConnectionFactory connectionFactory,
+        ICurrentTenantService currentTenant)
     {
         _connectionFactory = connectionFactory;
+        _currentTenant = currentTenant;
     }
 
     public async Task<ApiResponse<CategoryDto>> Handle(
@@ -35,12 +38,14 @@ public class GetCategoryByIdQueryHandler
         FROM Categories
         WHERE Id = @Id
         AND IsDeleted = 0
+        AND TenantId = @TenantId
         ";
 
         var category = await connection
             .QueryFirstOrDefaultAsync<CategoryDto>(
                 sql,
-                new { request.Id });
+                new { request.Id,
+                TenantId = _currentTenant.TenantId});
 
         if (category is null)
         {

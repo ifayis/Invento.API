@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Interfaces;
+using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Categories.Commands;
@@ -11,11 +12,14 @@ public class UpdateCategoryCommandHandler
         ApiResponse<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentTenantService _currentTenant;
 
     public UpdateCategoryCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ICurrentTenantService currentTenant)
     {
         _context = context;
+        _currentTenant = currentTenant;
     }
 
     public async Task<ApiResponse<Guid>> Handle(
@@ -25,6 +29,7 @@ public class UpdateCategoryCommandHandler
         var category = await _context.Categories
             .FirstOrDefaultAsync(x =>
                 x.Id == request.Id
+                && x.TenantId == _currentTenant.TenantId
                 && !x.IsDeleted,
                 cancellationToken);
 
@@ -42,6 +47,7 @@ public class UpdateCategoryCommandHandler
             .AnyAsync(x =>
                 x.Name == request.Name
                 && x.Id != request.Id
+                && x.TenantId == _currentTenant.TenantId
                 && !x.IsDeleted,
                 cancellationToken);
 

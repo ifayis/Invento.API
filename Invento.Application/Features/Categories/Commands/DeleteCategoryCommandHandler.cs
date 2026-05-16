@@ -11,11 +11,14 @@ public class DeleteCategoryCommandHandler
         ApiResponse<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentTenantService _currentTenant;
 
     public DeleteCategoryCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ICurrentTenantService currentTenant)
     {
         _context = context;
+        _currentTenant = currentTenant;
     }
 
     public async Task<ApiResponse<Guid>> Handle(
@@ -24,9 +27,10 @@ public class DeleteCategoryCommandHandler
     {
         var category = await _context.Categories
             .FirstOrDefaultAsync(x =>
-                x.Id == request.Id
-                && !x.IsDeleted,
-                cancellationToken);
+            x.Id == request.Id
+            && x.TenantId == _currentTenant.TenantId 
+            && !x.IsDeleted,
+            cancellationToken);
 
         if (category is null)
         {

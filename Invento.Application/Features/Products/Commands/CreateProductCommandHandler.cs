@@ -12,11 +12,13 @@ namespace Invento.Application.Features.Products.Commands
             ApiResponse<Guid>>
     {
         private readonly IApplicationDbContext _context;
+        private readonly ICurrentTenantService _currentTenant;
 
         public CreateProductCommandHandler(
-            IApplicationDbContext context)
+            IApplicationDbContext context, ICurrentTenantService currentTenant)
         {
             _context = context;
+            _currentTenant = currentTenant;
         }
 
         public async Task<ApiResponse<Guid>> Handle(
@@ -25,7 +27,8 @@ namespace Invento.Application.Features.Products.Commands
         {
             var categoryExists = await _context.Categories
                 .AnyAsync(x =>
-                    x.Id == request.CategoryId,
+                    x.Id == request.CategoryId
+                    && x.TenantId == _currentTenant.TenantId,
                     cancellationToken);
 
             if (!categoryExists)
@@ -40,6 +43,7 @@ namespace Invento.Application.Features.Products.Commands
 
             var product = new Product
             {
+                TenantId = _currentTenant.TenantId,
                 Name = request.Name,
                 SKU = request.SKU,
                 CostPrice = request.CostPrice,

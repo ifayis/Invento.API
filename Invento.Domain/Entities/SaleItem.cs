@@ -4,6 +4,8 @@ namespace Invento.Domain.Entities;
 
 public class SaleItem : BaseEntity
 {
+    public Guid TenantId { get; set; }
+
     public Guid SaleId { get; set; }
 
     public Sale Sale { get; set; } = null!;

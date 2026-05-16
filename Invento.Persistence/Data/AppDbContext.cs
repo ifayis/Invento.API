@@ -44,6 +44,18 @@ namespace Invento.persistance.Data
 
             modelBuilder.ApplyConfigurationsFromAssembly(
                 typeof(AppDbContext).Assembly);
+
+            modelBuilder.Entity<Product>()
+                .HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<Category>()
+                .HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<Sale>()
+                .HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<StockMovement>()
+                .HasQueryFilter(x => !x.IsDeleted);
         }
 
         public async Task<IDbContextTransaction>BeginTransactionAsync()

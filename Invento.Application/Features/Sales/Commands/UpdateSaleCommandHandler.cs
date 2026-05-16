@@ -13,11 +13,14 @@ public class UpdateSaleCommandHandler
         ApiResponse<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentTenantService _currentTenant;
 
     public UpdateSaleCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ICurrentTenantService currentTenant)
     {
         _context = context;
+        _currentTenant = currentTenant;
     }
 
     public async Task<ApiResponse<Guid>> Handle(
@@ -33,6 +36,7 @@ public class UpdateSaleCommandHandler
                 .Include(x => x.SaleItems)
                 .FirstOrDefaultAsync(x =>
                     x.Id == request.Id
+                    && x.TenantId == _currentTenant.TenantId
                     && !x.IsDeleted,
                     cancellationToken);
 
@@ -50,7 +54,8 @@ public class UpdateSaleCommandHandler
             {
                 var product = await _context.Products
                     .FirstAsync(x =>
-                        x.Id == item.ProductId,
+                        x.Id == item.ProductId
+                        && x.TenantId == _currentTenant.TenantId,
                         cancellationToken);
 
                 product.CurrentStock += item.Quantity;
@@ -74,6 +79,7 @@ public class UpdateSaleCommandHandler
                 var product = await _context.Products
                     .FirstOrDefaultAsync(x =>
                         x.Id == item.ProductId
+                        && x.TenantId == _currentTenant.TenantId
                         && !x.IsDeleted,
                         cancellationToken);
 
@@ -119,15 +125,13 @@ public class UpdateSaleCommandHandler
 
                 sale.SaleItems.Add(
                     new SaleItem
-                    {
+                    {  
+                        TenantId = _currentTenant.TenantId,
                         ProductId = product.Id,
                         Quantity = item.Quantity,
-                        UnitPrice =
-                            product.SellingPrice,
-                        CostPrice =
-                            product.CostPrice,
-                        TaxRate =
-                            product.TaxRate,
+                        UnitPrice = product.SellingPrice,
+                        CostPrice = product.CostPrice,
+                        TaxRate = product.TaxRate,
                         TaxAmount = taxAmount,
                         TotalPrice = totalPrice,
                         ProfitAmount = profit

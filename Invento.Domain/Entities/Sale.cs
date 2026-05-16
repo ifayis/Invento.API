@@ -7,6 +7,8 @@ public class Sale : BaseEntity
     public string InvoiceNumber { get; set; }
         = string.Empty;
 
+    public Guid TenantId { get; set; }
+
     public DateTime SaleDate { get; set; }
 
     public decimal SubTotal { get; set; }

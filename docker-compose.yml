@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: invento_sqlserver
+    environment:
+      SA_PASSWORD: "YourStrong@Pass123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+
+  redis:
+    image: redis:7
+    container_name: invento_redis
+    restart: always
+    ports:
+      - "6379:6379"

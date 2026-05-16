@@ -12,11 +12,14 @@ public class CreateCategoryCommandHandler
         ApiResponse<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentTenantService _currentTenant;
 
     public CreateCategoryCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context, 
+        ICurrentTenantService currentTenant)
     {
         _context = context;
+        _currentTenant = currentTenant;
     }
 
     public async Task<ApiResponse<Guid>> Handle(
@@ -26,6 +29,7 @@ public class CreateCategoryCommandHandler
         var exists = await _context.Categories
             .AnyAsync(x =>
                 x.Name == request.Name
+                && x.TenantId == _currentTenant.TenantId
                 && !x.IsDeleted,
                 cancellationToken);
 
@@ -41,6 +45,7 @@ public class CreateCategoryCommandHandler
 
         var category = new Category
         {
+            TenantId = _currentTenant.TenantId,
             Name = request.Name
         };
 

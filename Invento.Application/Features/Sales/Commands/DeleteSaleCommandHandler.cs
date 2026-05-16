@@ -12,11 +12,14 @@ public class DeleteSaleCommandHandler
         ApiResponse<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentTenantService _currentTenant;
 
     public DeleteSaleCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ICurrentTenantService currentTenant)
     {
         _context = context;
+        _currentTenant = currentTenant;
     }
 
     public async Task<ApiResponse<Guid>> Handle(
@@ -32,6 +35,7 @@ public class DeleteSaleCommandHandler
                 .Include(x => x.SaleItems)
                 .FirstOrDefaultAsync(x =>
                     x.Id == request.Id
+                    && x.TenantId == _currentTenant.TenantId
                     && !x.IsDeleted,
                     cancellationToken);
 
@@ -49,7 +53,8 @@ public class DeleteSaleCommandHandler
             {
                 var product = await _context.Products
                     .FirstAsync(x =>
-                        x.Id == item.ProductId,
+                        x.Id == item.ProductId
+                        && x.TenantId == _currentTenant.TenantId,
                         cancellationToken);
 
                 product.CurrentStock += item.Quantity;

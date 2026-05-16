@@ -12,14 +12,15 @@ public class GetSalesQueryHandler
         GetSalesQuery,
         ApiResponse<PagedResponse<SaleDto>>>
 {
-    private readonly IDbConnectionFactory
-        _connectionFactory;
+    private readonly IDbConnectionFactory _connectionFactory;
+    private readonly ICurrentTenantService _currentTenant;
 
     public GetSalesQueryHandler(
-        IDbConnectionFactory connectionFactory)
+        IDbConnectionFactory connectionFactory,
+        ICurrentTenantService currentTenant)
     {
-        _connectionFactory =
-            connectionFactory;
+        _connectionFactory = connectionFactory;
+        _currentTenant = currentTenant;
     }
 
     public async Task<
@@ -41,7 +42,7 @@ public class GetSalesQueryHandler
             CreatedAt
         FROM Sales
         WHERE IsDeleted = 0
-
+        AND TenantId =@TenantId
         AND
         (
             @Search IS NULL
@@ -69,7 +70,7 @@ public class GetSalesQueryHandler
         SELECT COUNT(*)
         FROM Sales
         WHERE IsDeleted = 0
-
+        AND TenantId = @TenantId
         AND
         (
             @Search IS NULL
@@ -92,6 +93,8 @@ public class GetSalesQueryHandler
 
         var parameters = new
         {
+            TenantId = _currentTenant.TenantId,
+
             request.Search,
 
             request.FromDate,

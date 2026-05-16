@@ -13,11 +13,13 @@ public class CreateSaleCommandHandler
         ApiResponse<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentTenantService _currentTenant;
 
     public CreateSaleCommandHandler(
-        IApplicationDbContext context)
+        IApplicationDbContext context, ICurrentTenantService currentTenant)
     {
         _context = context;
+        _currentTenant = currentTenant;
     }
 
     public async Task<ApiResponse<Guid>> Handle(
@@ -50,6 +52,7 @@ public class CreateSaleCommandHandler
                     .FirstOrDefaultAsync(
                         x =>
                             x.Id == item.ProductId
+                            && x.TenantId == _currentTenant.TenantId
                             && !x.IsDeleted,
                         cancellationToken);
 
@@ -93,8 +96,20 @@ public class CreateSaleCommandHandler
                     - product.CostPrice)
                     * item.Quantity);
 
+                var oldMovements =
+                    await _context.StockMovements
+                    .Where(x =>
+                        x.ReferenceNumber == sale.InvoiceNumber
+                        && x.TenantId == _currentTenant.TenantId)
+                    .ToListAsync(cancellationToken);
+
+                 _context.StockMovements
+                 .RemoveRange(oldMovements);
+
                 var saleItem = new SaleItem
                 {
+                    TenantId = _currentTenant.TenantId,
+
                     ProductId = product.Id,
 
                     Quantity = item.Quantity,
@@ -120,6 +135,8 @@ public class CreateSaleCommandHandler
                 var stockMovement =
                     new StockMovement
                     {
+                        TenantId = _currentTenant.TenantId,
+
                         ProductId = product.Id,
 
                         Quantity = item.Quantity,
@@ -134,8 +151,21 @@ public class CreateSaleCommandHandler
 
                 await _context.StockMovements
                     .AddAsync(
-                        stockMovement,
-                        cancellationToken);
+                    new StockMovement
+                    {
+                       TenantId = _currentTenant.TenantId,
+
+                         ProductId = product.Id,
+
+                         Quantity = item.Quantity,
+
+                         MovementType = "StockOut",
+
+                         Remarks = "Sale updated",
+
+                         ReferenceNumber = sale.InvoiceNumber
+
+                    }, cancellationToken);
 
                 subTotal += itemSubTotal;
 

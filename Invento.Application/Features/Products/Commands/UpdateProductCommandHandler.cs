@@ -11,11 +11,14 @@ namespace Invento.Application.Features.Products.Commands
             ApiResponse<Guid>>
     {
         private readonly IApplicationDbContext _context;
+        private readonly ICurrentTenantService _currentTenant;
 
         public UpdateProductCommandHandler(
-            IApplicationDbContext context)
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
         {
             _context = context;
+            _currentTenant = currentTenant;
         }
 
         public async Task<ApiResponse<Guid>> Handle(
@@ -24,9 +27,10 @@ namespace Invento.Application.Features.Products.Commands
         {
             var product = await _context.Products
                 .FirstOrDefaultAsync(x =>
-                    x.Id == request.Id
-                    && !x.IsDeleted,
-                    cancellationToken);
+                x.Id == request.Id
+                && x.TenantId == _currentTenant.TenantId 
+                && !x.IsDeleted,
+                cancellationToken);
 
             if (product is null)
             {
@@ -37,7 +41,7 @@ namespace Invento.Application.Features.Products.Commands
                         "Product not found"
                         });
             }
-
+            
             product.Name = request.Name;
             product.SKU = request.SKU;
             product.CostPrice = request.CostPrice;

@@ -14,11 +14,15 @@ public class GetStockMovementsQueryHandler
             PagedResponse<StockMovementDto>>>
 {
     private readonly IDbConnectionFactory _connectionFactory;
+    private readonly ICurrentTenantService _currentTenant;
+
 
     public GetStockMovementsQueryHandler(
-        IDbConnectionFactory connectionFactory)
+        IDbConnectionFactory connectionFactory,
+        ICurrentTenantService currentTenant)
     {
         _connectionFactory = connectionFactory;
+        _currentTenant = currentTenant;
     }
 
     public async Task<
@@ -44,6 +48,7 @@ public class GetStockMovementsQueryHandler
         INNER JOIN Products p
             ON sm.ProductId = p.Id
         WHERE sm.IsDeleted = 0
+        AND sm.TenantId = @TenantId
         AND
         (
             @ProductId IS NULL
@@ -78,6 +83,7 @@ public class GetStockMovementsQueryHandler
         INNER JOIN Products p
             ON sm.ProductId = p.Id
         WHERE sm.IsDeleted = 0
+        AND sm.TenantId = @TenantId
         AND
         (
             @ProductId IS NULL
@@ -107,6 +113,7 @@ public class GetStockMovementsQueryHandler
 
         var parameters = new
         {
+            TenantId = _currentTenant.TenantId,
             request.ProductId,
             request.Search,
             request.MovementType,

@@ -13,11 +13,14 @@ public class GetStockMovementByIdQueryHandler
         ApiResponse<StockMovementDto>>
 {
     private readonly IDbConnectionFactory _connectionFactory;
+    private readonly ICurrentTenantService _currentTenant;
 
     public GetStockMovementByIdQueryHandler(
-        IDbConnectionFactory connectionFactory)
+        IDbConnectionFactory connectionFactory,
+        ICurrentTenantService currentTenant)
     {
         _connectionFactory = connectionFactory;
+        _currentTenant = currentTenant;
     }
 
     public async Task<ApiResponse<StockMovementDto>> Handle(
@@ -42,13 +45,15 @@ public class GetStockMovementByIdQueryHandler
             ON sm.ProductId = p.Id
         WHERE sm.Id = @Id
         AND sm.IsDeleted = 0
+        AND sm.TenantId = @TenantId
         ";
 
         var movement =
             await connection.QueryFirstOrDefaultAsync
             <StockMovementDto>(
                 sql,
-                new { request.Id });
+                new { request.Id,
+                TenantId = _currentTenant.TenantId});
 
         if (movement is null)
         {

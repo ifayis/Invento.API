@@ -13,11 +13,14 @@ namespace Invento.Application.Features.Products.Queries
             ApiResponse<ProductDto>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ICurrentTenantService _currentTenant;
 
         public GetProductByIdQueryHandler(
-            IDbConnectionFactory connectionFactory)
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
         {
             _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
         }
 
         public async Task<ApiResponse<ProductDto>> Handle(
@@ -42,12 +45,14 @@ namespace Invento.Application.Features.Products.Queries
                 ON p.CategoryId = c.Id
             WHERE p.Id = @Id
             AND p.IsDeleted = 0
+            AND p.TenantId = @TenantId
             ";
 
             var product = await connection
                 .QueryFirstOrDefaultAsync<ProductDto>(
                     sql,
-                    new { request.Id });
+                    new { request.Id,
+                    TenantId = _currentTenant.TenantId});
 
             if (product is null)
             {

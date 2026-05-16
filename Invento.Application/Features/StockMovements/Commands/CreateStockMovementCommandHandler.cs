@@ -15,13 +15,16 @@ namespace Invento.Application.Features.StockMovements.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentTenantService _currentTenant;
 
         public CreateStockMovementCommandHandler(
             IApplicationDbContext context,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ICurrentTenantService currentTenant)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _currentTenant = currentTenant;
         }
 
         public async Task<ApiResponse<Guid>> Handle(
@@ -36,6 +39,7 @@ namespace Invento.Application.Features.StockMovements.Commands
                 var product = await _context.Products
                     .FirstOrDefaultAsync(x =>
                         x.Id == request.ProductId
+                        && x.TenantId == _currentTenant.TenantId
                         && !x.IsDeleted,
                         cancellationToken);
 
@@ -83,6 +87,7 @@ namespace Invento.Application.Features.StockMovements.Commands
 
                 var movement = new StockMovement
                 {
+                    TenantId = _currentTenant.TenantId,
                     ProductId = request.ProductId,
                     Quantity = request.Quantity,
                     MovementType =
