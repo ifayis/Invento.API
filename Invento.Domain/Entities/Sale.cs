@@ -7,6 +7,10 @@ public class Sale : BaseEntity
     public string InvoiceNumber { get; set; }
         = string.Empty;
 
+    public Guid? CustomerId { get; set; }
+
+    public Customer? Customer { get; set; }
+
     public Guid TenantId { get; set; }
 
     public DateTime SaleDate { get; set; }
