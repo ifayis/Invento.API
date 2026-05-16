@@ -38,6 +38,8 @@ namespace Invento.persistance.Data
 
         public DbSet<SaleItem> SaleItems => Set<SaleItem>();
 
+        public DbSet<TenantSettings> TenantSettings => Set<TenantSettings>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Invento.Application.Common;
+using Invento.Application.Abstractions;
+using Invento.Application.Features.Targets.DTOs;
+
+namespace Invento.Application.Features.Targets.Queries
+{
+    public class GetCriticalStockProductsQuery
+        : IQuery<
+            ApiResponse<List<StockAlertDto>>>
+    {
+    }
+}

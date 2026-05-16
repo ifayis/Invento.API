@@ -29,6 +29,8 @@ namespace Invento.Application.Interfaces
 
         DbSet<Customer> Customers { get; }
 
+        DbSet<TenantSettings> TenantSettings { get; }
+
         Task<int> SaveChangesAsync(
             CancellationToken cancellationToken);
 
