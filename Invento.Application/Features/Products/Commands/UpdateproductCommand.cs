@@ -26,6 +26,8 @@ namespace Invento.Application.Features.Products.Commands
 
         public int CurrentStock { get; set; }
 
+        public bool IsDeleted { get; set; }
+
         public Guid CategoryId { get; set; }
     }
 }

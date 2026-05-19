@@ -49,6 +49,7 @@ namespace Invento.Application.Features.Products.Commands
             product.SellingPrice = request.SellingPrice;
             product.CurrentStock = request.CurrentStock;
             product.CategoryId = request.CategoryId;
+            product.IsDeleted = request.IsDeleted;
 
             await _context.SaveChangesAsync(
                 cancellationToken);
@@ -60,7 +61,8 @@ namespace Invento.Application.Features.Products.Commands
                         Name = product.Name,
                         SKU = product.SKU,
                         CostPrice = product.CostPrice,
-                        SellingPrice = product.SellingPrice
+                        SellingPrice = product.SellingPrice,
+                        IsDeleted = product.IsDeleted
                     },
                     "Product updated successfully");
         }

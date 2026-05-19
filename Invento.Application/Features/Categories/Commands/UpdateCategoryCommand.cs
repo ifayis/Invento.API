@@ -16,5 +16,7 @@ namespace Invento.Application.Features.Categories.Commands
 
         public string Name { get; set; }
             = string.Empty;
+
+        public bool IsDeleted { get; set; }
     }
 }

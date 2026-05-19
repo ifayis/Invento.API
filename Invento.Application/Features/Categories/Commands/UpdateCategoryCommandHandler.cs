@@ -63,6 +63,7 @@ public class UpdateCategoryCommandHandler
         }
 
         category.Name = request.Name;
+        category.IsDeleted = request.IsDeleted;
 
         await _context.SaveChangesAsync(
             cancellationToken);
