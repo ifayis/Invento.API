@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Customer.Commands;
+using Invento.Application.Features.Customer.DTOs;
 using Invento.Application.Interfaces;
 
 namespace Invento.Application.Features.Customers.Commands;
@@ -8,7 +9,7 @@ namespace Invento.Application.Features.Customers.Commands;
 public class CreateCustomerCommandHandler
     : ICommandHandler<
         CreateCustomerCommand,
-        ApiResponse<Guid>>
+        ApiResponse<CustomerDto>>
 {
     private readonly IApplicationDbContext
         _context;
@@ -24,15 +25,14 @@ public class CreateCustomerCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>>
+    public async Task<ApiResponse<CustomerDto>>
         Handle(
             CreateCustomerCommand request,
             CancellationToken cancellationToken)
     {
         var customer = new Invento.Domain.Entities.Customer
         {
-            TenantId =
-                _currentTenant.TenantId,
+            TenantId = _currentTenant.TenantId,
 
             Name = request.Name,
 
@@ -51,9 +51,15 @@ public class CreateCustomerCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return ApiResponse<Guid>
+        return ApiResponse<CustomerDto>
             .SuccessResponse(
-                customer.Id,
+                new CustomerDto
+                {
+                    Name = customer.Name,
+                    Email = customer.Email,
+                    PhoneNumber = customer.Email,
+                    Address = customer.Address
+                },
                 "Customer created successfully");
     }
 }

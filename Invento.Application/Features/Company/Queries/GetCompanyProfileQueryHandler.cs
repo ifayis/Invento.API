@@ -36,22 +36,22 @@ public class GetCompanyProfileQueryHandler
             _connectionFactory.CreateConnection();
 
         var sql = @"
-SELECT
-    Id,
-    Name,
-    Email,
-    PhoneNumber,
-    Address,
-    LogoUrl,
-    TaxNumber,
-    Website
+        SELECT
+            Id,
+            CompanyName,
+            Email,
+            PhoneNumber,
+            Address,
+            LogoUrl,
+            TaxNumber,
+            Website
 
-FROM Tenants
+        FROM Tenants
 
-WHERE
-    Id = @TenantId
-    AND IsDeleted = 0
-";
+        WHERE
+            Id = @TenantId
+            AND IsDeleted = 0
+        ";
 
         var result =
             await connection

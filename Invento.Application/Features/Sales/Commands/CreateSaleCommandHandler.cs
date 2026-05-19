@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Sales.Command;
+using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ namespace Invento.Application.Features.Sales.Commands;
 public class CreateSaleCommandHandler
     : ICommandHandler<
         CreateSaleCommand,
-        ApiResponse<Guid>>
+        ApiResponse<SaleDetailsDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
@@ -22,7 +23,7 @@ public class CreateSaleCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>> Handle(
+    public async Task<ApiResponse<SaleDetailsDto>> Handle(
         CreateSaleCommand request,
         CancellationToken cancellationToken)
     {
@@ -58,7 +59,7 @@ public class CreateSaleCommandHandler
 
                 if (product is null)
                 {
-                    return ApiResponse<Guid>
+                    return ApiResponse<SaleDetailsDto>
                         .FailureResponse(
                             new List<string>
                             {
@@ -69,7 +70,7 @@ public class CreateSaleCommandHandler
                 if (product.CurrentStock
                     < item.Quantity)
                 {
-                    return ApiResponse<Guid>
+                    return ApiResponse<SaleDetailsDto>
                         .FailureResponse(
                             new List<string>
                             {
@@ -195,9 +196,14 @@ public class CreateSaleCommandHandler
             await transaction.CommitAsync(
                 cancellationToken);
 
-            return ApiResponse<Guid>
+            return ApiResponse<SaleDetailsDto>
                 .SuccessResponse(
-                    sale.Id,
+                new SaleDetailsDto
+                {
+                    InvoiceNumber = sale.InvoiceNumber,
+                    SaleDate = sale.SaleDate,
+                    TotalAmount = sale.TotalAmount
+                },
                     "Sale created successfully");
         }
         catch

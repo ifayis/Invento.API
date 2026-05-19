@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Invento.Application.Features.Sales.Command
 {
     public class CreateSaleCommand
-        : ICommand<ApiResponse<Guid>>
+        : ICommand<ApiResponse<SaleDetailsDto>>
     {
         public DateTime SaleDate { get; set; }
 

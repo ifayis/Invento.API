@@ -34,18 +34,18 @@ public class GetProductProfitQueryHandler
             _connectionFactory.CreateConnection();
 
         var sql = @"
-SELECT
-    ISNULL(SUM(si.ProfitAmount), 0)
-FROM SaleItems si
+        SELECT
+            ISNULL(SUM(si.ProfitAmount), 0)
+        FROM SaleItems si
 
-INNER JOIN Sales s
-    ON si.SaleId = s.Id
+        INNER JOIN Sales s
+            ON si.SaleId = s.Id
 
-WHERE
-    si.ProductId = @ProductId
-    AND s.IsDeleted = 0
-    AND s.TenantId = @TenantId
-";
+        WHERE
+            si.ProductId = @ProductId
+            AND s.IsDeleted = 0
+            AND s.TenantId = @TenantId
+        ";
 
         var profit =
             await connection.ExecuteScalarAsync

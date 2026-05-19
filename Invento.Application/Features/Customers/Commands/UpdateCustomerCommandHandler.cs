@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Customer.Commands;
+using Invento.Application.Features.Customer.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,7 @@ namespace Invento.Application.Features.Customers.Commands;
 public class UpdateCustomerCommandHandler
     : ICommandHandler<
         UpdateCustomerCommand,
-        ApiResponse<Guid>>
+        ApiResponse<CustomerDto>>
 {
     private readonly IApplicationDbContext
         _context;
@@ -25,7 +26,7 @@ public class UpdateCustomerCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>>
+    public async Task<ApiResponse<CustomerDto>>
         Handle(
             UpdateCustomerCommand request,
             CancellationToken cancellationToken)
@@ -40,7 +41,7 @@ public class UpdateCustomerCommandHandler
 
         if (customer is null)
         {
-            return ApiResponse<Guid>
+            return ApiResponse<CustomerDto>
                 .FailureResponse(
                     new List<string>
                     {
@@ -58,9 +59,15 @@ public class UpdateCustomerCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return ApiResponse<Guid>
+        return ApiResponse<CustomerDto>
             .SuccessResponse(
-                customer.Id,
+                new CustomerDto
+                {
+                    Name = customer.Name,
+                    Email = customer.Email,
+                    PhoneNumber = customer.Email,
+                    Address = customer.Address
+                },
                 "Customer updated successfully");
     }
 }

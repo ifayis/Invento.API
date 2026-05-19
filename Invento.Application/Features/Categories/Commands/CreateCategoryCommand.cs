@@ -1,17 +1,14 @@
 ﻿using Invento.Application.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Invento.Application.Common;
+using Invento.Application.Features.Categories.DTOs;
+using MediatR;
+using System;
 
 namespace Invento.Application.Features.Categories.Commands
 {
-    public class CreateCategoryCommand
-        : ICommand<ApiResponse<Guid>>
+    public class CreateCategoryCommand : 
+        ICommand<ApiResponse<CategoryDto>>
     {
         public string Name { get; set; }
-            = string.Empty;
     }
 }

@@ -5,13 +5,14 @@ using Invento.Domain.Entities;
 using Invento.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using Invento.Application.Features.StockMovements.DTOs;
 
 namespace Invento.Application.Features.StockMovements.Commands
 {
     public class CreateStockMovementCommandHandler
         : ICommandHandler<
             CreateStockMovementCommand,
-            ApiResponse<Guid>>
+            ApiResponse<StockMovementDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -27,7 +28,7 @@ namespace Invento.Application.Features.StockMovements.Commands
             _currentTenant = currentTenant;
         }
 
-        public async Task<ApiResponse<Guid>> Handle(
+        public async Task<ApiResponse<StockMovementDto>> Handle(
             CreateStockMovementCommand request,
             CancellationToken cancellationToken)
         {
@@ -45,7 +46,7 @@ namespace Invento.Application.Features.StockMovements.Commands
 
                 if (product is null)
                 {
-                    return ApiResponse<Guid>
+                    return ApiResponse<StockMovementDto>
                         .FailureResponse(
                             new List<string>
                             {
@@ -59,7 +60,7 @@ namespace Invento.Application.Features.StockMovements.Commands
                     if (product.CurrentStock
                         < request.Quantity)
                     {
-                        return ApiResponse<Guid>
+                        return ApiResponse<StockMovementDto>
                             .FailureResponse(
                                 new List<string>
                                 {
@@ -108,9 +109,14 @@ namespace Invento.Application.Features.StockMovements.Commands
                 await transaction.CommitAsync(
                     cancellationToken);
 
-                return ApiResponse<Guid>
+                return ApiResponse<StockMovementDto>
                     .SuccessResponse(
-                        movement.Id,
+                    new StockMovementDto
+                    {
+                        MovementType = movement.MovementType,
+                        ReferenceNumber = movement.ReferenceNumber,
+                        ProductId = movement.ProductId
+                    },
                         "Stock movement completed");
             }
             catch

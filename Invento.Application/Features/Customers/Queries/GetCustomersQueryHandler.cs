@@ -36,43 +36,43 @@ public class GetCustomersQueryHandler
             _connectionFactory.CreateConnection();
 
         var sql = @"
-SELECT
-    Id,
-    Name,
-    Email,
-    PhoneNumber,
-    Address,
-    CreatedAt
-FROM Customers
-WHERE
-    IsDeleted = 0
-    AND TenantId = @TenantId
-    AND
-    (
-        @Search IS NULL
-        OR Name LIKE '%' + @Search + '%'
-        OR Email LIKE '%' + @Search + '%'
-        OR PhoneNumber LIKE '%' + @Search + '%'
-    )
+        SELECT
+            Id,
+            Name,
+            Email,
+            PhoneNumber,
+            Address,
+            CreatedAt
+        FROM Customers
+        WHERE
+            IsDeleted = 0
+            AND TenantId = @TenantId
+            AND
+            (
+                @Search IS NULL
+                OR Name LIKE '%' + @Search + '%'
+                OR Email LIKE '%' + @Search + '%'
+                OR PhoneNumber LIKE '%' + @Search + '%'
+            )
 
-ORDER BY CreatedAt DESC
+        ORDER BY CreatedAt DESC
 
-OFFSET @Offset ROWS
-FETCH NEXT @PageSize ROWS ONLY;
+        OFFSET @Offset ROWS
+        FETCH NEXT @PageSize ROWS ONLY;
 
-SELECT COUNT(*)
-FROM Customers
-WHERE
-    IsDeleted = 0
-    AND TenantId = @TenantId
-    AND
-    (
-        @Search IS NULL
-        OR Name LIKE '%' + @Search + '%'
-        OR Email LIKE '%' + @Search + '%'
-        OR PhoneNumber LIKE '%' + @Search + '%'
-    );
-";
+        SELECT COUNT(*)
+        FROM Customers
+        WHERE
+            IsDeleted = 0
+            AND TenantId = @TenantId
+            AND
+            (
+                @Search IS NULL
+                OR Name LIKE '%' + @Search + '%'
+                OR Email LIKE '%' + @Search + '%'
+                OR PhoneNumber LIKE '%' + @Search + '%'
+            );
+        ";
 
         var parameters = new
         {

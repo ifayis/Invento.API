@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Invento.Application.Common;
+using Invento.Application.Features.Customer.DTOs;
 
 namespace Invento.Application.Features.Customer.Commands
 {
     public class CreateCustomerCommand
-        : ICommand<ApiResponse<Guid>>
+        : ICommand<ApiResponse<CustomerDto>>
     {
         public string Name { get; set; }
             = string.Empty;

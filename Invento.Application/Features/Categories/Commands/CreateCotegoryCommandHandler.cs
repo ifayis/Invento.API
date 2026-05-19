@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Features.Categories.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Invento.Application.Features.Categories.Commands;
 public class CreateCategoryCommandHandler
     : ICommandHandler<
         CreateCategoryCommand,
-        ApiResponse<Guid>>
+        ApiResponse<CategoryDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
@@ -22,7 +23,7 @@ public class CreateCategoryCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>> Handle(
+    public async Task<ApiResponse<CategoryDto>> Handle(
         CreateCategoryCommand request,
         CancellationToken cancellationToken)
     {
@@ -35,7 +36,7 @@ public class CreateCategoryCommandHandler
 
         if (exists)
         {
-            return ApiResponse<Guid>
+            return ApiResponse<CategoryDto>
                 .FailureResponse(
                     new List<string>
                     {
@@ -56,9 +57,13 @@ public class CreateCategoryCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return ApiResponse<Guid>
+        return ApiResponse<CategoryDto>
             .SuccessResponse(
-                category.Id,
-                "Category created successfully");
+                new CategoryDto
+                {
+                    Id = category.Id,
+                    Name = category.Name
+                },
+                "Category created successfully"); 
     }
 }

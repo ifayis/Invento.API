@@ -35,19 +35,19 @@ public class GetCustomerByIdQueryHandler
             _connectionFactory.CreateConnection();
 
         var sql = @"
-SELECT
-    Id,
-    Name,
-    Email,
-    PhoneNumber,
-    Address,
-    CreatedAt
-FROM Customers
-WHERE
-    Id = @Id
-    AND TenantId = @TenantId
-    AND IsDeleted = 0
-";
+        SELECT
+            Id,
+            Name,
+            Email,
+            PhoneNumber,
+            Address,
+            CreatedAt
+        FROM Customers
+        WHERE
+            Id = @Id
+            AND TenantId = @TenantId
+            AND IsDeleted = 0
+        ";
 
         var customer =
             await connection

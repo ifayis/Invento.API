@@ -36,26 +36,26 @@ public class GetCriticalStockProductsQueryHandler
             _connectionFactory.CreateConnection();
 
         var sql = @"
-SELECT
-    p.Id AS ProductId,
-    p.Name AS ProductName,
-    p.CurrentStock,
-    ts.CriticalStockThreshold
-        AS Threshold
+        SELECT
+            p.Id AS ProductId,
+            p.Name AS ProductName,
+            p.CurrentStock,
+            ts.CriticalStockThreshold
+                AS Threshold
 
-FROM Products p
+        FROM Products p
 
-INNER JOIN TenantSettings ts
-    ON p.TenantId = ts.TenantId
+        INNER JOIN TenantSettings ts
+            ON p.TenantId = ts.TenantId
 
-WHERE
-    p.IsDeleted = 0
-    AND p.TenantId = @TenantId
-    AND p.CurrentStock
-        <= ts.CriticalStockThreshold
+        WHERE
+            p.IsDeleted = 0
+            AND p.TenantId = @TenantId
+            AND p.CurrentStock
+                <= ts.CriticalStockThreshold
 
-ORDER BY p.CurrentStock ASC
-";
+        ORDER BY p.CurrentStock ASC
+        ";
 
         var result =
             await connection.QueryAsync

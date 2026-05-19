@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Features.Categories.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Invento.Application.Features.Categories.Commands;
 public class UpdateCategoryCommandHandler
     : ICommandHandler<
         UpdateCategoryCommand,
-        ApiResponse<Guid>>
+        ApiResponse<CategoryDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
@@ -22,7 +23,7 @@ public class UpdateCategoryCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>> Handle(
+    public async Task<ApiResponse<CategoryDto>> Handle(
         UpdateCategoryCommand request,
         CancellationToken cancellationToken)
     {
@@ -35,7 +36,7 @@ public class UpdateCategoryCommandHandler
 
         if (category is null)
         {
-            return ApiResponse<Guid>
+            return ApiResponse<CategoryDto>
                 .FailureResponse(
                     new List<string>
                     {
@@ -53,7 +54,7 @@ public class UpdateCategoryCommandHandler
 
         if (exists)
         {
-            return ApiResponse<Guid>
+            return ApiResponse<CategoryDto>
                 .FailureResponse(
                     new List<string>
                     {
@@ -66,9 +67,12 @@ public class UpdateCategoryCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return ApiResponse<Guid>
+        return ApiResponse<CategoryDto>
             .SuccessResponse(
-                category.Id,
+                new CategoryDto
+                {
+                   Name = category.Name
+                },
                 "Category updated successfully");
     }
 }

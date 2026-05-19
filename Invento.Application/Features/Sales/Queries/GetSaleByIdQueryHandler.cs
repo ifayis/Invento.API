@@ -31,36 +31,36 @@ public class GetSaleByIdQueryHandler
             _connectionFactory.CreateConnection();
 
         var saleSql = @"
-SELECT
-    Id,
-    InvoiceNumber,
-    SaleDate,
-    SubTotal,
-    TaxAmount,
-    DiscountAmount,
-    TotalAmount,
-    ProfitAmount
-FROM Sales
-WHERE Id = @Id
-AND IsDeleted = 0
-AND TenantId = @TenantId
-";
+        SELECT
+            Id,
+            InvoiceNumber,
+            SaleDate,
+            SubTotal,
+            TaxAmount,
+            DiscountAmount,
+            TotalAmount,
+            ProfitAmount
+        FROM Sales
+        WHERE Id = @Id
+        AND IsDeleted = 0
+        AND TenantId = @TenantId
+        ";
 
         var itemsSql = @"
-SELECT
-    si.ProductId,
-    p.Name AS ProductName,
-    si.Quantity,
-    si.UnitPrice,
-    si.TaxAmount,
-    si.TotalPrice,
-    si.ProfitAmount
-FROM SaleItems si
-INNER JOIN Products p
-    ON si.ProductId = p.Id
-WHERE si.SaleId = @Id
-AND si.TenantId = @TenantId
-";
+        SELECT
+            si.ProductId,
+            p.Name AS ProductName,
+            si.Quantity,
+            si.UnitPrice,
+            si.TaxAmount,
+            si.TotalPrice,
+            si.ProfitAmount
+        FROM SaleItems si
+        INNER JOIN Products p
+            ON si.ProductId = p.Id
+        WHERE si.SaleId = @Id
+        AND si.TenantId = @TenantId
+        ";
 
         var sale =
             await connection.QueryFirstOrDefaultAsync

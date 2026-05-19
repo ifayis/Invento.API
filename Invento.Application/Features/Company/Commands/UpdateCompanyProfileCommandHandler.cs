@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Features.Company.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ namespace Invento.Application.Features.Company.Commands;
 public class UpdateCompanyProfileCommandHandler
     : ICommandHandler<
         UpdateCompanyProfileCommand,
-        ApiResponse<Guid>>
+        ApiResponse<CompanyProfileDto>>
 {
     private readonly IApplicationDbContext
         _context;
@@ -24,7 +25,7 @@ public class UpdateCompanyProfileCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>>
+    public async Task<ApiResponse<CompanyProfileDto>>
         Handle(
             UpdateCompanyProfileCommand request,
             CancellationToken cancellationToken)
@@ -39,7 +40,7 @@ public class UpdateCompanyProfileCommandHandler
 
         if (tenant is null)
         {
-            return ApiResponse<Guid>
+            return ApiResponse<CompanyProfileDto>
                 .FailureResponse(
                     new List<string>
                     {
@@ -47,8 +48,7 @@ public class UpdateCompanyProfileCommandHandler
                     });
         }
 
-        tenant.Name = request.Name;
-        tenant.Email = request.Email;
+        tenant.CompanyName = request.CompanyName;
         tenant.PhoneNumber =
             request.PhoneNumber;
         tenant.Address =
@@ -63,9 +63,17 @@ public class UpdateCompanyProfileCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return ApiResponse<Guid>
+        return ApiResponse<CompanyProfileDto>
             .SuccessResponse(
-                tenant.Id,
+                new CompanyProfileDto
+                {
+                    CompanyName = tenant.CompanyName,
+                    PhoneNumber = tenant.PhoneNumber,
+                    Address = tenant.Address,
+                    LogoUrl = tenant.LogoUrl,
+                    TaxNumber = tenant.TaxNumber,
+                    Website = tenant.Website
+                },
                 "Company updated successfully");
     }
 }

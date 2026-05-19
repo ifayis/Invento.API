@@ -24,20 +24,18 @@ namespace Invento.Infrastructure.Extensions
             services.AddScoped<ICurrentTenantService,
                 CurrentTenantService>();
 
-            services.AddStackExchangeRedisCache(options =>
-            {
-                var serviceProvider = services.BuildServiceProvider();
-                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                options.Configuration = configuration["Redis:ConnectionString"];
-            });
+            //services.AddStackExchangeRedisCache(options =>
+            //{
+            //    var serviceProvider = services.BuildServiceProvider();
+            //    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+            //    options.Configuration = configuration["Redis:ConnectionString"];
+            //});
 
-            services.AddScoped<
-                ICacheService,
-                RedisCacheService>();
+            //services.AddScoped<
+            //    ICacheService,
+            //    RedisCacheService>();
 
             return services;
         }
-
-        
     }
 }

@@ -35,18 +35,18 @@ public class GetTenantTargetsQueryHandler
             _connectionFactory.CreateConnection();
 
         var sql = @"
-SELECT
-    LowStockThreshold,
-    CriticalStockThreshold,
-    MonthlySalesTarget,
-    MonthlyProfitTarget
+        SELECT
+            LowStockThreshold,
+            CriticalStockThreshold,
+            MonthlySalesTarget,
+            MonthlyProfitTarget
 
-FROM TenantSettings
+        FROM TenantSettings
 
-WHERE
-    TenantId = @TenantId
-    AND IsDeleted = 0
-";
+        WHERE
+            TenantId = @TenantId
+            AND IsDeleted = 0
+        ";
 
         var result =
             await connection

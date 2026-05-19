@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Features.Categories.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ namespace Invento.Application.Features.Categories.Commands;
 public class DeleteCategoryCommandHandler
     : ICommandHandler<
         DeleteCategoryCommand,
-        ApiResponse<Guid>>
+        ApiResponse<CategoryDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
@@ -21,7 +22,7 @@ public class DeleteCategoryCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>> Handle(
+    public async Task<ApiResponse<CategoryDto>> Handle(
         DeleteCategoryCommand request,
         CancellationToken cancellationToken)
     {
@@ -34,7 +35,7 @@ public class DeleteCategoryCommandHandler
 
         if (category is null)
         {
-            return ApiResponse<Guid>
+            return ApiResponse<CategoryDto>
                 .FailureResponse(
                     new List<string>
                     {
@@ -47,9 +48,12 @@ public class DeleteCategoryCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return ApiResponse<Guid>
+        return ApiResponse<CategoryDto>
             .SuccessResponse(
-                category.Id,
+                new CategoryDto
+                {
+                    Name = category.Name
+                },
                 "Category deleted successfully");
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Sales.Command;
+using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ namespace Invento.Application.Features.Sales.Commands;
 public class UpdateSaleCommandHandler
     : ICommandHandler<
         UpdateSaleCommand,
-        ApiResponse<Guid>>
+        ApiResponse<SaleDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
@@ -23,7 +24,7 @@ public class UpdateSaleCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>> Handle(
+    public async Task<ApiResponse<SaleDto>> Handle(
         UpdateSaleCommand request,
         CancellationToken cancellationToken)
     {
@@ -42,7 +43,7 @@ public class UpdateSaleCommandHandler
 
             if (sale is null)
             {
-                return ApiResponse<Guid>
+                return ApiResponse<SaleDto>
                     .FailureResponse(
                         new List<string>
                         {
@@ -85,7 +86,7 @@ public class UpdateSaleCommandHandler
 
                 if (product is null)
                 {
-                    return ApiResponse<Guid>
+                    return ApiResponse<SaleDto>
                         .FailureResponse(
                             new List<string>
                             {
@@ -96,7 +97,7 @@ public class UpdateSaleCommandHandler
                 if (product.CurrentStock
                     < item.Quantity)
                 {
-                    return ApiResponse<Guid>
+                    return ApiResponse<SaleDto>
                         .FailureResponse(
                             new List<string>
                             {
@@ -157,10 +158,15 @@ public class UpdateSaleCommandHandler
             await transaction.CommitAsync(
                 cancellationToken);
 
-            return ApiResponse<Guid>
+            return ApiResponse<SaleDto>
                 .SuccessResponse(
-                    sale.Id,
-                    "Sale updated successfully");
+                new SaleDto
+                {
+                    InvoiceNumber = sale.InvoiceNumber,
+                    SaleDate = sale.SaleDate,
+                    TotalAmount = sale.TotalAmount
+                },
+                "Sale updated successfully");
         }
         catch
         {

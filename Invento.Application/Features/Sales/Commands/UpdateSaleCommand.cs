@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Invento.Application.Features.Sales.Command
 {
     public class UpdateSaleCommand
-        : ICommand<ApiResponse<Guid>>
+        : ICommand<ApiResponse<SaleDto>>
     {
         public Guid Id { get; set; }
 

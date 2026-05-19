@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Features.Products.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ namespace Invento.Application.Features.Products.Commands
     public class UpdateProductCommandHandler
         : ICommandHandler<
             UpdateProductCommand,
-            ApiResponse<Guid>>
+            ApiResponse<ProductDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
@@ -21,7 +22,7 @@ namespace Invento.Application.Features.Products.Commands
             _currentTenant = currentTenant;
         }
 
-        public async Task<ApiResponse<Guid>> Handle(
+        public async Task<ApiResponse<ProductDto>> Handle(
             UpdateProductCommand request,
             CancellationToken cancellationToken)
         {
@@ -34,7 +35,7 @@ namespace Invento.Application.Features.Products.Commands
 
             if (product is null)
             {
-                return ApiResponse<Guid>
+                return ApiResponse<ProductDto>
                     .FailureResponse(
                         new List<string>
                         {
@@ -52,9 +53,15 @@ namespace Invento.Application.Features.Products.Commands
             await _context.SaveChangesAsync(
                 cancellationToken);
 
-            return ApiResponse<Guid>
+            return ApiResponse<ProductDto>
                 .SuccessResponse(
-                    product.Id,
+                    new ProductDto
+                    {
+                        Name = product.Name,
+                        SKU = product.SKU,
+                        CostPrice = product.CostPrice,
+                        SellingPrice = product.SellingPrice
+                    },
                     "Product updated successfully");
         }
     }

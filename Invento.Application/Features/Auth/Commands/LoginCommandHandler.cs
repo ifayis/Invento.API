@@ -84,8 +84,7 @@ namespace Invento.Application.Features.Auth.Commands
                     {
                         AccessToken = accessToken,
                         RefreshToken = refreshTokenValue,
-                        ExpiresAt =
-                            DateTime.UtcNow.AddMinutes(15)
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(15)
                     },
                     "Login successful");
         }

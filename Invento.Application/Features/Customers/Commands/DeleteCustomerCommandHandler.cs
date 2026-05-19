@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Customer.Commands;
+using Invento.Application.Features.Customer.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,7 @@ namespace Invento.Application.Features.Customers.Commands;
 public class DeleteCustomerCommandHandler
     : ICommandHandler<
         DeleteCustomerCommand,
-        ApiResponse<Guid>>
+        ApiResponse<CustomerDto>>
 {
     private readonly IApplicationDbContext
         _context;
@@ -25,7 +26,7 @@ public class DeleteCustomerCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>>
+    public async Task<ApiResponse<CustomerDto>>
         Handle(
             DeleteCustomerCommand request,
             CancellationToken cancellationToken)
@@ -40,7 +41,7 @@ public class DeleteCustomerCommandHandler
 
         if (customer is null)
         {
-            return ApiResponse<Guid>
+            return ApiResponse<CustomerDto>
                 .FailureResponse(
                     new List<string>
                     {
@@ -53,9 +54,12 @@ public class DeleteCustomerCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return ApiResponse<Guid>
+        return ApiResponse<CustomerDto>
             .SuccessResponse(
-                customer.Id,
+                new CustomerDto
+                {
+                    Name = customer.Name
+                },
                 "Customer deleted successfully");
     }
 }

@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Features.Company.DTOs;
 
 namespace Invento.Application.Features.Company.Commands
 {
     public class UpdateCompanyProfileCommand
-        : ICommand<ApiResponse<Guid>>
+        : ICommand<ApiResponse<CompanyProfileDto>>
     {
-        public string Name { get; set; }
+        public string CompanyName { get; set; }
             = string.Empty;
 
         public string? Email { get; set; }

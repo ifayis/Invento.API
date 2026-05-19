@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Features.Targets.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace Invento.Application.Features.Targets.Commands
 {
     public class UpdateTenantTargetsCommand
-        : ICommand<ApiResponse<Guid>>
+        : ICommand<ApiResponse<TenantTargetDto>>
     {
         public int LowStockThreshold { get; set; }
 

@@ -36,23 +36,23 @@ public class GetProfitByDateRangeQueryHandler
             _connectionFactory.CreateConnection();
 
         var sql = @"
-SELECT
-    ISNULL(SUM(TotalAmount), 0)
-        AS TotalRevenue,
+        SELECT
+            ISNULL(SUM(TotalAmount), 0)
+                AS TotalRevenue,
 
-    ISNULL(SUM(ProfitAmount), 0)
-        AS TotalProfit,
+            ISNULL(SUM(ProfitAmount), 0)
+                AS TotalProfit,
 
-    COUNT(*) AS TotalSales
+            COUNT(*) AS TotalSales
 
-FROM Sales
+        FROM Sales
 
-WHERE
-    IsDeleted = 0
-    AND TenantId = @TenantId
-    AND SaleDate >= @FromDate
-    AND SaleDate <= @ToDate
-";
+        WHERE
+            IsDeleted = 0
+            AND TenantId = @TenantId
+            AND SaleDate >= @FromDate
+            AND SaleDate <= @ToDate
+        ";
 
         var result =
             await connection

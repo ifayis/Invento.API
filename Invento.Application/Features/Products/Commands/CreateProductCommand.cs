@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Features.Products.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace Invento.Application.Features.Products.Commands
 {
     public class CreateProductCommand
-        : ICommand<ApiResponse<Guid>>
+        : ICommand<ApiResponse<ProductDto>>
     {
         public string Name { get; set; }
             = string.Empty;

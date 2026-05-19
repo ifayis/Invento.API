@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Features.Targets.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Invento.Application.Features.Targets.Commands;
 public class UpdateTenantTargetsCommandHandler
     : ICommandHandler<
         UpdateTenantTargetsCommand,
-        ApiResponse<Guid>>
+        ApiResponse<TenantTargetDto>>
 {
     private readonly IApplicationDbContext
         _context;
@@ -25,7 +26,7 @@ public class UpdateTenantTargetsCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>>
+    public async Task<ApiResponse<TenantTargetDto>>
         Handle(
             UpdateTenantTargetsCommand request,
             CancellationToken cancellationToken)
@@ -66,9 +67,15 @@ public class UpdateTenantTargetsCommandHandler
         await _context.SaveChangesAsync(
             cancellationToken);
 
-        return ApiResponse<Guid>
+        return ApiResponse<TenantTargetDto>
             .SuccessResponse(
-                settings.Id,
+            new TenantTargetDto
+            {
+                CriticalStockThreshold = settings.CriticalStockThreshold,
+                LowStockThreshold = settings.LowStockThreshold,
+                MonthlyProfitTarget = settings.MonthlyProfitTarget,
+                MonthlySalesTarget = settings.MonthlySalesTarget
+            },
                 "Target settings updated");
     }
 }

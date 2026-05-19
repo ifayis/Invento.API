@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Sales.Command;
+using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,7 @@ namespace Invento.Application.Features.Sales.Commands;
 public class DeleteSaleCommandHandler
     : ICommandHandler<
         DeleteSaleCommand,
-        ApiResponse<Guid>>
+        ApiResponse<SaleDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
@@ -22,7 +23,7 @@ public class DeleteSaleCommandHandler
         _currentTenant = currentTenant;
     }
 
-    public async Task<ApiResponse<Guid>> Handle(
+    public async Task<ApiResponse<SaleDto>> Handle(
         DeleteSaleCommand request,
         CancellationToken cancellationToken)
     {
@@ -41,7 +42,7 @@ public class DeleteSaleCommandHandler
 
             if (sale is null)
             {
-                return ApiResponse<Guid>
+                return ApiResponse<SaleDto>
                     .FailureResponse(
                         new List<string>
                         {
@@ -68,10 +69,13 @@ public class DeleteSaleCommandHandler
             await transaction.CommitAsync(
                 cancellationToken);
 
-            return ApiResponse<Guid>
+            return ApiResponse<SaleDto>
                 .SuccessResponse(
-                    sale.Id,
-                    "Sale deleted successfully");
+                new SaleDto
+                {
+
+                },
+                "Sale deleted successfully");
         }
         catch
         {

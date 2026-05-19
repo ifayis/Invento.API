@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Invento.Application.Features.StockMovements.DTOs;
 
 namespace Invento.Application.Features.StockMovements.Commands
 {
     public class CreateStockMovementCommand
-        : ICommand<ApiResponse<Guid>>
+        : ICommand<ApiResponse<StockMovementDto>>
     {
         public Guid ProductId { get; set; }
 
