@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Invento.Shared.Common;
+﻿using Invento.Shared.Common;
 
 namespace Invento.Domain.Entities
 {
@@ -15,8 +10,7 @@ namespace Invento.Domain.Entities
 
         public bool IsDeleted { get; set; } = false;
 
-        public ICollection<Product> Products { get; set; }
-            = new List<Product>();
+        public ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }
 

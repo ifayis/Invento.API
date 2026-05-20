@@ -4,8 +4,7 @@ using Invento.Domain.Entities;
 
 namespace Invento.Persistence.Configurations
 {
-    public class ProductConfiguration
-    : IEntityTypeConfiguration<Product>
+    public class ProductConfiguration : IEntityTypeConfiguration<Product>
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {

@@ -4,62 +4,54 @@ using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Interfaces;
 
-namespace Invento.Application.Features.Profit.Queries;
-
-public class GetProductProfitQueryHandler
-    : IQueryHandler<
-        GetProductProfitQuery,
-        ApiResponse<decimal>>
+namespace Invento.Application.Features.Profit.Queries
 {
-    private readonly IDbConnectionFactory
-        _connectionFactory;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public GetProductProfitQueryHandler(
-        IDbConnectionFactory connectionFactory,
-        ICurrentTenantService currentTenant)
+    public class GetProductProfitQueryHandler
+        : IQueryHandler<GetProductProfitQuery, ApiResponse<decimal>>
     {
-        _connectionFactory = connectionFactory;
-        _currentTenant = currentTenant;
-    }
+        private readonly IDbConnectionFactory _connectionFactory;
 
-    public async Task<ApiResponse<decimal>>
-        Handle(
-            GetProductProfitQuery request,
-            CancellationToken cancellationToken)
-    {
-        using var connection =
-            _connectionFactory.CreateConnection();
+        private readonly ICurrentTenantService _currentTenant;
 
-        var sql = @"
-        SELECT
-            ISNULL(SUM(si.ProfitAmount), 0)
-        FROM SaleItems si
+        public GetProductProfitQueryHandler(
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
+        {
+            _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
+        }
 
-        INNER JOIN Sales s
-            ON si.SaleId = s.Id
+        public async Task<ApiResponse<decimal>> Handle(
+                GetProductProfitQuery request,
+                CancellationToken cancellationToken)
+        {
+            using var connection = _connectionFactory.CreateConnection();
 
-        WHERE
-            si.ProductId = @ProductId
-            AND s.IsDeleted = 0
-            AND s.TenantId = @TenantId
-        ";
+            var sql = @"
+            SELECT
+                ISNULL(SUM(si.ProfitAmount), 0)
+            FROM SaleItems si
 
-        var profit =
-            await connection.ExecuteScalarAsync
-            <decimal>(
-                sql,
-                new
-                {
-                    request.ProductId,
+            INNER JOIN Sales s
+                ON si.SaleId = s.Id
 
-                    TenantId =
-                        _currentTenant.TenantId
-                });
+            WHERE
+                si.ProductId = @ProductId
+                AND s.IsDeleted = 0
+                AND s.TenantId = @TenantId
+            ";
 
-        return ApiResponse<decimal>
-            .SuccessResponse(profit);
+            var profit = await connection.ExecuteScalarAsync<decimal>(
+                    sql,
+                    new
+                    {
+                        request.ProductId,
+                        TenantId = _currentTenant.TenantId
+                    }
+            );
+
+            return ApiResponse<decimal>
+                .SuccessResponse(profit);
+        }
     }
 }

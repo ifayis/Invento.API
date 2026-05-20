@@ -1,19 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Invento.Application.Features.Company.DTOs
+﻿namespace Invento.Application.Features.Company.DTOs
 {
     public class CompanyProfileDto
     {
         public Guid Id { get; set; }
 
-        public string CompanyName { get; set; }
-            = string.Empty;
-
-        //public string? Email { get; set; }
+        public string CompanyName { get; set; } = string.Empty;
 
         public string? PhoneNumber { get; set; }
 

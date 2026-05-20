@@ -1,18 +1,11 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Features.StockMovements.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Invento.Application.Common;
 
 namespace Invento.Application.Features.StockMovements.Queries
 {
     public class GetStockMovementsQuery
-        : IQuery<
-            ApiResponse<
-                PagedResponse<StockMovementDto>>>
+        : IQuery<ApiResponse<PagedResponse<StockMovementDto>>>
     {
         public Guid? ProductId { get; set; }
 

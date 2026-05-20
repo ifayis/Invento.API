@@ -5,70 +5,60 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Features.Profit.DTOs;
 using Invento.Application.Interfaces;
 
-namespace Invento.Application.Features.Profit.Queries;
-
-public class GetProfitByDateRangeQueryHandler
-    : IQueryHandler<
-        GetProfitByDateRangeQuery,
-        ApiResponse<ProfitSummaryDto>>
+namespace Invento.Application.Features.Profit.Queries
 {
-    private readonly IDbConnectionFactory
-        _connectionFactory;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public GetProfitByDateRangeQueryHandler(
-        IDbConnectionFactory connectionFactory,
-        ICurrentTenantService currentTenant)
+    public class GetProfitByDateRangeQueryHandler
+        : IQueryHandler<GetProfitByDateRangeQuery,  ApiResponse<ProfitSummaryDto>>
     {
-        _connectionFactory = connectionFactory;
-        _currentTenant = currentTenant;
-    }
+        private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ICurrentTenantService _currentTenant;
 
-    public async Task<
-        ApiResponse<ProfitSummaryDto>>
-        Handle(
-            GetProfitByDateRangeQuery request,
-            CancellationToken cancellationToken)
-    {
-        using var connection =
-            _connectionFactory.CreateConnection();
+        public GetProfitByDateRangeQueryHandler(
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
+        {
+            _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
+        }
 
-        var sql = @"
-        SELECT
-            ISNULL(SUM(TotalAmount), 0)
-                AS TotalRevenue,
+        public async Task<ApiResponse<ProfitSummaryDto>> Handle(
+                GetProfitByDateRangeQuery request,
+                CancellationToken cancellationToken)
+        {
+            using var connection = _connectionFactory.CreateConnection();
 
-            ISNULL(SUM(ProfitAmount), 0)
-                AS TotalProfit,
+            var sql = @"
+            SELECT
+                ISNULL(SUM(TotalAmount), 0)
+                    AS TotalRevenue,
 
-            COUNT(*) AS TotalSales
+                ISNULL(SUM(ProfitAmount), 0)
+                    AS TotalProfit,
 
-        FROM Sales
+                COUNT(*) AS TotalSales
 
-        WHERE
-            IsDeleted = 0
-            AND TenantId = @TenantId
-            AND SaleDate >= @FromDate
-            AND SaleDate <= @ToDate
-        ";
+            FROM Sales
 
-        var result =
-            await connection
-            .QueryFirstAsync<ProfitSummaryDto>(
-                sql,
-                new
-                {
-                    TenantId =
-                        _currentTenant.TenantId,
+            WHERE
+                IsDeleted = 0
+                AND TenantId = @TenantId
+                AND SaleDate >= @FromDate
+                AND SaleDate <= @ToDate
+            ";
 
-                    request.FromDate,
+            var result = await connection
+                .QueryFirstAsync<ProfitSummaryDto>(
+                    sql,
+                    new
+                    {
+                        TenantId = _currentTenant.TenantId,
+                        request.FromDate,
+                        request.ToDate
+                    }
+                );
 
-                    request.ToDate
-                });
-
-        return ApiResponse<ProfitSummaryDto>
-            .SuccessResponse(result);
+            return ApiResponse<ProfitSummaryDto>
+                .SuccessResponse(result);
+        }
     }
 }

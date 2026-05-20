@@ -5,63 +5,55 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Features.Targets.DTOs;
 using Invento.Application.Interfaces;
 
-namespace Invento.Application.Features.Targets.Queries;
-
-public class GetTenantTargetsQueryHandler
-    : IQueryHandler<
-        GetTenantTargetsQuery,
-        ApiResponse<TenantTargetDto>>
+namespace Invento.Application.Features.Targets.Queries
 {
-    private readonly IDbConnectionFactory
-        _connectionFactory;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public GetTenantTargetsQueryHandler(
-        IDbConnectionFactory connectionFactory,
-        ICurrentTenantService currentTenant)
+    public class GetTenantTargetsQueryHandler
+        : IQueryHandler<GetTenantTargetsQuery, ApiResponse<TenantTargetDto>>
     {
-        _connectionFactory = connectionFactory;
-        _currentTenant = currentTenant;
-    }
+        private readonly IDbConnectionFactory _connectionFactory;
 
-    public async Task<ApiResponse<TenantTargetDto>>
-        Handle(
-            GetTenantTargetsQuery request,
-            CancellationToken cancellationToken)
-    {
-        using var connection =
-            _connectionFactory.CreateConnection();
+        private readonly ICurrentTenantService _currentTenant;
 
-        var sql = @"
-        SELECT
-            LowStockThreshold,
-            CriticalStockThreshold,
-            MonthlySalesTarget,
-            MonthlyProfitTarget
+        public GetTenantTargetsQueryHandler(
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
+        {
+            _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
+        }
 
-        FROM TenantSettings
+        public async Task<ApiResponse<TenantTargetDto>> Handle(
+                GetTenantTargetsQuery request,
+                CancellationToken cancellationToken)
+        {
+            using var connection = _connectionFactory.CreateConnection();
 
-        WHERE
-            TenantId = @TenantId
-            AND IsDeleted = 0
-        ";
+                var sql = @"
+                SELECT
+                    LowStockThreshold,
+                    CriticalStockThreshold,
+                    MonthlySalesTarget,
+                    MonthlyProfitTarget
 
-        var result =
-            await connection
-            .QueryFirstOrDefaultAsync
-            <TenantTargetDto>(
-                sql,
-                new
-                {
-                    TenantId =
-                        _currentTenant.TenantId
-                });
+                FROM TenantSettings
 
-        result ??= new TenantTargetDto();
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0
+                ";
 
-        return ApiResponse<TenantTargetDto>
-            .SuccessResponse(result);
+            var result = await connection.QueryFirstOrDefaultAsync<TenantTargetDto>(
+                    sql,
+                    new
+                    {
+                        TenantId = _currentTenant.TenantId
+                    }
+            );
+
+            result ??= new TenantTargetDto();
+
+            return ApiResponse<TenantTargetDto>
+                .SuccessResponse(result);
+        }
     }
 }

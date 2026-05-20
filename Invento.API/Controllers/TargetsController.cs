@@ -4,50 +4,47 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Invento.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class TargetsController : ControllerBase
+namespace Invento.API.Controllers
 {
-    private readonly IMediator _mediator;
 
-    public TargetsController(
-        IMediator mediator)
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class TargetsController : ControllerBase
     {
-        _mediator = mediator;
-    }
+        private readonly IMediator _mediator;
 
-    [HttpGet("low-stock")]
-    public async Task<IActionResult>
-        LowStock()
-    {
-        return Ok(await _mediator.Send(
-            new GetLowStockProductsQuery()));
-    }
+        public TargetsController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
-    [HttpGet("critical-stock")]
-    public async Task<IActionResult>
-        CriticalStock()
-    {
-        return Ok(await _mediator.Send(
-            new GetCriticalStockProductsQuery()));
-    }
 
-    [HttpGet("monthly")]
-    public async Task<IActionResult>
-        GetTargets()
-    {
-        return Ok(await _mediator.Send(
-            new GetTenantTargetsQuery()));
-    }
+        [HttpGet("low-stock")]
+        public async Task<IActionResult> LowStock()
+        {
+            return Ok(await _mediator.Send(new GetLowStockProductsQuery()));
+        }
 
-    [HttpPut("monthly")]
-    public async Task<IActionResult>
-        UpdateTargets(
-            UpdateTenantTargetsCommand command)
-    {
-        return Ok(await _mediator.Send(command));
+
+        [HttpGet("critical-stock")]
+        public async Task<IActionResult> CriticalStock()
+        {
+            return Ok(await _mediator.Send(new GetCriticalStockProductsQuery()));
+        }
+
+
+        [HttpGet("monthly")]
+        public async Task<IActionResult> GetTargets()
+        {
+            return Ok(await _mediator.Send(new GetTenantTargetsQuery()));
+        }
+
+
+        [HttpPut("monthly")]
+        public async Task<IActionResult> UpdateTargets(UpdateTenantTargetsCommand command)
+        {
+            return Ok(await _mediator.Send(command));
+        }
     }
 }

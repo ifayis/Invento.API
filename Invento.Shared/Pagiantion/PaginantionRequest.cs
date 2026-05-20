@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Invento.Shared.Pagiantion
+﻿namespace Invento.Shared.Pagiantion
 {
     public class PaginationRequest
     {

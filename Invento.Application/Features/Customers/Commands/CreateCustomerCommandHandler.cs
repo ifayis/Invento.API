@@ -4,62 +4,53 @@ using Invento.Application.Features.Customer.Commands;
 using Invento.Application.Features.Customer.DTOs;
 using Invento.Application.Interfaces;
 
-namespace Invento.Application.Features.Customers.Commands;
-
-public class CreateCustomerCommandHandler
-    : ICommandHandler<
-        CreateCustomerCommand,
-        ApiResponse<CustomerDto>>
+namespace Invento.Application.Features.Customers.Commands
 {
-    private readonly IApplicationDbContext
-        _context;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public CreateCustomerCommandHandler(
-        IApplicationDbContext context,
-        ICurrentTenantService currentTenant)
+    public class CreateCustomerCommandHandler
+        : ICommandHandler<CreateCustomerCommand, ApiResponse<CustomerDto>>
     {
-        _context = context;
-        _currentTenant = currentTenant;
-    }
+        private readonly IApplicationDbContext _context;
 
-    public async Task<ApiResponse<CustomerDto>>
-        Handle(
-            CreateCustomerCommand request,
-            CancellationToken cancellationToken)
-    {
-        var customer = new Invento.Domain.Entities.Customer
+        private readonly ICurrentTenantService _currentTenant;
+
+        public CreateCustomerCommandHandler(
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
         {
-            TenantId = _currentTenant.TenantId,
+            _context = context;
+            _currentTenant = currentTenant;
+        }
 
-            Name = request.Name,
+        public async Task<ApiResponse<CustomerDto>> Handle(
+                CreateCustomerCommand request,
+                CancellationToken cancellationToken)
+        {
+            var customer = new Invento.Domain.Entities.Customer
+            {
+                TenantId = _currentTenant.TenantId,
+                Name = request.Name,
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber,
+                Address = request.Address
+            };
 
-            Email = request.Email,
+            await _context.Customers.AddAsync(
+                customer,
+                cancellationToken);
 
-            PhoneNumber =
-                request.PhoneNumber,
+            await _context.SaveChangesAsync(cancellationToken);
 
-            Address = request.Address
-        };
-
-        await _context.Customers.AddAsync(
-            customer,
-            cancellationToken);
-
-        await _context.SaveChangesAsync(
-            cancellationToken);
-
-        return ApiResponse<CustomerDto>
-            .SuccessResponse(
-                new CustomerDto
-                {
-                    Name = customer.Name,
-                    Email = customer.Email,
-                    PhoneNumber = customer.Email,
-                    Address = customer.Address
-                },
-                "Customer created successfully");
+            return ApiResponse<CustomerDto>
+                .SuccessResponse(
+                    new CustomerDto
+                    {
+                        Name = customer.Name,
+                        Email = customer.Email,
+                        PhoneNumber = customer.Email,
+                        Address = customer.Address
+                    },
+                    "Customer created successfully"
+                );
+        }
     }
 }

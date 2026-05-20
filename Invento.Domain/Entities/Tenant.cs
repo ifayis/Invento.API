@@ -20,7 +20,5 @@ public class Tenant : BaseEntity
 
     public bool IsDeleted { get; set; } = false;
 
-    public ICollection<User> Users
-    { get; set; }
-        = new List<User>();
+    public ICollection<User> Users { get; set; } = new List<User>();
 }

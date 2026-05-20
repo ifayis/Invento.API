@@ -4,11 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Invento.Persistence.Configurations;
 
-public class SalesConfiguration
-    : IEntityTypeConfiguration<Sale>
+public class SalesConfiguration : IEntityTypeConfiguration<Sale>
 {
-    public void Configure(
-        EntityTypeBuilder<Sale> builder)
+    public void Configure(EntityTypeBuilder<Sale> builder)
     {
         builder.ToTable("Sales");
 

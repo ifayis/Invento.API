@@ -5,89 +5,93 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Interfaces;
 
-namespace Invento.Application.Features.Sales.Queries;
-
-public class GetSaleByIdQueryHandler
-    : IQueryHandler<
-        GetSaleByIdQuery,
-        ApiResponse<SaleDetailsDto>>
+namespace Invento.Application.Features.Sales.Queries
 {
-    private readonly IDbConnectionFactory _connectionFactory;
-    private readonly ICurrentTenantService _currentTenant;
-
-    public GetSaleByIdQueryHandler(
-        IDbConnectionFactory connectionFactory,
-        ICurrentTenantService currentTenant)
+    public class GetSaleByIdQueryHandler
+        : IQueryHandler<GetSaleByIdQuery, ApiResponse<SaleDetailsDto>>
     {
-        _connectionFactory = connectionFactory;
-        _currentTenant = currentTenant;
-    }
+        private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ICurrentTenantService _currentTenant;
 
-    public async Task<ApiResponse<SaleDetailsDto>> Handle(
-        GetSaleByIdQuery request,
-        CancellationToken cancellationToken)
-    {
-        using var connection =
-            _connectionFactory.CreateConnection();
-
-        var saleSql = @"
-        SELECT
-            Id,
-            InvoiceNumber,
-            SaleDate,
-            SubTotal,
-            TaxAmount,
-            DiscountAmount,
-            TotalAmount,
-            ProfitAmount
-        FROM Sales
-        WHERE Id = @Id
-        AND IsDeleted = 0
-        AND TenantId = @TenantId
-        ";
-
-        var itemsSql = @"
-        SELECT
-            si.ProductId,
-            p.Name AS ProductName,
-            si.Quantity,
-            si.UnitPrice,
-            si.TaxAmount,
-            si.TotalPrice,
-            si.ProfitAmount
-        FROM SaleItems si
-        INNER JOIN Products p
-            ON si.ProductId = p.Id
-        WHERE si.SaleId = @Id
-        AND si.TenantId = @TenantId
-        ";
-
-        var sale =
-            await connection.QueryFirstOrDefaultAsync
-            <SaleDetailsDto>(
-                saleSql,
-                new { request.Id,
-                TenatId = _currentTenant.TenantId});
-
-        if (sale is null)
+        public GetSaleByIdQueryHandler(
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
         {
-            return ApiResponse<SaleDetailsDto>
-                .FailureResponse(
-                    new List<string>
-                    {
-                        "Sale not found"
-                    });
+            _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
         }
 
-        var items =
-            await connection.QueryAsync<SaleItemDto>(
-                itemsSql,
-                new { request.Id,
-                TenantId = _currentTenant.TenantId});
+        public async Task<ApiResponse<SaleDetailsDto>> Handle(
+            GetSaleByIdQuery request,
+            CancellationToken cancellationToken)
+        {
+            using var connection = _connectionFactory.CreateConnection();
 
-        sale.Items = items.ToList();
+            var saleSql = @"
+            SELECT
+                Id,
+                InvoiceNumber,
+                SaleDate,
+                SubTotal,
+                TaxAmount,
+                DiscountAmount,
+                TotalAmount,
+                ProfitAmount
+            FROM Sales
+            WHERE Id = @Id
+            AND IsDeleted = 0
+            AND TenantId = @TenantId
+            ";
 
-        return ApiResponse<SaleDetailsDto>
-            .SuccessResponse(sale);
+            var itemsSql = @"
+            SELECT
+                si.ProductId,
+                p.Name AS ProductName,
+                si.Quantity,
+                si.UnitPrice,
+                si.TaxAmount,
+                si.TotalPrice,
+                si.ProfitAmount
+            FROM SaleItems si
+            INNER JOIN Products p
+                ON si.ProductId = p.Id
+            WHERE si.SaleId = @Id
+            AND si.TenantId = @TenantId
+            ";
+
+            var sale = await connection.QueryFirstOrDefaultAsync<SaleDetailsDto>(
+                    saleSql,
+                    new
+                    {
+                        request.Id,
+                        TenatId = _currentTenant.TenantId
+                    }
+            );
+
+            if (sale is null)
+            {
+                return ApiResponse<SaleDetailsDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                        "Sale not found"
+                        }
+                    );
+            }
+
+            var items = await connection.QueryAsync<SaleItemDto>(
+                    itemsSql,
+                    new
+                    {
+                        request.Id,
+                        TenantId = _currentTenant.TenantId
+                    }
+            );
+
+            sale.Items = items.ToList();
+
+            return ApiResponse<SaleDetailsDto>
+                .SuccessResponse(sale);
+        }
     }
 }

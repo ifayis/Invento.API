@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Invento.Shared.Common;
+﻿using Invento.Shared.Common;
 
 namespace Invento.Domain.Entities
 {
@@ -31,13 +26,10 @@ namespace Invento.Domain.Entities
 
         public Category Category { get; set; } = default!;
 
-        public ICollection<ProductImage> Images { get; set; }
-            = new List<ProductImage>();
+        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
 
-        public ICollection<StockMovement> StockMovements { get; set; }
-            = new List<StockMovement>();
+        public ICollection<StockMovement> StockMovements { get; set; }  = new List<StockMovement>();
 
-        public ICollection<SaleItem> SaleItems { get; set; }
-            = new List<SaleItem>();
+        public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
     }
 }

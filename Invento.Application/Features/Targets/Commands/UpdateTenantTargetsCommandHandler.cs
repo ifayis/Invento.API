@@ -5,77 +5,68 @@ using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Invento.Application.Features.Targets.Commands;
-
-public class UpdateTenantTargetsCommandHandler
-    : ICommandHandler<
-        UpdateTenantTargetsCommand,
-        ApiResponse<TenantTargetDto>>
+namespace Invento.Application.Features.Targets.Commands
 {
-    private readonly IApplicationDbContext
-        _context;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public UpdateTenantTargetsCommandHandler(
-        IApplicationDbContext context,
-        ICurrentTenantService currentTenant)
+    public class UpdateTenantTargetsCommandHandler
+        : ICommandHandler<UpdateTenantTargetsCommand, ApiResponse<TenantTargetDto>>
     {
-        _context = context;
-        _currentTenant = currentTenant;
-    }
+        private readonly IApplicationDbContext _context;
 
-    public async Task<ApiResponse<TenantTargetDto>>
-        Handle(
-            UpdateTenantTargetsCommand request,
-            CancellationToken cancellationToken)
-    {
-        var settings =
-            await _context.TenantSettings
-            .FirstOrDefaultAsync(x =>
-                x.TenantId
-                    == _currentTenant.TenantId,
-                cancellationToken);
+        private readonly ICurrentTenantService _currentTenant;
 
-        if (settings is null)
+        public UpdateTenantTargetsCommandHandler(
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
         {
-            settings = new TenantSettings
-            {
-                TenantId =
-                    _currentTenant.TenantId
-            };
-
-            await _context.TenantSettings
-                .AddAsync(
-                    settings,
-                    cancellationToken);
+            _context = context;
+            _currentTenant = currentTenant;
         }
 
-        settings.LowStockThreshold =
-            request.LowStockThreshold;
+        public async Task<ApiResponse<TenantTargetDto>> Handle(
+                UpdateTenantTargetsCommand request,
+                CancellationToken cancellationToken)
+        {
+            var settings = await _context.TenantSettings
+                .FirstOrDefaultAsync(x =>
+                    x.TenantId
+                        == _currentTenant.TenantId,
+                    cancellationToken);
 
-        settings.CriticalStockThreshold =
-            request.CriticalStockThreshold;
-
-        settings.MonthlySalesTarget =
-            request.MonthlySalesTarget;
-
-        settings.MonthlyProfitTarget =
-            request.MonthlyProfitTarget;
-
-        await _context.SaveChangesAsync(
-            cancellationToken);
-
-        return ApiResponse<TenantTargetDto>
-            .SuccessResponse(
-            new TenantTargetDto
+            if (settings is null)
             {
-                CriticalStockThreshold = settings.CriticalStockThreshold,
-                LowStockThreshold = settings.LowStockThreshold,
-                MonthlyProfitTarget = settings.MonthlyProfitTarget,
-                MonthlySalesTarget = settings.MonthlySalesTarget
-            },
-                "Target settings updated");
+                settings = new TenantSettings
+                {
+                    TenantId = _currentTenant.TenantId
+                };
+
+                await _context.TenantSettings
+                    .AddAsync(
+                        settings,
+                        cancellationToken
+                    );
+            }
+
+            settings.LowStockThreshold = request.LowStockThreshold;
+
+            settings.CriticalStockThreshold = request.CriticalStockThreshold;
+
+            settings.MonthlySalesTarget = request.MonthlySalesTarget;
+
+            settings.MonthlyProfitTarget = request.MonthlyProfitTarget;
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return ApiResponse<TenantTargetDto>
+                .SuccessResponse(
+                new TenantTargetDto
+                {
+                    CriticalStockThreshold = settings.CriticalStockThreshold,
+                    LowStockThreshold = settings.LowStockThreshold,
+                    MonthlyProfitTarget = settings.MonthlyProfitTarget,
+                    MonthlySalesTarget = settings.MonthlySalesTarget
+                },
+                    "Target settings updated"
+                );
+        }
     }
 }

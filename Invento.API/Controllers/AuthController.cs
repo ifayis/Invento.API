@@ -2,44 +2,46 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Invento.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class AuthController : ControllerBase
+namespace Invento.API.Controllers
 {
-    private readonly IMediator _mediator;
 
-    public AuthController(IMediator mediator)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
     {
-        _mediator = mediator;
-    }
+        private readonly IMediator _mediator;
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register(
-        RegisterCommand command)
-    {
-        var result = await _mediator.Send(command);
-
-        if (!result.Success)
+        public AuthController(IMediator mediator)
         {
-            return BadRequest(result);
+            _mediator = mediator;
         }
 
-        return Ok(result);
-    }
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login(
-        LoginCommand command)
-    {
-        var result = await _mediator.Send(command);
-
-        if (!result.Success)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterCommand command)
         {
-            return BadRequest(result);
+            var result = await _mediator.Send(command);
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
         }
 
-        return Ok(result);
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }

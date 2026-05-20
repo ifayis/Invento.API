@@ -4,11 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Invento.Persistence.Configurations;
 
-public class CustomerConfiguration
-    : IEntityTypeConfiguration<Customer>
+public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 {
-    public void Configure(
-        EntityTypeBuilder<Customer> builder)
+    public void Configure(EntityTypeBuilder<Customer> builder)
     {
         builder.ToTable("Customers");
 

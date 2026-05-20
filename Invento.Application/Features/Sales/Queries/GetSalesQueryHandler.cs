@@ -5,137 +5,127 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Interfaces;
 
-namespace Invento.Application.Features.Sales.Queries;
-
-public class GetSalesQueryHandler
-    : IQueryHandler<
-        GetSalesQuery,
-        ApiResponse<PagedResponse<SaleDto>>>
+namespace Invento.Application.Features.Sales.Queries
 {
-    private readonly IDbConnectionFactory _connectionFactory;
-    private readonly ICurrentTenantService _currentTenant;
-
-    public GetSalesQueryHandler(
-        IDbConnectionFactory connectionFactory,
-        ICurrentTenantService currentTenant)
+    public class GetSalesQueryHandler
+        : IQueryHandler<GetSalesQuery, ApiResponse<PagedResponse<SaleDto>>>
     {
-        _connectionFactory = connectionFactory;
-        _currentTenant = currentTenant;
-    }
+        private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ICurrentTenantService _currentTenant;
 
-    public async Task<
-        ApiResponse<PagedResponse<SaleDto>>>
-        Handle(
-            GetSalesQuery request,
-            CancellationToken cancellationToken)
-    {
-        using var connection =
-            _connectionFactory.CreateConnection();
-
-        var sql = @"
-        SELECT
-            Id,
-            InvoiceNumber,
-            SaleDate,
-            TotalAmount,
-            ProfitAmount,
-            CreatedAt
-        FROM Sales
-        WHERE IsDeleted = 0
-        AND TenantId =@TenantId
-        AND
-        (
-            @Search IS NULL
-            OR InvoiceNumber
-                LIKE '%' + @Search + '%'
-        )
-
-        AND
-        (
-            @FromDate IS NULL
-            OR SaleDate >= @FromDate
-        )
-
-        AND
-        (
-            @ToDate IS NULL
-            OR SaleDate <= @ToDate
-        )
-
-        ORDER BY SaleDate DESC
-
-        OFFSET @Offset ROWS
-        FETCH NEXT @PageSize ROWS ONLY;
-
-        SELECT COUNT(*)
-        FROM Sales
-        WHERE IsDeleted = 0
-        AND TenantId = @TenantId
-        AND
-        (
-            @Search IS NULL
-            OR InvoiceNumber
-                LIKE '%' + @Search + '%'
-        )
-
-        AND
-        (
-            @FromDate IS NULL
-            OR SaleDate >= @FromDate
-        )
-
-        AND
-        (
-            @ToDate IS NULL
-            OR SaleDate <= @ToDate
-        );
-        ";
-
-        var parameters = new
+        public GetSalesQueryHandler(
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
         {
-            TenantId = _currentTenant.TenantId,
+            _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
+        }
 
-            request.Search,
+        public async Task<ApiResponse<PagedResponse<SaleDto>>> Handle(
+                GetSalesQuery request,
+                CancellationToken cancellationToken)
+        {
+            using var connection = _connectionFactory.CreateConnection();
 
-            request.FromDate,
+            var sql = @"
+            SELECT
+                Id,
+                InvoiceNumber,
+                SaleDate,
+                TotalAmount,
+                ProfitAmount,
+                CreatedAt
+            FROM Sales
+            WHERE IsDeleted = 0
+            AND TenantId =@TenantId
+            AND
+            (
+                @Search IS NULL
+                OR InvoiceNumber
+                    LIKE '%' + @Search + '%'
+            )
 
-            request.ToDate,
+            AND
+            (
+                @FromDate IS NULL
+                OR SaleDate >= @FromDate
+            )
 
-            Offset =
-                (request.PageNumber - 1)
-                * request.PageSize,
+            AND
+            (
+                @ToDate IS NULL
+                OR SaleDate <= @ToDate
+            )
 
-            request.PageSize
-        };
+            ORDER BY SaleDate DESC
 
-        using var multi =
-            await connection.QueryMultipleAsync(
-                sql,
-                parameters);
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
 
-        var sales =
-            await multi.ReadAsync<SaleDto>();
+            SELECT COUNT(*)
+            FROM Sales
+            WHERE IsDeleted = 0
+            AND TenantId = @TenantId
+            AND
+            (
+                @Search IS NULL
+                OR InvoiceNumber
+                    LIKE '%' + @Search + '%'
+            )
 
-        var totalRecords =
-            await multi.ReadFirstAsync<int>();
+            AND
+            (
+                @FromDate IS NULL
+                OR SaleDate >= @FromDate
+            )
 
-        var response =
-            new PagedResponse<SaleDto>
+            AND
+            (
+                @ToDate IS NULL
+                OR SaleDate <= @ToDate
+            );
+            ";
+
+            var parameters = new
             {
-                Items = sales,
+                TenantId = _currentTenant.TenantId,
 
-                PageNumber =
-                    request.PageNumber,
+                request.Search,
 
-                PageSize =
-                    request.PageSize,
+                request.FromDate,
 
-                TotalRecords =
-                    totalRecords
+                request.ToDate,
+
+                Offset =
+                    (request.PageNumber - 1)
+                    * request.PageSize,
+
+                request.PageSize
             };
 
-        return ApiResponse<
-            PagedResponse<SaleDto>>
-            .SuccessResponse(response);
+            using var multi = await connection.QueryMultipleAsync(
+                    sql,
+                    parameters
+            );
+
+            var sales = await multi.ReadAsync<SaleDto>();
+
+            var totalRecords = await multi.ReadFirstAsync<int>();
+
+            var response =
+                new PagedResponse<SaleDto>
+                {
+                    Items = sales,
+
+                    PageNumber = request.PageNumber,
+
+                    PageSize = request.PageSize,
+
+                    TotalRecords = totalRecords
+                };
+
+            return ApiResponse<PagedResponse<SaleDto>>
+                .SuccessResponse(response);
+        }
     }
 }

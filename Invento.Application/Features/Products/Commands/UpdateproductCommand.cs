@@ -1,11 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Products.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Invento.Application.Features.Products.Commands
 {
@@ -14,11 +9,9 @@ namespace Invento.Application.Features.Products.Commands
     {
         public Guid Id { get; set; }
 
-        public string Name { get; set; }
-            = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
-        public string SKU { get; set; }
-            = string.Empty;
+        public string SKU { get; set; } = string.Empty;
 
         public decimal CostPrice { get; set; }
 

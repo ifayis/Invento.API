@@ -4,11 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Invento.Persistence.Configurations;
 
-public class TenantSettingsConfiguration
-    : IEntityTypeConfiguration<TenantSettings>
+public class TenantSettingsConfiguration : IEntityTypeConfiguration<TenantSettings>
 {
-    public void Configure(
-        EntityTypeBuilder<TenantSettings> builder)
+    public void Configure(EntityTypeBuilder<TenantSettings> builder)
     {
         builder.ToTable("TenantSettings");
 

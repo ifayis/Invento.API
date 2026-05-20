@@ -1,15 +1,9 @@
 ﻿using FluentValidation;
 using Invento.Application.Features.Products.Commands;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Invento.Application.Features.Products.Validators
 {
-    public class CreateProductCommandValidator
-        : AbstractValidator<CreateProductCommand>
+    public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
     {
         public CreateProductCommandValidator()
         {

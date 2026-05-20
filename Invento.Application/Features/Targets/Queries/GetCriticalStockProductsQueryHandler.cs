@@ -5,70 +5,61 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Features.Targets.DTOs;
 using Invento.Application.Interfaces;
 
-namespace Invento.Application.Features.Targets.Queries;
-
-public class GetCriticalStockProductsQueryHandler
-    : IQueryHandler<
-        GetCriticalStockProductsQuery,
-        ApiResponse<List<StockAlertDto>>>
+namespace Invento.Application.Features.Targets.Queries
 {
-    private readonly IDbConnectionFactory
-        _connectionFactory;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public GetCriticalStockProductsQueryHandler(
-        IDbConnectionFactory connectionFactory,
-        ICurrentTenantService currentTenant)
+    public class GetCriticalStockProductsQueryHandler
+        : IQueryHandler<GetCriticalStockProductsQuery, ApiResponse<List<StockAlertDto>>>
     {
-        _connectionFactory = connectionFactory;
-        _currentTenant = currentTenant;
-    }
+        private readonly IDbConnectionFactory _connectionFactory;
 
-    public async Task<
-        ApiResponse<List<StockAlertDto>>>
-        Handle(
-            GetCriticalStockProductsQuery request,
-            CancellationToken cancellationToken)
-    {
-        using var connection =
-            _connectionFactory.CreateConnection();
+        private readonly ICurrentTenantService _currentTenant;
 
-        var sql = @"
-        SELECT
-            p.Id AS ProductId,
-            p.Name AS ProductName,
-            p.CurrentStock,
-            ts.CriticalStockThreshold
-                AS Threshold
+        public GetCriticalStockProductsQueryHandler(
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
+        {
+            _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
+        }
 
-        FROM Products p
+        public async Task<ApiResponse<List<StockAlertDto>>> Handle(
+                GetCriticalStockProductsQuery request,
+                CancellationToken cancellationToken)
+        {
+            using var connection = _connectionFactory.CreateConnection();
 
-        INNER JOIN TenantSettings ts
-            ON p.TenantId = ts.TenantId
+            var sql = @"
+            SELECT
+                p.Id AS ProductId,
+                p.Name AS ProductName,
+                p.CurrentStock,
+                ts.CriticalStockThreshold
+                    AS Threshold
 
-        WHERE
-            p.IsDeleted = 0
-            AND p.TenantId = @TenantId
-            AND p.CurrentStock
-                <= ts.CriticalStockThreshold
+            FROM Products p
 
-        ORDER BY p.CurrentStock ASC
-        ";
+            INNER JOIN TenantSettings ts
+                ON p.TenantId = ts.TenantId
 
-        var result =
-            await connection.QueryAsync
-            <StockAlertDto>(
-                sql,
-                new
-                {
-                    TenantId =
-                        _currentTenant.TenantId
-                });
+            WHERE
+                p.IsDeleted = 0
+                AND p.TenantId = @TenantId
+                AND p.CurrentStock
+                    <= ts.CriticalStockThreshold
 
-        return ApiResponse<
-            List<StockAlertDto>>
-            .SuccessResponse(result.ToList());
+            ORDER BY p.CurrentStock ASC
+            ";
+
+            var result = await connection.QueryAsync<StockAlertDto>(
+                    sql,
+                    new
+                    {
+                        TenantId = _currentTenant.TenantId
+                    }
+            );
+
+            return ApiResponse<List<StockAlertDto>>
+                .SuccessResponse(result.ToList());
+        }
     }
 }

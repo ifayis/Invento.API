@@ -9,9 +9,7 @@ using System;
 namespace Invento.Application.Features.Auth.Commands
 {
     public class LoginCommandHandler
-        : ICommandHandler<
-            LoginCommand,
-            ApiResponse<AuthResponseDto>>
+        : ICommandHandler<LoginCommand, ApiResponse<AuthResponseDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
@@ -31,7 +29,8 @@ namespace Invento.Application.Features.Auth.Commands
             var user = await _context.Users
                 .FirstOrDefaultAsync(x =>
                     x.Email == request.Email,
-                    cancellationToken);
+                    cancellationToken
+                );
 
             if (user is null)
             {
@@ -40,13 +39,15 @@ namespace Invento.Application.Features.Auth.Commands
                         new List<string>
                         {
                         "Invalid credentials"
-                        });
+                        }
+                    );
             }
 
             var passwordValid =
                 PasswordHasher.Verify(
                     request.Password,
-                    user.PasswordHash);
+                    user.PasswordHash
+                );
 
             if (!passwordValid)
             {
@@ -55,14 +56,13 @@ namespace Invento.Application.Features.Auth.Commands
                         new List<string>
                         {
                         "Invalid credentials"
-                        });
+                        }
+                    );
             }
 
-            var accessToken =
-                _jwtTokenGenerator.GenerateAccessToken(user);
+            var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
 
-            var refreshTokenValue =
-                _jwtTokenGenerator.GenerateRefreshToken();
+            var refreshTokenValue = _jwtTokenGenerator.GenerateRefreshToken();
 
             var refreshToken = new RefreshToken
             {
@@ -75,8 +75,7 @@ namespace Invento.Application.Features.Auth.Commands
                 refreshToken,
                 cancellationToken);
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return ApiResponse<AuthResponseDto>
                 .SuccessResponse(
@@ -86,7 +85,8 @@ namespace Invento.Application.Features.Auth.Commands
                         RefreshToken = refreshTokenValue,
                         ExpiresAt = DateTime.UtcNow.AddMinutes(15)
                     },
-                    "Login successful");
+                    "Login successful"
+                );
         }
     }
 }

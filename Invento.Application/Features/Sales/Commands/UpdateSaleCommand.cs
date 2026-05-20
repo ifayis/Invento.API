@@ -1,11 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Sales.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Invento.Application.Features.Sales.Command
 {
@@ -18,8 +13,6 @@ namespace Invento.Application.Features.Sales.Command
 
         public decimal DiscountAmount { get; set; }
 
-        public List<CreateSaleItemDto> Items
-        { get; set; }
-            = new();
+        public List<CreateSaleItemDto> Items { get; set; } = new();
     }
 }

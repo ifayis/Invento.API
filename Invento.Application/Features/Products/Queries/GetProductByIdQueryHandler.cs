@@ -8,9 +8,7 @@ using Invento.Application.Interfaces;
 namespace Invento.Application.Features.Products.Queries
 {
     public class GetProductByIdQueryHandler
-        : IQueryHandler<
-            GetProductByIdQuery,
-            ApiResponse<ProductDto>>
+        : IQueryHandler<GetProductByIdQuery, ApiResponse<ProductDto>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ICurrentTenantService _currentTenant;
@@ -27,8 +25,7 @@ namespace Invento.Application.Features.Products.Queries
             GetProductByIdQuery request,
             CancellationToken cancellationToken)
         {
-            using var connection =
-                _connectionFactory.CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
 
             var sql = @"
             SELECT
@@ -52,7 +49,8 @@ namespace Invento.Application.Features.Products.Queries
                 .QueryFirstOrDefaultAsync<ProductDto>(
                     sql,
                     new { request.Id,
-                    TenantId = _currentTenant.TenantId});
+                    TenantId = _currentTenant.TenantId}
+                );
 
             if (product is null)
             {
@@ -61,7 +59,8 @@ namespace Invento.Application.Features.Products.Queries
                         new List<string>
                         {
                         "Product not found"
-                        });
+                        }
+                    );
             }
 
             return ApiResponse<ProductDto>

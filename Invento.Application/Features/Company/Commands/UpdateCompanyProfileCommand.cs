@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Invento.Application.Abstractions;
+﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Company.DTOs;
 
 namespace Invento.Application.Features.Company.Commands
 {
-    public class UpdateCompanyProfileCommand
+    public class UpdateCompanyProfileCommand 
         : ICommand<ApiResponse<CompanyProfileDto>>
     {
-        public string CompanyName { get; set; }
-            = string.Empty;
+        public string CompanyName { get; set; } = string.Empty;
 
         public string? Email { get; set; }
 

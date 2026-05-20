@@ -7,9 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Products.Commands
 {
     public class DeleteProductCommandHandler
-        : ICommandHandler<
-            DeleteProductCommand,
-            ApiResponse<ProductDto>>
+        : ICommandHandler<DeleteProductCommand, ApiResponse<ProductDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
@@ -40,21 +38,22 @@ namespace Invento.Application.Features.Products.Commands
                         new List<string>
                         {
                         "Product not found"
-                        });
+                        }
+                    );
             }
 
             product.IsDeleted = true;
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return ApiResponse<ProductDto>
                 .SuccessResponse(
-                new ProductDto
-                {
+                   new ProductDto
+                   {
                     Name = product.Name
-                },
-                    "Product deleted successfully");
+                   },
+                   "Product deleted successfully"
+                );
         }
     }
 }

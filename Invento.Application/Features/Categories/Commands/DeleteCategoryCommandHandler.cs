@@ -4,56 +4,56 @@ using Invento.Application.Features.Categories.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Invento.Application.Features.Categories.Commands;
-
-public class DeleteCategoryCommandHandler
-    : ICommandHandler<
-        DeleteCategoryCommand,
-        ApiResponse<CategoryDto>>
+namespace Invento.Application.Features.Categories.Commands
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentTenantService _currentTenant;
-
-    public DeleteCategoryCommandHandler(
-        IApplicationDbContext context,
-        ICurrentTenantService currentTenant)
+    public class DeleteCategoryCommandHandler
+        : ICommandHandler<DeleteCategoryCommand, ApiResponse<CategoryDto>>
     {
-        _context = context;
-        _currentTenant = currentTenant;
-    }
+        private readonly IApplicationDbContext _context;
+        private readonly ICurrentTenantService _currentTenant;
 
-    public async Task<ApiResponse<CategoryDto>> Handle(
-        DeleteCategoryCommand request,
-        CancellationToken cancellationToken)
-    {
-        var category = await _context.Categories
-            .FirstOrDefaultAsync(x =>
-            x.Id == request.Id
-            && x.TenantId == _currentTenant.TenantId 
-            && !x.IsDeleted,
-            cancellationToken);
-
-        if (category is null)
+        public DeleteCategoryCommandHandler(
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
         {
-            return ApiResponse<CategoryDto>
-                .FailureResponse(
-                    new List<string>
-                    {
-                        "Category not found"
-                    });
+            _context = context;
+            _currentTenant = currentTenant;
         }
 
-        category.IsDeleted = true;
+        public async Task<ApiResponse<CategoryDto>> Handle(
+            DeleteCategoryCommand request,
+            CancellationToken cancellationToken)
+        {
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(x =>
+                x.Id == request.Id
+                && x.TenantId == _currentTenant.TenantId
+                && !x.IsDeleted,
+                cancellationToken);
 
-        await _context.SaveChangesAsync(
-            cancellationToken);
+            if (category is null)
+            {
+                return ApiResponse<CategoryDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                        "Category not found"
+                        }
+                    );
+            }
 
-        return ApiResponse<CategoryDto>
-            .SuccessResponse(
-                new CategoryDto
-                {
-                    Name = category.Name
-                },
-                "Category deleted successfully");
+            category.IsDeleted = true;
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return ApiResponse<CategoryDto>
+                .SuccessResponse(
+                    new CategoryDto
+                    {
+                        Name = category.Name
+                    },
+                    "Category deleted successfully"
+                );
+        }
     }
 }

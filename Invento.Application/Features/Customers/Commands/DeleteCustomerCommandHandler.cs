@@ -5,61 +5,59 @@ using Invento.Application.Features.Customer.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Invento.Application.Features.Customers.Commands;
-
-public class DeleteCustomerCommandHandler
-    : ICommandHandler<
-        DeleteCustomerCommand,
-        ApiResponse<CustomerDto>>
+namespace Invento.Application.Features.Customers.Commands
 {
-    private readonly IApplicationDbContext
-        _context;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public DeleteCustomerCommandHandler(
-        IApplicationDbContext context,
-        ICurrentTenantService currentTenant)
+    public class DeleteCustomerCommandHandler
+        : ICommandHandler<DeleteCustomerCommand, ApiResponse<CustomerDto>>
     {
-        _context = context;
-        _currentTenant = currentTenant;
-    }
+        private readonly IApplicationDbContext _context;
 
-    public async Task<ApiResponse<CustomerDto>>
-        Handle(
-            DeleteCustomerCommand request,
-            CancellationToken cancellationToken)
-    {
-        var customer = await _context.Customers
-            .FirstOrDefaultAsync(x =>
-                x.Id == request.Id
-                && x.TenantId
-                    == _currentTenant.TenantId
-                && !x.IsDeleted,
-                cancellationToken);
+        private readonly ICurrentTenantService _currentTenant;
 
-        if (customer is null)
+        public DeleteCustomerCommandHandler(
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
         {
-            return ApiResponse<CustomerDto>
-                .FailureResponse(
-                    new List<string>
-                    {
-                        "Customer not found"
-                    });
+            _context = context;
+            _currentTenant = currentTenant;
         }
 
-        customer.IsDeleted = true;
+        public async Task<ApiResponse<CustomerDto>> Handle(
+                DeleteCustomerCommand request,
+                CancellationToken cancellationToken)
+        {
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(x =>
+                    x.Id == request.Id
+                    && x.TenantId == _currentTenant.TenantId
+                    && !x.IsDeleted,
+                    cancellationToken
+                );
 
-        await _context.SaveChangesAsync(
-            cancellationToken);
+            if (customer is null)
+            {
+                return ApiResponse<CustomerDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                        "Customer not found"
+                        }
+                    );
+            }
 
-        return ApiResponse<CustomerDto>
-            .SuccessResponse(
-                new CustomerDto
-                {
-                    Name = customer.Name
-                },
-                "Customer deleted successfully");
+            customer.IsDeleted = true;
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
+
+            return ApiResponse<CustomerDto>
+                .SuccessResponse(
+                    new CustomerDto
+                    {
+                        Name = customer.Name
+                    },
+                    "Customer deleted successfully"
+                );
+        }
     }
 }

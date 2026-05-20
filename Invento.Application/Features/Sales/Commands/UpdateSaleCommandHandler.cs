@@ -9,9 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Sales.Commands;
 
 public class UpdateSaleCommandHandler
-    : ICommandHandler<
-        UpdateSaleCommand,
-        ApiResponse<SaleDto>>
+    : ICommandHandler<UpdateSaleCommand, ApiResponse<SaleDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
@@ -28,8 +26,7 @@ public class UpdateSaleCommandHandler
         UpdateSaleCommand request,
         CancellationToken cancellationToken)
     {
-        using var transaction =
-            await _context.BeginTransactionAsync();
+        using var transaction = await _context.BeginTransactionAsync();
 
         try
         {
@@ -48,7 +45,8 @@ public class UpdateSaleCommandHandler
                         new List<string>
                         {
                             "Sale not found"
-                        });
+                        }
+                    );
             }
 
             foreach (var item in sale.SaleItems)
@@ -57,7 +55,8 @@ public class UpdateSaleCommandHandler
                     .FirstAsync(x =>
                         x.Id == item.ProductId
                         && x.TenantId == _currentTenant.TenantId,
-                        cancellationToken);
+                        cancellationToken
+                    );
 
                 product.CurrentStock += item.Quantity;
             }
@@ -82,7 +81,8 @@ public class UpdateSaleCommandHandler
                         x.Id == item.ProductId
                         && x.TenantId == _currentTenant.TenantId
                         && !x.IsDeleted,
-                        cancellationToken);
+                        cancellationToken
+                    );
 
                 if (product is null)
                 {
@@ -91,7 +91,8 @@ public class UpdateSaleCommandHandler
                             new List<string>
                             {
                                 $"Product not found: {item.ProductId}"
-                            });
+                            }
+                        );
                 }
 
                 if (product.CurrentStock
@@ -102,27 +103,19 @@ public class UpdateSaleCommandHandler
                             new List<string>
                             {
                                 $"Insufficient stock for {product.Name}"
-                            });
+                            }
+                        );
                 }
 
                 product.CurrentStock -= item.Quantity;
 
-                var itemSubTotal =
-                    product.SellingPrice
-                    * item.Quantity;
+                var itemSubTotal = product.SellingPrice * item.Quantity;
 
-                var taxAmount =
-                    (itemSubTotal
-                    * product.TaxRate)
-                    / 100;
+                var taxAmount = (itemSubTotal * product.TaxRate) / 100;
 
-                var totalPrice =
-                    itemSubTotal + taxAmount;
+                var totalPrice = itemSubTotal + taxAmount;
 
-                var profit =
-                    ((product.SellingPrice
-                    - product.CostPrice)
-                    * item.Quantity);
+                var profit = (product.SellingPrice - product.CostPrice) * item.Quantity;
 
                 sale.SaleItems.Add(
                     new SaleItem
@@ -147,16 +140,11 @@ public class UpdateSaleCommandHandler
             sale.TaxAmount = totalTax;
             sale.ProfitAmount = totalProfit;
 
-            sale.TotalAmount =
-                subTotal
-                + totalTax
-                - request.DiscountAmount;
+            sale.TotalAmount = subTotal + totalTax - request.DiscountAmount;
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
-            await transaction.CommitAsync(
-                cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
 
             return ApiResponse<SaleDto>
                 .SuccessResponse(
@@ -170,8 +158,7 @@ public class UpdateSaleCommandHandler
         }
         catch
         {
-            await transaction.RollbackAsync(
-                cancellationToken);
+            await transaction.RollbackAsync(cancellationToken);
 
             throw;
         }

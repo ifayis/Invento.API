@@ -4,34 +4,34 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Invento.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class CompanyController : ControllerBase
+namespace Invento.API.Controllers
 {
-    private readonly IMediator _mediator;
 
-    public CompanyController(
-        IMediator mediator)
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class CompanyController : ControllerBase
     {
-        _mediator = mediator;
-    }
+        private readonly IMediator _mediator;
 
-    [HttpGet]
-    public async Task<IActionResult>
-        GetProfile()
-    {
-        return Ok(await _mediator.Send(
-            new GetCompanyProfileQuery()));
-    }
+        public CompanyController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
-    [HttpPut]
-    public async Task<IActionResult>
-        Update(
-            UpdateCompanyProfileCommand command)
-    {
-        return Ok(await _mediator.Send(command));
+
+        [HttpGet]
+        public async Task<IActionResult>  GetProfile()
+        {
+            return Ok(await _mediator.Send(
+                new GetCompanyProfileQuery()));
+        }
+
+
+        [HttpPut]
+        public async Task<IActionResult> Update(UpdateCompanyProfileCommand command)
+        {
+            return Ok(await _mediator.Send(command));
+        }
     }
 }

@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 
 namespace Invento.Application.Features.Auth.Validators
 {
-    public class RegisterCommandValidator
-        : AbstractValidator<RegisterCommand>
+    public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
     {
         public RegisterCommandValidator()
         {

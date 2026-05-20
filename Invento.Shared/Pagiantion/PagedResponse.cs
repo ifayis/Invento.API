@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Invento.Shared.Pagiantion
+﻿namespace Invento.Shared.Pagiantion
 {
     public class PagedResponse<T>
     {
-        public IEnumerable<T> Items { get; set; }
-            = Enumerable.Empty<T>();
+        public IEnumerable<T> Items { get; set; } = Enumerable.Empty<T>();
 
         public int PageNumber { get; set; }
 

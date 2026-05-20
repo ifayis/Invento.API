@@ -5,64 +5,56 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Features.Profit.DTOs;
 using Invento.Application.Interfaces;
 
-namespace Invento.Application.Features.Profit.Queries;
-
-public class GetNetProfitQueryHandler
-    : IQueryHandler<
-        GetNetProfitQuery,
-        ApiResponse<ProfitSummaryDto>>
+namespace Invento.Application.Features.Profit.Queries
 {
-    private readonly IDbConnectionFactory
-        _connectionFactory;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public GetNetProfitQueryHandler(
-        IDbConnectionFactory connectionFactory,
-        ICurrentTenantService currentTenant)
+    public class GetNetProfitQueryHandler
+        : IQueryHandler<GetNetProfitQuery, ApiResponse<ProfitSummaryDto>>
     {
-        _connectionFactory = connectionFactory;
-        _currentTenant = currentTenant;
-    }
+        private readonly IDbConnectionFactory _connectionFactory;
 
-    public async Task<
-        ApiResponse<ProfitSummaryDto>>
-        Handle(
-            GetNetProfitQuery request,
-            CancellationToken cancellationToken)
-    {
-        using var connection =
-            _connectionFactory.CreateConnection();
+        private readonly ICurrentTenantService _currentTenant;
 
-        var sql = @"
-        SELECT
-            ISNULL(SUM(TotalAmount), 0)
-                AS TotalRevenue,
+        public GetNetProfitQueryHandler(
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
+        {
+            _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
+        }
 
-            ISNULL(SUM(ProfitAmount), 0)
-                AS TotalProfit,
+        public async Task<ApiResponse<ProfitSummaryDto>> Handle(
+                GetNetProfitQuery request,
+                CancellationToken cancellationToken)
+        {
+            using var connection = _connectionFactory.CreateConnection();
 
-            COUNT(*) AS TotalSales
+            var sql = @"
+            SELECT
+                ISNULL(SUM(TotalAmount), 0)
+                    AS TotalRevenue,
 
-        FROM Sales
+                ISNULL(SUM(ProfitAmount), 0)
+                    AS TotalProfit,
 
-        WHERE
-            IsDeleted = 0
-            AND TenantId = @TenantId
-        ";
+                COUNT(*) AS TotalSales
 
-        var result =
-            await connection
-            .QueryFirstAsync<ProfitSummaryDto>(
-                sql,
-                new
-                {
-                    TenantId =
-                        _currentTenant.TenantId
-                });
+            FROM Sales
 
-        return ApiResponse<ProfitSummaryDto>
-            .SuccessResponse(result);
+            WHERE
+                IsDeleted = 0
+                AND TenantId = @TenantId
+            ";
+
+            var result = await connection
+                .QueryFirstAsync<ProfitSummaryDto>(
+                    sql,
+                    new
+                    {
+                        TenantId = _currentTenant.TenantId
+                    });
+
+            return ApiResponse<ProfitSummaryDto>
+                .SuccessResponse(result);
+        }
     }
 }

@@ -8,9 +8,7 @@ using Invento.Application.Interfaces;
 namespace Invento.Application.Features.Categories.Queries
 {
     public class GetCategoriesQueryHandler
-        : IQueryHandler<
-            GetCategoriesQuery,
-            ApiResponse<PagedResponse<CategoryDto>>>
+        : IQueryHandler<GetCategoriesQuery, ApiResponse<PagedResponse<CategoryDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ICurrentTenantService _currentTenant;
@@ -28,36 +26,35 @@ namespace Invento.Application.Features.Categories.Queries
             GetCategoriesQuery request,
             CancellationToken cancellationToken)
         {
-            using var connection =
-                _connectionFactory.CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
 
             var sql = @"
-        SELECT
-            Id,
-            Name,
-            CreatedAt
-        FROM Categories
-        WHERE IsDeleted = 0
-        AND TenantId = @TenantId
-        AND
-        (
-            @Search IS NULL
-            OR Name LIKE '%' + @Search + '%'
-        )
-        ORDER BY CreatedAt DESC
-        OFFSET @Offset ROWS
-        FETCH NEXT @PageSize ROWS ONLY;
+            SELECT
+                Id,
+                Name,
+                CreatedAt
+            FROM Categories
+            WHERE IsDeleted = 0
+            AND TenantId = @TenantId
+            AND
+            (
+                @Search IS NULL
+                OR Name LIKE '%' + @Search + '%'
+            )
+            ORDER BY CreatedAt DESC
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
 
-        SELECT COUNT(*)
-        FROM Categories
-        WHERE IsDeleted = 0
-        AND TenantId = @TenantId
-        AND
-        (
-            @Search IS NULL
-            OR Name LIKE '%' + @Search + '%'
-        );
-        ";
+            SELECT COUNT(*)
+            FROM Categories
+            WHERE IsDeleted = 0
+            AND TenantId = @TenantId
+            AND
+            (
+                @Search IS NULL
+                OR Name LIKE '%' + @Search + '%'
+            )
+            ";
 
             var parameters = new
             {
@@ -72,13 +69,12 @@ namespace Invento.Application.Features.Categories.Queries
             using var multi =
                 await connection.QueryMultipleAsync(
                     sql,
-                    parameters);
+                    parameters
+                );
 
-            var categories =
-                await multi.ReadAsync<CategoryDto>();
+            var categories = await multi.ReadAsync<CategoryDto>();
 
-            var totalRecords =
-                await multi.ReadFirstAsync<int>();
+            var totalRecords = await multi.ReadFirstAsync<int>();
 
             var response =
                 new PagedResponse<CategoryDto>

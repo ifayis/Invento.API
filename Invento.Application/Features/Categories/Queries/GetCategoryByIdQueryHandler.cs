@@ -8,9 +8,7 @@ using Invento.Application.Interfaces;
 namespace Invento.Application.Features.Categories.Queries;
 
 public class GetCategoryByIdQueryHandler
-    : IQueryHandler<
-        GetCategoryByIdQuery,
-        ApiResponse<CategoryDto>>
+    : IQueryHandler<GetCategoryByIdQuery, ApiResponse<CategoryDto>>
 {
     private readonly IDbConnectionFactory _connectionFactory;
     private readonly ICurrentTenantService _currentTenant;
@@ -27,8 +25,7 @@ public class GetCategoryByIdQueryHandler
         GetCategoryByIdQuery request,
         CancellationToken cancellationToken)
     {
-        using var connection =
-            _connectionFactory.CreateConnection();
+        using var connection = _connectionFactory.CreateConnection();
 
         var sql = @"
         SELECT
@@ -45,7 +42,8 @@ public class GetCategoryByIdQueryHandler
             .QueryFirstOrDefaultAsync<CategoryDto>(
                 sql,
                 new { request.Id,
-                TenantId = _currentTenant.TenantId});
+                TenantId = _currentTenant.TenantId}
+            );
 
         if (category is null)
         {
@@ -54,7 +52,8 @@ public class GetCategoryByIdQueryHandler
                     new List<string>
                     {
                         "Category not found"
-                    });
+                    }
+                );
         }
 
         return ApiResponse<CategoryDto>

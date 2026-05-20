@@ -7,9 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Products.Commands
 {
     public class UpdateProductCommandHandler
-        : ICommandHandler<
-            UpdateProductCommand,
-            ApiResponse<ProductDto>>
+        : ICommandHandler< UpdateProductCommand, ApiResponse<ProductDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
@@ -40,7 +38,8 @@ namespace Invento.Application.Features.Products.Commands
                         new List<string>
                         {
                         "Product not found"
-                        });
+                        }
+                    );
             }
             
             product.Name = request.Name;
@@ -51,8 +50,7 @@ namespace Invento.Application.Features.Products.Commands
             product.CategoryId = request.CategoryId;
             product.IsDeleted = request.IsDeleted;
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return ApiResponse<ProductDto>
                 .SuccessResponse(
@@ -64,7 +62,8 @@ namespace Invento.Application.Features.Products.Commands
                         SellingPrice = product.SellingPrice,
                         IsDeleted = product.IsDeleted
                     },
-                    "Product updated successfully");
+                    "Product updated successfully"
+                );
         }
     }
 }

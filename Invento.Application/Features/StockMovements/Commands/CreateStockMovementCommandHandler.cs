@@ -10,9 +10,7 @@ using Invento.Application.Features.StockMovements.DTOs;
 namespace Invento.Application.Features.StockMovements.Commands
 {
     public class CreateStockMovementCommandHandler
-        : ICommandHandler<
-            CreateStockMovementCommand,
-            ApiResponse<StockMovementDto>>
+        : ICommandHandler< CreateStockMovementCommand, ApiResponse<StockMovementDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -32,8 +30,7 @@ namespace Invento.Application.Features.StockMovements.Commands
             CreateStockMovementCommand request,
             CancellationToken cancellationToken)
         {
-            using var transaction =
-                await _context.BeginTransactionAsync();
+            using var transaction = await _context.BeginTransactionAsync();
 
             try
             {
@@ -42,7 +39,8 @@ namespace Invento.Application.Features.StockMovements.Commands
                         x.Id == request.ProductId
                         && x.TenantId == _currentTenant.TenantId
                         && !x.IsDeleted,
-                        cancellationToken);
+                        cancellationToken
+                    );
 
                 if (product is null)
                 {
@@ -51,21 +49,21 @@ namespace Invento.Application.Features.StockMovements.Commands
                             new List<string>
                             {
                             "Product not found"
-                            });
+                            }
+                        );
                 }
 
-                if (request.MovementType
-                    == StockMovementType.StockOut)
+                if (request.MovementType == StockMovementType.StockOut)
                 {
-                    if (product.CurrentStock
-                        < request.Quantity)
+                    if (product.CurrentStock < request.Quantity)
                     {
                         return ApiResponse<StockMovementDto>
                             .FailureResponse(
                                 new List<string>
                                 {
                                 "Insufficient stock"
-                                });
+                                }
+                            );
                     }
 
                     product.CurrentStock -= request.Quantity;
@@ -91,33 +89,31 @@ namespace Invento.Application.Features.StockMovements.Commands
                     TenantId = _currentTenant.TenantId,
                     ProductId = request.ProductId,
                     Quantity = request.Quantity,
-                    MovementType =
-                        request.MovementType.ToString(),
+                    MovementType = request.MovementType.ToString(),
                     Remarks = request.Remarks,
-                    ReferenceNumber =
-                        request.ReferenceNumber,
+                    ReferenceNumber = request.ReferenceNumber,
                     CreatedByUserId = userId
                 };
 
                 await _context.StockMovements.AddAsync(
                     movement,
-                    cancellationToken);
+                    cancellationToken
+                );
 
-                await _context.SaveChangesAsync(
-                    cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
 
-                await transaction.CommitAsync(
-                    cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 return ApiResponse<StockMovementDto>
                     .SuccessResponse(
                     new StockMovementDto
-                    {
+                       {
                         MovementType = movement.MovementType,
                         ReferenceNumber = movement.ReferenceNumber,
                         ProductId = movement.ProductId
-                    },
-                        "Stock movement completed");
+                       },
+                        "Stock movement completed"
+                    );
             }
             catch
             {

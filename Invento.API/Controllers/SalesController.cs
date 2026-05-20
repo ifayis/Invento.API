@@ -5,96 +5,102 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Invento.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class SalesController : ControllerBase
+namespace Invento.API.Controllers
 {
-    private readonly IMediator _mediator;
 
-    public SalesController(IMediator mediator)
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class SalesController : ControllerBase
     {
-        _mediator = mediator;
-    }
+        private readonly IMediator _mediator;
 
-    [HttpPost]
-    public async Task<IActionResult> Create(
-        CreateSaleCommand command)
-    {
-        return Ok(await _mediator.Send(command));
-    }
+        public SalesController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
-    [HttpPut]
-    public async Task<IActionResult> Update(
-        UpdateSaleCommand command)
-    {
-        return Ok(await _mediator.Send(command));
-    }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        return Ok(await _mediator.Send(
-            new DeleteSaleCommand
-            {
-                Id = id
-            }));
-    }
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateSaleCommand command)
+        {
+            return Ok(await _mediator.Send(command));
+        }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
-    {
-        return Ok(await _mediator.Send(
-            new GetSaleByIdQuery
-            {
-                Id = id
-            }));
-    }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll(
-        [FromQuery] GetSalesQuery query)
-    {
-        return Ok(await _mediator.Send(query));
-    }
+        [HttpPut]
+        public async Task<IActionResult> Update(UpdateSaleCommand command)
+        {
+            return Ok(await _mediator.Send(command));
+        }
 
-    [HttpGet("today")]
-    public async Task<IActionResult> TodaySales()
-    {
-        return Ok(await _mediator.Send(
-            new GetSalesQuery
-            {
-                FromDate = DateTime.UtcNow.Date,
-                ToDate =
-                    DateTime.UtcNow.Date
-                    .AddDays(1)
-                    .AddTicks(-1)
-            }));
-    }
 
-    [HttpGet("lastweek")]
-    public async Task<IActionResult> LastWeekSales()
-    {
-        return Ok(await _mediator.Send(
-            new GetSalesQuery
-            {
-                FromDate =
-                    DateTime.UtcNow.AddDays(-7),
-                ToDate = DateTime.UtcNow
-            }));
-    }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            return Ok(await _mediator.Send(
+                new DeleteSaleCommand
+                {
+                    Id = id
+                }
+            ));
+        }
 
-    [HttpGet("lastmonth")]
-    public async Task<IActionResult> LastMonthSales()
-    {
-        return Ok(await _mediator.Send(
-            new GetSalesQuery
-            {
-                FromDate =
-                    DateTime.UtcNow.AddMonths(-1),
-                ToDate = DateTime.UtcNow
-            }));
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            return Ok(await _mediator.Send(
+                new GetSaleByIdQuery
+                {
+                    Id = id
+                }
+            ));
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] GetSalesQuery query)
+        {
+            return Ok(await _mediator.Send(query));
+        }
+
+        [HttpGet("today")]
+        public async Task<IActionResult> TodaySales()
+        {
+            return Ok(await _mediator.Send(
+                new GetSalesQuery
+                {
+                    FromDate = DateTime.UtcNow.Date,
+                    ToDate = DateTime.UtcNow.Date.AddDays(1).AddTicks(-1)
+                }
+            ));
+        }
+
+
+        [HttpGet("lastweek")]
+        public async Task<IActionResult> LastWeekSales()
+        {
+            return Ok(await _mediator.Send(
+                new GetSalesQuery
+                {
+                    FromDate = DateTime.UtcNow.AddDays(-7),
+                    ToDate = DateTime.UtcNow
+                }
+            ));
+        }
+
+
+        [HttpGet("lastmonth")]
+        public async Task<IActionResult> LastMonthSales()
+        {
+            return Ok(await _mediator.Send(
+                new GetSalesQuery
+                {
+                    FromDate =DateTime.UtcNow.AddMonths(-1),
+                    ToDate = DateTime.UtcNow
+                }
+            ));
+        }
     }
 }

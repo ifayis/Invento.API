@@ -5,65 +5,67 @@ using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Invento.Application.Features.Categories.Commands;
-
-public class CreateCategoryCommandHandler
-    : ICommandHandler<
-        CreateCategoryCommand,
-        ApiResponse<CategoryDto>>
+namespace Invento.Application.Features.Categories.Commands
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentTenantService _currentTenant;
-
-    public CreateCategoryCommandHandler(
-        IApplicationDbContext context, 
-        ICurrentTenantService currentTenant)
+    public class CreateCategoryCommandHandler
+        : ICommandHandler<CreateCategoryCommand, ApiResponse<CategoryDto>>
     {
-        _context = context;
-        _currentTenant = currentTenant;
-    }
+        private readonly IApplicationDbContext _context;
+        private readonly ICurrentTenantService _currentTenant;
 
-    public async Task<ApiResponse<CategoryDto>> Handle(
-        CreateCategoryCommand request,
-        CancellationToken cancellationToken)
-    {
-        var exists = await _context.Categories
-            .AnyAsync(x =>
-                x.Name == request.Name
-                && x.TenantId == _currentTenant.TenantId
-                && !x.IsDeleted,
-                cancellationToken);
-
-        if (exists)
+        public CreateCategoryCommandHandler(
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
         {
-            return ApiResponse<CategoryDto>
-                .FailureResponse(
-                    new List<string>
-                    {
-                        "Category already exists"
-                    });
+            _context = context;
+            _currentTenant = currentTenant;
         }
 
-        var category = new Category
+        public async Task<ApiResponse<CategoryDto>> Handle(
+            CreateCategoryCommand request,
+            CancellationToken cancellationToken)
         {
-            TenantId = _currentTenant.TenantId,
-            Name = request.Name
-        };
+            var exists = await _context.Categories
+                .AnyAsync(x =>
+                    x.Name == request.Name
+                    && x.TenantId == _currentTenant.TenantId
+                    && !x.IsDeleted,
+                    cancellationToken
+                );
 
-        await _context.Categories.AddAsync(
-            category,
-            cancellationToken);
+            if (exists)
+            {
+                return ApiResponse<CategoryDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                        "Category already exists"
+                        }
+                    );
+            }
 
-        await _context.SaveChangesAsync(
-            cancellationToken);
+            var category = new Category
+            {
+                TenantId = _currentTenant.TenantId,
+                Name = request.Name
+            };
 
-        return ApiResponse<CategoryDto>
-            .SuccessResponse(
-                new CategoryDto
-                {
-                    Id = category.Id,
-                    Name = category.Name
-                },
-                "Category created successfully"); 
+            await _context.Categories.AddAsync(
+                category,
+                cancellationToken
+            );
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return ApiResponse<CategoryDto>
+                .SuccessResponse(
+                    new CategoryDto
+                    {
+                        Id = category.Id,
+                        Name = category.Name
+                    },
+                    "Category created successfully"
+                );
+        }
     }
 }

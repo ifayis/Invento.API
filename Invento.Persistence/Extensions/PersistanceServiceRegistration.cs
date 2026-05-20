@@ -4,11 +4,6 @@ using Invento.Persistence.Connections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Invento.Persistence.Extensions
 {
@@ -25,8 +20,7 @@ namespace Invento.Persistence.Extensions
                     configuration.GetConnectionString("DefaultConnection"));
             });
 
-            services.AddScoped<IDbConnectionFactory,
-                SqlConnectionFactory>();
+            services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
 
             return services;
         }

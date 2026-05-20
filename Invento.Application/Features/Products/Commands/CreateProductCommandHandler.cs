@@ -8,15 +8,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Products.Commands
 {
     public class CreateProductCommandHandler
-        : ICommandHandler<
-            CreateProductCommand,
-            ApiResponse<ProductDto>>
+        : ICommandHandler<CreateProductCommand, ApiResponse<ProductDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
 
-        public CreateProductCommandHandler(
-            IApplicationDbContext context, ICurrentTenantService currentTenant)
+        public CreateProductCommandHandler(IApplicationDbContext context, ICurrentTenantService currentTenant)
         {
             _context = context;
             _currentTenant = currentTenant;
@@ -30,7 +27,8 @@ namespace Invento.Application.Features.Products.Commands
                 .AnyAsync(x =>
                     x.Id == request.CategoryId
                     && x.TenantId == _currentTenant.TenantId,
-                    cancellationToken);
+                    cancellationToken
+                );
 
             if (!categoryExists)
             {
@@ -39,7 +37,8 @@ namespace Invento.Application.Features.Products.Commands
                         new List<string>
                         {
                         "Category not found"
-                        });
+                        }
+                    );
             }
 
             var product = new Product
@@ -57,8 +56,7 @@ namespace Invento.Application.Features.Products.Commands
                 product,
                 cancellationToken);
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return ApiResponse<ProductDto>
                 .SuccessResponse(
@@ -69,7 +67,8 @@ namespace Invento.Application.Features.Products.Commands
                         CostPrice = product.CostPrice,
                         SellingPrice = product.SellingPrice
                     },
-                    "Product created successfully");
+                    "Product created successfully"
+                );
         }
     }
 }

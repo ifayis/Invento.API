@@ -16,9 +16,7 @@ namespace Invento.Application.Common
 
         public List<string>? Errors { get; set; }
 
-        public static ApiResponse<T> SuccessResponse(
-            T data,
-            string message = "Success")
+        public static ApiResponse<T> SuccessResponse(T data, string message = "Success")
         {
             return new ApiResponse<T>
             {
@@ -28,9 +26,7 @@ namespace Invento.Application.Common
             };
         }
 
-        public static ApiResponse<T> FailureResponse(
-            List<string> errors,
-            string message = "Failed")
+        public static ApiResponse<T> FailureResponse(List<string> errors, string message = "Failed")
         {
             return new ApiResponse<T>
             {

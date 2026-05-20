@@ -2,19 +2,13 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Invento.Application.Common
 {
     public static class ApplicationServiceRegistration
     {
         public static IServiceCollection
-            AddApplicationServices(
-                this IServiceCollection services)
+            AddApplicationServices(this IServiceCollection services)
         {
             services.AddMediatR(cfg =>
             {
@@ -27,7 +21,8 @@ namespace Invento.Application.Common
 
             services.AddTransient(
                 typeof(IPipelineBehavior<,>),
-                typeof(ValidationBehavior<,>));
+                typeof(ValidationBehavior<,>)
+            );
 
             return services;
         }

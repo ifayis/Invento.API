@@ -4,22 +4,18 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace Invento.Infrastructure.Caching;
 
-public class RedisCacheService
-    : ICacheService
+public class RedisCacheService : ICacheService
 {
     private readonly IDistributedCache _cache;
 
-    public RedisCacheService(
-        IDistributedCache cache)
+    public RedisCacheService(IDistributedCache cache)
     {
         _cache = cache;
     }
 
-    public async Task<T?> GetAsync<T>(
-        string key)
+    public async Task<T?> GetAsync<T>(string key)
     {
-        var cachedData =
-            await _cache.GetStringAsync(key);
+        var cachedData = await _cache.GetStringAsync(key);
 
         if (string.IsNullOrWhiteSpace(
             cachedData))
@@ -27,8 +23,7 @@ public class RedisCacheService
             return default;
         }
 
-        return JsonSerializer.Deserialize<T>(
-            cachedData);
+        return JsonSerializer.Deserialize<T>(cachedData);
     }
 
     public async Task SetAsync<T>(
@@ -39,8 +34,7 @@ public class RedisCacheService
         var options =
             new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow =
-                    expiry ?? TimeSpan.FromMinutes(5)
+                AbsoluteExpirationRelativeToNow = expiry ?? TimeSpan.FromMinutes(5)
             };
 
         var jsonData =
@@ -49,7 +43,9 @@ public class RedisCacheService
         await _cache.SetStringAsync(
             key,
             jsonData,
-            options);
+            options
+        );
+
     }
 
     public async Task RemoveAsync(

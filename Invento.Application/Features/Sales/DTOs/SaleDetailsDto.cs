@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Invento.Application.Features.Sales.DTOs
+﻿namespace Invento.Application.Features.Sales.DTOs
 {
     public class SaleDetailsDto
     {
         public Guid Id { get; set; }
 
-        public string InvoiceNumber { get; set; }
-            = string.Empty;
+        public string InvoiceNumber { get; set; } = string.Empty;
 
         public DateTime SaleDate { get; set; }
 
@@ -25,8 +18,6 @@ namespace Invento.Application.Features.Sales.DTOs
 
         public decimal ProfitAmount { get; set; }
 
-        public List<SaleItemDto> Items
-        { get; set; }
-            = new();
+        public List<SaleItemDto> Items { get; set; } = new();
     }
 }

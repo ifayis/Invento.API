@@ -5,69 +5,65 @@ using Invento.Application.Features.Customer.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Invento.Application.Features.Customers.Commands;
-
-public class UpdateCustomerCommandHandler
-    : ICommandHandler<
-        UpdateCustomerCommand,
-        ApiResponse<CustomerDto>>
+namespace Invento.Application.Features.Customers.Commands
 {
-    private readonly IApplicationDbContext
-        _context;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public UpdateCustomerCommandHandler(
-        IApplicationDbContext context,
-        ICurrentTenantService currentTenant)
+    public class UpdateCustomerCommandHandler
+        : ICommandHandler<UpdateCustomerCommand, ApiResponse<CustomerDto>>
     {
-        _context = context;
-        _currentTenant = currentTenant;
-    }
+        private readonly IApplicationDbContext _context;
 
-    public async Task<ApiResponse<CustomerDto>>
-        Handle(
-            UpdateCustomerCommand request,
-            CancellationToken cancellationToken)
-    {
-        var customer = await _context.Customers
-            .FirstOrDefaultAsync(x =>
-                x.Id == request.Id
-                && x.TenantId
-                    == _currentTenant.TenantId
-                && !x.IsDeleted,
-                cancellationToken);
+        private readonly ICurrentTenantService _currentTenant;
 
-        if (customer is null)
+        public UpdateCustomerCommandHandler(
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
         {
-            return ApiResponse<CustomerDto>
-                .FailureResponse(
-                    new List<string>
-                    {
-                        "Customer not found"
-                    });
+            _context = context;
+            _currentTenant = currentTenant;
         }
 
-        customer.Name = request.Name;
-        customer.Email = request.Email;
-        customer.PhoneNumber =
-            request.PhoneNumber;
-        customer.Address =
-            request.Address;
+        public async Task<ApiResponse<CustomerDto>> Handle(
+                UpdateCustomerCommand request,
+                CancellationToken cancellationToken)
+        {
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(x =>
+                    x.Id == request.Id
+                    && x.TenantId
+                        == _currentTenant.TenantId
+                    && !x.IsDeleted,
+                    cancellationToken
+                );
 
-        await _context.SaveChangesAsync(
-            cancellationToken);
+            if (customer is null)
+            {
+                return ApiResponse<CustomerDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                        "Customer not found"
+                        }
+                    );
+            }
 
-        return ApiResponse<CustomerDto>
-            .SuccessResponse(
-                new CustomerDto
-                {
-                    Name = customer.Name,
-                    Email = customer.Email,
-                    PhoneNumber = customer.Email,
-                    Address = customer.Address
-                },
-                "Customer updated successfully");
+            customer.Name = request.Name;
+            customer.Email = request.Email;
+            customer.PhoneNumber = request.PhoneNumber;
+            customer.Address = request.Address;
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return ApiResponse<CustomerDto>
+                .SuccessResponse(
+                    new CustomerDto
+                    {
+                        Name = customer.Name,
+                        Email = customer.Email,
+                        PhoneNumber = customer.Email,
+                        Address = customer.Address
+                    },
+                    "Customer updated successfully"
+                );
+        }
     }
 }

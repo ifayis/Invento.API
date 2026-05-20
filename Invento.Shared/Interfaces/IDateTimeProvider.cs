@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Invento.Shared.Interfaces
-{
-    public interface IDateTimeProvider
-    {
-        DateTime UtcNow { get; }
-    }
-}
+﻿//namespace Invento.Shared.Interfaces
+//{
+//    public interface IDateTimeProvider
+//    {
+//        DateTime UtcNow { get; }
+//    }
+//}

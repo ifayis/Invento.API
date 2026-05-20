@@ -1,23 +1,22 @@
 ﻿using Invento.Shared.Common;
 
-namespace Invento.Domain.Entities;
-
-public class Customer : BaseEntity
+namespace Invento.Domain.Entities
 {
-    public Guid TenantId { get; set; }
+    public class Customer : BaseEntity
+    {
+        public Guid TenantId { get; set; }
 
-    public string Name { get; set; }
-        = string.Empty;
+        public string Name { get; set; }
+            = string.Empty;
 
-    public string? Email { get; set; }
+        public string? Email { get; set; }
 
-    public string? PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
-    public string? Address { get; set; }
+        public string? Address { get; set; }
 
-    public bool IsDeleted { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
 
-    public ICollection<Sale> Sales
-    { get; set; }
-        = new List<Sale>();
+        public ICollection<Sale> Sales { get; set; } = new List<Sale>();
+    }
 }

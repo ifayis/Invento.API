@@ -4,11 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Invento.Persistence.Configurations;
 
-public class StockMovementConfiguration
-    : IEntityTypeConfiguration<StockMovement>
+public class StockMovementConfiguration : IEntityTypeConfiguration<StockMovement>
 {
-    public void Configure(
-        EntityTypeBuilder<StockMovement> builder)
+    public void Configure(EntityTypeBuilder<StockMovement> builder)
     {
         builder.ToTable("StockMovements");
 

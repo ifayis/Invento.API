@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Invento.Application.Features.Products.DTOs
+﻿namespace Invento.Application.Features.Products.DTOs
 {
     public class ProductDto
     {
         public Guid Id { get; set; }
 
-        public string Name { get; set; }
-            = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
-        public string SKU { get; set; }
-            = string.Empty;
+        public string SKU { get; set; }  = string.Empty;
 
         public decimal CostPrice { get; set; }
         
@@ -22,8 +14,7 @@ namespace Invento.Application.Features.Products.DTOs
 
         public int CurrentStock { get; set; }
 
-        public string CategoryName { get; set; }
-            = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
 
         public bool IsDeleted { get; set; }
 

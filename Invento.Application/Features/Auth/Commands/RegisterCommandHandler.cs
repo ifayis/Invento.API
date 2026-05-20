@@ -4,14 +4,11 @@ using Invento.Application.Features.Auth.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Invento.Application.Features.Auth.Commands
 {
     public class RegisterCommandHandler
-        : ICommandHandler<
-            RegisterCommand,
-            ApiResponse<AuthResponseDto>>
+        : ICommandHandler< RegisterCommand, ApiResponse<AuthResponseDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
@@ -31,7 +28,8 @@ namespace Invento.Application.Features.Auth.Commands
             var existingUser = await _context.Users
                 .FirstOrDefaultAsync(x =>
                     x.Email == request.Email,
-                    cancellationToken);
+                    cancellationToken
+                );
 
             if (existingUser is not null)
             {
@@ -40,7 +38,8 @@ namespace Invento.Application.Features.Auth.Commands
                         new List<string>
                         {
                             "Email already exists"
-                        });
+                        }
+                    );
             }
 
             var tenant = new Tenant
@@ -57,8 +56,7 @@ namespace Invento.Application.Features.Auth.Commands
             {
                 FullName = request.FullName,
                 Email = request.Email,
-                PasswordHash =
-                    PasswordHasher.Hash(request.Password),
+                PasswordHash = PasswordHasher.Hash(request.Password),
                 Role = "Admin",
                 TenantId = tenant.Id
             };
@@ -67,11 +65,9 @@ namespace Invento.Application.Features.Auth.Commands
                 user,
                 cancellationToken);
 
-            var accessToken =
-                _jwtTokenGenerator.GenerateAccessToken(user);
+            var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
 
-            var refreshTokenValue =
-                _jwtTokenGenerator.GenerateRefreshToken();
+            var refreshTokenValue = _jwtTokenGenerator.GenerateRefreshToken();
 
             var refreshToken = new RefreshToken
             {
@@ -84,15 +80,15 @@ namespace Invento.Application.Features.Auth.Commands
                 refreshToken,
                 cancellationToken);
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return ApiResponse<AuthResponseDto>
                 .SuccessResponse(
                     new AuthResponseDto
                     {
                     },
-                    "Registration successful"); 
+                    "Registration successful"
+                ); 
         }
     }
 }

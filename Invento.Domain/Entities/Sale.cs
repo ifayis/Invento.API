@@ -4,8 +4,7 @@ namespace Invento.Domain.Entities;
 
 public class Sale : BaseEntity
 {
-    public string InvoiceNumber { get; set; }
-        = string.Empty;
+    public string InvoiceNumber { get; set; } = string.Empty;
 
     public Guid? CustomerId { get; set; }
 
@@ -27,7 +26,5 @@ public class Sale : BaseEntity
 
     public bool IsDeleted { get; set; } = false;
 
-    public ICollection<SaleItem> SaleItems
-    { get; set; }
-        = new List<SaleItem>();
+    public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
 }

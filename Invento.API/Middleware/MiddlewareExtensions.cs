@@ -3,19 +3,15 @@
     public static class MiddlewareExtensions
     {
         public static IApplicationBuilder
-            UseCustomExceptionMiddleware(
-                this IApplicationBuilder app)
+            UseCustomExceptionMiddleware(this IApplicationBuilder app)
         {
-            return app.UseMiddleware<
-                ExceptionHandlingMiddleware>();
+            return app.UseMiddleware<ExceptionHandlingMiddleware>();
         }
 
         public static IApplicationBuilder
-            UseRequestLoggingMiddleware(
-                this IApplicationBuilder app)
+            UseRequestLoggingMiddleware(this IApplicationBuilder app)
         {
-            return app.UseMiddleware<
-                RequestLoggingMiddleware>();
+            return app.UseMiddleware<RequestLoggingMiddleware>();
         }
     }
 }

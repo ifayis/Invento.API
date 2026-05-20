@@ -27,7 +27,8 @@ namespace Invento.API.Middleware
                 "Incoming Request: {RequestId} {Method} {Path}",
                 requestId,
                 context.Request.Method,
-                context.Request.Path);
+                context.Request.Path
+            );
 
             await _next(context);
 
@@ -37,7 +38,8 @@ namespace Invento.API.Middleware
                 "Completed Request: {RequestId} {StatusCode} in {ElapsedMilliseconds}ms",
                 requestId,
                 context.Response.StatusCode,
-                stopwatch.ElapsedMilliseconds);
+                stopwatch.ElapsedMilliseconds
+            );
         }
     }
 }

@@ -6,8 +6,8 @@ using System;
 
 namespace Invento.Application.Features.Categories.Commands
 {
-    public class CreateCategoryCommand : 
-        ICommand<ApiResponse<CategoryDto>>
+    public class CreateCategoryCommand 
+        : ICommand<ApiResponse<CategoryDto>>
     {
         public string Name { get; set; }
     }

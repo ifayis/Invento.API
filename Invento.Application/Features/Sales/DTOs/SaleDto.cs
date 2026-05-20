@@ -10,8 +10,7 @@ namespace Invento.Application.Features.Sales.DTOs
     {
         public Guid Id { get; set; }
 
-        public string InvoiceNumber { get; set; }
-            = string.Empty;
+        public string InvoiceNumber { get; set; } = string.Empty;
 
         public DateTime SaleDate { get; set; }
 

@@ -12,8 +12,7 @@ public class StockMovement : BaseEntity
 
     public int Quantity { get; set; }
 
-    public string MovementType { get; set; }
-        = string.Empty;
+    public string MovementType { get; set; } = string.Empty;
 
     public string? Remarks { get; set; }
 

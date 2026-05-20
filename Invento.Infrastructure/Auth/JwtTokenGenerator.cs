@@ -27,14 +27,14 @@ namespace Invento.Infrastructure.Auth
             new Claim("Email", user.Email),
             new Claim("Role", user.Role),
             new Claim("TenantId", user.TenantId.ToString())
-        };
+            };
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
 
             var credentials = new SigningCredentials(
                 key,
-                SecurityAlgorithms.HmacSha256);
+                SecurityAlgorithms.HmacSha256
+            );
 
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,
@@ -42,10 +42,10 @@ namespace Invento.Infrastructure.Auth
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(
                     _jwtSettings.AccessTokenExpirationMinutes),
-                signingCredentials: credentials);
+                signingCredentials: credentials
+            );
 
-            return new JwtSecurityTokenHandler()
-                .WriteToken(token);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         public string GenerateRefreshToken()

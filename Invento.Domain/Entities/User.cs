@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Invento.Shared.Common;
+﻿using Invento.Shared.Common;
 
 namespace Invento.Domain.Entities
 {
@@ -23,7 +18,6 @@ namespace Invento.Domain.Entities
 
         public Tenant Tenant { get; set; } = default!;
 
-        public ICollection<RefreshToken> RefreshTokens { get; set; }
-            = new List<RefreshToken>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

@@ -5,37 +5,31 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Features.Company.DTOs;
 using Invento.Application.Interfaces;
 
-namespace Invento.Application.Features.Company.Queries;
-
-public class GetCompanyProfileQueryHandler
-    : IQueryHandler<
-        GetCompanyProfileQuery,
-        ApiResponse<CompanyProfileDto>>
+namespace Invento.Application.Features.Company.Queries
 {
-    private readonly IDbConnectionFactory
-        _connectionFactory;
-
-    private readonly ICurrentTenantService
-        _currentTenant;
-
-    public GetCompanyProfileQueryHandler(
-        IDbConnectionFactory connectionFactory,
-        ICurrentTenantService currentTenant)
+    public class GetCompanyProfileQueryHandler
+        : IQueryHandler<GetCompanyProfileQuery, ApiResponse<CompanyProfileDto>>
     {
-        _connectionFactory = connectionFactory;
-        _currentTenant = currentTenant;
-    }
+        private readonly IDbConnectionFactory _connectionFactory;
 
-    public async Task<
-        ApiResponse<CompanyProfileDto>>
-        Handle(
-            GetCompanyProfileQuery request,
-            CancellationToken cancellationToken)
-    {
-        using var connection =
-            _connectionFactory.CreateConnection();
+        private readonly ICurrentTenantService _currentTenant;
 
-        var sql = @"
+        public GetCompanyProfileQueryHandler(
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
+        {
+            _connectionFactory = connectionFactory;
+            _currentTenant = currentTenant;
+        }
+
+        public async Task<
+            ApiResponse<CompanyProfileDto>> Handle(
+                GetCompanyProfileQuery request,
+                CancellationToken cancellationToken)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var sql = @"
         SELECT
             Id,
             CompanyName,
@@ -53,30 +47,30 @@ public class GetCompanyProfileQueryHandler
             AND IsDeleted = 0
         ";
 
-        var result =
-            await connection
-            .QueryFirstOrDefaultAsync
-            <CompanyProfileDto>(
-                sql,
-                new
-                {
-                    TenantId =
-                        _currentTenant.TenantId
-                });
+            var result = await connection.QueryFirstOrDefaultAsync
+                <CompanyProfileDto>(
+                    sql,
+                    new
+                    {
+                        TenantId = _currentTenant.TenantId
+                    }
+                );
 
-        if (result is null)
-        {
+            if (result is null)
+            {
+                return ApiResponse<
+                    CompanyProfileDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                        "Company not found"
+                        }
+                    );
+            }
+
             return ApiResponse<
                 CompanyProfileDto>
-                .FailureResponse(
-                    new List<string>
-                    {
-                        "Company not found"
-                    });
+                .SuccessResponse(result);
         }
-
-        return ApiResponse<
-            CompanyProfileDto>
-            .SuccessResponse(result);
     }
 }
