@@ -1,13 +1,14 @@
+using Invento.API.Middleware;
 using Invento.Application.Common;
+using Invento.Application.Features.Auth.Commands;
 using Invento.Application.Interfaces;
 using Invento.Infrastructure.Extensions;
-using Invento.persistance.Data;
+using Invento.Persistence.Data;
 using Invento.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Invento.API.Middleware;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,15 +57,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddApplicationServices();
-builder.Services.AddInfrastructureServices();
-
-builder.Services.AddPersistenceServices(
-    builder.Configuration);
-
-builder.Services.AddDbContext<AppDbContext>();
-
-builder.Services.AddScoped<IApplicationDbContext>(
-    provider => provider.GetRequiredService<AppDbContext>());
+builder.Services.AddPersistenceServices(builder.Configuration);
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
@@ -91,7 +85,8 @@ builder.Services
                 IssuerSigningKey =
                     new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(
-                            jwtSettings.SecretKey)),
+                            jwtSettings.SecretKey)
+                    ),
 
                 NameClaimType = "Name",
                 RoleClaimType = "Role"

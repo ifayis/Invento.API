@@ -4,7 +4,6 @@ using Invento.Application.Features.Auth.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Invento.Application.Features.Auth.Commands
 {
@@ -23,14 +22,16 @@ namespace Invento.Application.Features.Auth.Commands
         }
 
         public async Task<ApiResponse<AuthResponseDto>> Handle(
-            LoginCommand request,
-            CancellationToken cancellationToken)
+                LoginCommand request,
+                CancellationToken cancellationToken)
         {
+            var normalizedEmail = request.Email.Trim().ToLower();
+
             var user = await _context.Users
                 .FirstOrDefaultAsync(x =>
-                    x.Email == request.Email,
-                    cancellationToken
-                );
+                    x.Email.ToLower() == normalizedEmail
+                    && !x.IsDeleted,
+                    cancellationToken);
 
             if (user is null)
             {
@@ -39,7 +40,8 @@ namespace Invento.Application.Features.Auth.Commands
                         new List<string>
                         {
                         "Invalid credentials"
-                        }
+                        },
+                        "Login failed"
                     );
             }
 
@@ -56,24 +58,41 @@ namespace Invento.Application.Features.Auth.Commands
                         new List<string>
                         {
                         "Invalid credentials"
-                        }
+                        },
+                        "Login failed"
                     );
+            }
+
+            var oldTokens = await _context.RefreshTokens
+                .Where(x =>
+                    x.UserId == user.Id
+                    && !x.IsRevoked)
+                .ToListAsync(cancellationToken);
+
+            foreach (var token in oldTokens)
+            {
+                token.IsRevoked = true;
+                token.RevokedAt = DateTime.UtcNow;
             }
 
             var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
 
             var refreshTokenValue = _jwtTokenGenerator.GenerateRefreshToken();
 
-            var refreshToken = new RefreshToken
-            {
-                UserId = user.Id,
-                Token = refreshTokenValue,
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
-            };
+            var refreshToken =
+                new RefreshToken
+                {
+                    UserId = user.Id,
+                    Token = refreshTokenValue,
+                    ExpiresAt = DateTime.UtcNow.AddDays(7),
+                    IsRevoked = false
+                };
 
-            await _context.RefreshTokens.AddAsync(
-                refreshToken,
-                cancellationToken);
+            await _context.RefreshTokens
+                .AddAsync(
+                    refreshToken,
+                    cancellationToken
+                );
 
             await _context.SaveChangesAsync(cancellationToken);
 

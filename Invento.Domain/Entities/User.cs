@@ -18,6 +18,6 @@ namespace Invento.Domain.Entities
 
         public Tenant Tenant { get; set; } = default!;
 
-        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+        public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

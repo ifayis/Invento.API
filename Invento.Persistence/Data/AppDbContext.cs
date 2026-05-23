@@ -3,7 +3,7 @@ using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Invento.persistance.Data
+namespace Invento.Persistence.Data
 {
     public class AppDbContext
         : DbContext, IApplicationDbContext

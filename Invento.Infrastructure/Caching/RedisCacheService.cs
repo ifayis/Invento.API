@@ -37,8 +37,7 @@ public class RedisCacheService : ICacheService
                 AbsoluteExpirationRelativeToNow = expiry ?? TimeSpan.FromMinutes(5)
             };
 
-        var jsonData =
-            JsonSerializer.Serialize(value);
+        var jsonData = JsonSerializer.Serialize(value);
 
         await _cache.SetStringAsync(
             key,
@@ -48,8 +47,7 @@ public class RedisCacheService : ICacheService
 
     }
 
-    public async Task RemoveAsync(
-        string key)
+    public async Task RemoveAsync(string key)
     {
         await _cache.RemoveAsync(key);
     }

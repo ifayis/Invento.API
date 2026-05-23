@@ -6,15 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Categories.Commands;
 
-public class DeleteCategoryCommandHandler
+public class RestoreCategoryCommandHandler
     : ICommandHandler<
-        DeleteCategoryCommand,
+        RestoreCategoryCommand,
         ApiResponse<CategoryDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
 
-    public DeleteCategoryCommandHandler(
+    public RestoreCategoryCommandHandler(
         IApplicationDbContext context,
         ICurrentTenantService currentTenant)
     {
@@ -23,14 +23,15 @@ public class DeleteCategoryCommandHandler
     }
 
     public async Task<ApiResponse<CategoryDto>> Handle(
-        DeleteCategoryCommand request,
+        RestoreCategoryCommand request,
         CancellationToken cancellationToken)
     {
         var category = await _context.Categories
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(x =>
                 x.Id == request.Id
-                && x.TenantId == _currentTenant.TenantId
-                && !x.IsDeleted,
+                && x.TenantId ==
+                    _currentTenant.TenantId,
                 cancellationToken);
 
         if (category is null)
@@ -43,7 +44,17 @@ public class DeleteCategoryCommandHandler
                     });
         }
 
-        category.IsDeleted = true;
+        if (!category.IsDeleted)
+        {
+            return ApiResponse<CategoryDto>
+                .FailureResponse(
+                    new List<string>
+                    {
+                        "Category already active"
+                    });
+        }
+
+        category.IsDeleted = false;
 
         await _context.SaveChangesAsync(
             cancellationToken);
@@ -55,6 +66,6 @@ public class DeleteCategoryCommandHandler
                     Id = category.Id,
                     Name = category.Name
                 },
-                "Category hidden successfully");
+                "Category restored successfully");
     }
 }

@@ -43,5 +43,33 @@ namespace Invento.API.Controllers
 
             return Ok(result);
         }
+
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(LogoutCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }

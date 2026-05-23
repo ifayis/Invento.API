@@ -9,7 +9,10 @@ namespace Invento.Infrastructure.Extensions
 {
     public static class InfrastructureServiceRegistration
     {
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+        public static IServiceCollection
+        AddInfrastructureServices(
+            this IServiceCollection services,
+            IConfiguration configuration)
         {
             services.AddHttpContextAccessor();
 
@@ -19,9 +22,8 @@ namespace Invento.Infrastructure.Extensions
 
             services.AddStackExchangeRedisCache(options =>
             {
-                var serviceProvider = services.BuildServiceProvider();
-                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                options.Configuration = configuration["Redis:ConnectionString"];
+                options.Configuration =
+                    configuration["Redis:ConnectionString"];
             });
 
             services.AddScoped<ICacheService, RedisCacheService>();

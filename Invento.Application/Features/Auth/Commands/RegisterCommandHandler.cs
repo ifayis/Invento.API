@@ -5,90 +5,116 @@ using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Invento.Application.Features.Auth.Commands
+namespace Invento.Application.Features.Auth.Commands;
+
+public class RegisterCommandHandler
+    : ICommandHandler<
+        RegisterCommand,
+        ApiResponse<AuthResponseDto>>
 {
-    public class RegisterCommandHandler
-        : ICommandHandler< RegisterCommand, ApiResponse<AuthResponseDto>>
+    private readonly IApplicationDbContext _context;
+    private readonly IJwtTokenGenerator _jwtTokenGenerator;
+
+    public RegisterCommandHandler(
+        IApplicationDbContext context,
+        IJwtTokenGenerator jwtTokenGenerator)
     {
-        private readonly IApplicationDbContext _context;
-        private readonly IJwtTokenGenerator _jwtTokenGenerator;
+        _context = context;
+        _jwtTokenGenerator = jwtTokenGenerator;
+    }
 
-        public RegisterCommandHandler(
-            IApplicationDbContext context,
-            IJwtTokenGenerator jwtTokenGenerator)
-        {
-            _context = context;
-            _jwtTokenGenerator = jwtTokenGenerator;
-        }
-
-        public async Task<ApiResponse<AuthResponseDto>> Handle(
+    public async Task<ApiResponse<AuthResponseDto>>
+        Handle(
             RegisterCommand request,
             CancellationToken cancellationToken)
+    {
+        var existingUser =
+            await _context.Users
+            .FirstOrDefaultAsync(
+                x => x.Email == request.Email,
+                cancellationToken);
+
+        if (existingUser != null)
         {
-            var existingUser = await _context.Users
-                .FirstOrDefaultAsync(x =>
-                    x.Email == request.Email,
-                    cancellationToken
-                );
+            return ApiResponse<AuthResponseDto>
+                .FailureResponse(
+                    new List<string>
+                    {
+                        "Email already exists"
+                    });
+        }
 
-            if (existingUser is not null)
-            {
-                return ApiResponse<AuthResponseDto>
-                    .FailureResponse(
-                        new List<string>
-                        {
-                            "Email already exists"
-                        }
-                    );
-            }
+        var tenant = new Tenant
+        {
+            CompanyName = request.CompanyName,
+            Email = request.Email
+        };
 
-            var tenant = new Tenant
-            {
-                CompanyName = request.CompanyName,
-                Email = request.Email
-            };
+        await _context.Tenants.AddAsync(
+            tenant,
+            cancellationToken);
 
-            await _context.Tenants.AddAsync(
-                tenant,
-                cancellationToken);
+        await _context.SaveChangesAsync(
+            cancellationToken);
 
-            var user = new User
-            {
-                FullName = request.FullName,
-                Email = request.Email,
-                PasswordHash = PasswordHasher.Hash(request.Password),
-                Role = "Admin",
-                TenantId = tenant.Id
-            };
+        var user = new User
+        {
+            FullName = request.FullName,
+            Email = request.Email,
+            PasswordHash =
+                PasswordHasher.Hash(
+                    request.Password),
 
-            await _context.Users.AddAsync(
-                user,
-                cancellationToken);
+            Role = "Admin",
 
-            var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
+            TenantId = tenant.Id
+        };
 
-            var refreshTokenValue = _jwtTokenGenerator.GenerateRefreshToken();
+        await _context.Users.AddAsync(
+            user,
+            cancellationToken);
 
-            var refreshToken = new RefreshToken
+        await _context.SaveChangesAsync(
+            cancellationToken);
+
+        var accessToken =
+            _jwtTokenGenerator
+            .GenerateAccessToken(user);
+
+        var refreshTokenValue =
+            _jwtTokenGenerator
+            .GenerateRefreshToken();
+
+        var refreshToken =
+            new RefreshToken
             {
                 UserId = user.Id,
                 Token = refreshTokenValue,
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
+                ExpiresAt =
+                    DateTime.UtcNow.AddDays(7)
             };
 
-            await _context.RefreshTokens.AddAsync(
+        await _context.RefreshTokens
+            .AddAsync(
                 refreshToken,
                 cancellationToken);
 
-            await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync(
+            cancellationToken);
 
-            return ApiResponse<AuthResponseDto>
-                .SuccessResponse(
-                    new AuthResponseDto
-                    {
-                    },
-                    "Registration successful"
-                ); 
-        }
+        return ApiResponse<AuthResponseDto>
+            .SuccessResponse(
+                new AuthResponseDto
+                {
+                    AccessToken =
+                        accessToken,
+
+                    RefreshToken =
+                        refreshTokenValue,
+
+                    ExpiresAt =
+                        DateTime.UtcNow.AddMinutes(15)
+                },
+                "Registration successful");
     }
 }

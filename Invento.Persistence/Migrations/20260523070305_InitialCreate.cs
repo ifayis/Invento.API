@@ -5,7 +5,7 @@
 namespace Invento.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class updateCompanyProfileModule1 : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

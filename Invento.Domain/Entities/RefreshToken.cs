@@ -12,6 +12,8 @@ namespace Invento.Domain.Entities
 
         public bool IsRevoked { get; set; }
 
+        public DateTime? RevokedAt { get; set; }
+
         public User User { get; set; } = default!;
     }
 }

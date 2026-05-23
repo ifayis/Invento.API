@@ -45,6 +45,20 @@ namespace Invento.API.Controllers
         }
 
 
+        [HttpPut("{id}/restore")]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new RestoreCategoryCommand
+                    {
+                        Id = id
+                    }
+                )
+            );
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
