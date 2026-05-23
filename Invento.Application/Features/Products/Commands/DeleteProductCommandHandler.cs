@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Products.Commands
 {
     public class DeleteProductCommandHandler
-        : ICommandHandler<DeleteProductCommand, ApiResponse<ProductDto>>
+        : ICommandHandler<DeleteProductCommand, ApiResponse<ProductStatusDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
@@ -20,7 +20,7 @@ namespace Invento.Application.Features.Products.Commands
             _currentTenant = currentTenant;
         }
 
-        public async Task<ApiResponse<ProductDto>> Handle(
+        public async Task<ApiResponse<ProductStatusDto>> Handle(
             DeleteProductCommand request,
             CancellationToken cancellationToken)
         {
@@ -35,7 +35,7 @@ namespace Invento.Application.Features.Products.Commands
 
             if (product is null)
             {
-                return ApiResponse<ProductDto>
+                return ApiResponse<ProductStatusDto>
                     .FailureResponse(
                         new List<string>
                         {
@@ -48,9 +48,9 @@ namespace Invento.Application.Features.Products.Commands
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            return ApiResponse<ProductDto>
+            return ApiResponse<ProductStatusDto>
                 .SuccessResponse(
-                    new ProductDto
+                    new ProductStatusDto
                     {
                         Id = product.Id,
                         Name = product.Name

@@ -36,17 +36,13 @@ namespace Invento.Application.Features.Products.Queries
                 p.SellingPrice,
                 p.CurrentStock,
                 p.IsDeleted,
-                p.CreatedAt,
-                c.Name AS CategoryName
-
+                c.Name AS CategoryName,
+                p.CreatedAt
             FROM Products p
-
             INNER JOIN Categories c
                 ON p.CategoryId = c.Id
-
             WHERE
-                p.IsDeleted = 0
-                AND p.TenantId = @TenantId
+                p.TenantId = @TenantId
                 AND c.TenantId = @TenantId
                 AND
                 (
@@ -54,17 +50,14 @@ namespace Invento.Application.Features.Products.Queries
                     OR p.Name LIKE '%' + @Search + '%'
                     OR p.SKU LIKE '%' + @Search + '%'
                 )
-
             ORDER BY p.CreatedAt DESC
-
             OFFSET @Offset ROWS
             FETCH NEXT @PageSize ROWS ONLY;
 
             SELECT COUNT(*)
             FROM Products p
             WHERE
-                p.IsDeleted = 0
-                AND p.TenantId = @TenantId
+                p.TenantId = @TenantId
                 AND
                 (
                     @Search IS NULL

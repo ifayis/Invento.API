@@ -56,6 +56,7 @@ namespace Invento.Application.Features.Company.Commands
                 .SuccessResponse(
                     new CompanyProfileDto
                     {
+                        Id = tenant.Id,
                         CompanyName = tenant.CompanyName,
                         PhoneNumber = tenant.PhoneNumber,
                         Address = tenant.Address,

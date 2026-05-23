@@ -41,7 +41,6 @@ namespace Invento.Application.Features.Products.Queries
             INNER JOIN Categories c
                 ON p.CategoryId = c.Id
             WHERE p.Id = @Id
-            AND p.IsDeleted = 0
             AND p.TenantId = @TenantId
             ";
 
