@@ -8,7 +8,9 @@ using Invento.Application.Interfaces;
 namespace Invento.Application.Features.Products.Queries
 {
     public class GetProductsQueryHandler
-        : IQueryHandler<GetProductsQuery, ApiResponse<PagedResponse<ProductDto>>>
+        : IQueryHandler<
+            GetProductsQuery,
+            ApiResponse<PagedResponse<ProductDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ICurrentTenantService _currentTenant;
@@ -21,54 +23,58 @@ namespace Invento.Application.Features.Products.Queries
             _currentTenant = currentTenant;
         }
 
-        public async Task<
-            ApiResponse<PagedResponse<ProductDto>>> Handle(
+        public async Task<ApiResponse<PagedResponse<ProductDto>>> Handle(
             GetProductsQuery request,
             CancellationToken cancellationToken)
         {
-            using var connection = _connectionFactory.CreateConnection();
+            using var connection =
+                _connectionFactory.CreateConnection();
 
             var sql = @"
-        SELECT
-            p.Id,
-            p.Name,
-            p.SKU,
-            p.CostPrice,
-            p.SellingPrice,
-            p.CurrentStock,
-            p.LowStockThreshold,
-            p.ImageUrl,
-            c.Name AS CategoryName,
-            p.CreatedAt
-        FROM Products p
-        INNER JOIN Categories c
-            ON p.CategoryId = c.Id
-        WHERE
-            p.IsDeleted = 0
-            AND p.TenantId = @TenantId
-            AND c.TenantId = @TenantId
-            AND
-            (
-                @Search IS NULL
-                OR p.Name LIKE '%' + @Search + '%'
-                OR p.SKU LIKE '%' + @Search + '%'
-            )
-        ORDER BY p.CreatedAt DESC
-        OFFSET @Offset ROWS
-        FETCH NEXT @PageSize ROWS ONLY;
+            SELECT
+                p.Id,
+                p.Name,
+                p.SKU,
+                p.CostPrice,
+                p.SellingPrice,
+                p.CurrentStock,
+                p.IsDeleted,
+                p.CreatedAt,
+                c.Name AS CategoryName
 
-        SELECT COUNT(*)
-        FROM Products p
-        WHERE
-            p.IsDeleted = 0
-            AND p.TenantId = @TenantId
-            AND
-            (
-                @Search IS NULL
-                OR p.Name LIKE '%' + @Search + '%'
-                OR p.SKU LIKE '%' + @Search + '%'
-            );
-        ";
+            FROM Products p
+
+            INNER JOIN Categories c
+                ON p.CategoryId = c.Id
+
+            WHERE
+                p.IsDeleted = 0
+                AND p.TenantId = @TenantId
+                AND c.TenantId = @TenantId
+                AND
+                (
+                    @Search IS NULL
+                    OR p.Name LIKE '%' + @Search + '%'
+                    OR p.SKU LIKE '%' + @Search + '%'
+                )
+
+            ORDER BY p.CreatedAt DESC
+
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
+
+            SELECT COUNT(*)
+            FROM Products p
+            WHERE
+                p.IsDeleted = 0
+                AND p.TenantId = @TenantId
+                AND
+                (
+                    @Search IS NULL
+                    OR p.Name LIKE '%' + @Search + '%'
+                    OR p.SKU LIKE '%' + @Search + '%'
+                );
+            ";
 
             var parameters = new
             {
@@ -80,22 +86,27 @@ namespace Invento.Application.Features.Products.Queries
                 request.PageSize
             };
 
-            using var multi = 
+            using var multi =
                 await connection.QueryMultipleAsync(
                     sql,
-                    parameters
-                );
+                    parameters);
 
-            var products = await multi.ReadAsync<ProductDto>();
+            var products =
+                (await multi.ReadAsync<ProductDto>())
+                .ToList();
 
-            var totalRecords = await multi.ReadFirstAsync<int>();
+            var totalRecords =
+                await multi.ReadFirstAsync<int>();
 
             var response =
                 new PagedResponse<ProductDto>
                 {
-                    Items = products.ToList(),
+                    Items = products,
+
                     PageNumber = request.PageNumber,
+
                     PageSize = request.PageSize,
+
                     TotalRecords = totalRecords
                 };
 

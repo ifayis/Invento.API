@@ -8,12 +8,16 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Products.Commands
 {
     public class CreateProductCommandHandler
-        : ICommandHandler<CreateProductCommand, ApiResponse<ProductDto>>
+        : ICommandHandler<
+            CreateProductCommand,
+            ApiResponse<ProductDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
 
-        public CreateProductCommandHandler(IApplicationDbContext context, ICurrentTenantService currentTenant)
+        public CreateProductCommandHandler(
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
         {
             _context = context;
             _currentTenant = currentTenant;
@@ -23,32 +27,37 @@ namespace Invento.Application.Features.Products.Commands
             CreateProductCommand request,
             CancellationToken cancellationToken)
         {
-            var categoryExists = await _context.Categories
-                .AnyAsync(x =>
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(x =>
                     x.Id == request.CategoryId
-                    && x.TenantId == _currentTenant.TenantId,
-                    cancellationToken
-                );
+                    && x.TenantId == _currentTenant.TenantId
+                    && !x.IsDeleted,
+                    cancellationToken);
 
-            if (!categoryExists)
+            if (category is null)
             {
                 return ApiResponse<ProductDto>
                     .FailureResponse(
                         new List<string>
                         {
-                        "Category not found"
-                        }
-                    );
+                            "Category not found"
+                        });
             }
 
             var product = new Product
             {
                 TenantId = _currentTenant.TenantId,
-                Name = request.Name,
-                SKU = request.SKU,
+
+                Name = request.Name.Trim(),
+
+                SKU = request.SKU.Trim(),
+
                 CostPrice = request.CostPrice,
+
                 SellingPrice = request.SellingPrice,
+
                 CurrentStock = request.CurrentStock,
+
                 CategoryId = request.CategoryId
             };
 
@@ -56,19 +65,34 @@ namespace Invento.Application.Features.Products.Commands
                 product,
                 cancellationToken);
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(
+                cancellationToken);
+
+            var response = new ProductDto
+            {
+                Id = product.Id,
+
+                Name = product.Name,
+
+                SKU = product.SKU,
+
+                CostPrice = product.CostPrice,
+
+                SellingPrice = product.SellingPrice,
+
+                CurrentStock = product.CurrentStock,
+
+                CategoryName = category.Name,
+
+                IsDeleted = product.IsDeleted,
+
+                CreatedAt = product.CreatedAt
+            };
 
             return ApiResponse<ProductDto>
                 .SuccessResponse(
-                    new ProductDto
-                    {
-                        Name = product.Name,
-                        SKU = product.SKU,
-                        CostPrice = product.CostPrice,
-                        SellingPrice = product.SellingPrice
-                    },
-                    "Product created successfully"
-                );
+                    response,
+                    "Product created successfully");
         }
     }
 }

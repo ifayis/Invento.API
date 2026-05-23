@@ -2,6 +2,7 @@
 using Invento.Application.Common;
 using Invento.Application.Features.Products.DTOs;
 using Invento.Application.Interfaces;
+using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Products.Commands
@@ -41,7 +42,24 @@ namespace Invento.Application.Features.Products.Commands
                         }
                     );
             }
-            
+
+            var category = await _context.Categories
+                           .FirstOrDefaultAsync(x =>
+                               x.Id == request.CategoryId &&
+                               x.TenantId == _currentTenant.TenantId &&
+                               !x.IsDeleted,
+                               cancellationToken);
+
+            if (category is null)
+            {
+                return ApiResponse<ProductDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                            "Category not found"
+                        });
+            }
+
             product.Name = request.Name;
             product.SKU = request.SKU;
             product.CostPrice = request.CostPrice;
@@ -56,11 +74,23 @@ namespace Invento.Application.Features.Products.Commands
                 .SuccessResponse(
                     new ProductDto
                     {
+                        Id = product.Id,
+
                         Name = product.Name,
+
                         SKU = product.SKU,
+
                         CostPrice = product.CostPrice,
+
                         SellingPrice = product.SellingPrice,
-                        IsDeleted = product.IsDeleted
+
+                        CurrentStock = product.CurrentStock,
+
+                        CategoryName = category.Name,
+
+                        IsDeleted = product.IsDeleted,
+
+                        CreatedAt = product.CreatedAt
                     },
                     "Product updated successfully"
                 );
