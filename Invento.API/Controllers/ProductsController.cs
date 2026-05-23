@@ -74,5 +74,19 @@ namespace Invento.API.Controllers
 
             return Ok(result);
         }
+
+
+        [HttpPut("{id}/restore")]
+        public async Task<IActionResult> Unhide(Guid id)
+        {
+            var result = await _mediator.Send(
+                new RestoreProductCommand
+                {
+                    Id = id
+                }
+            );
+
+            return Ok(result);
+        }
     }
 }

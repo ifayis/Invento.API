@@ -8,9 +8,7 @@ using Invento.Application.Interfaces;
 namespace Invento.Application.Features.Products.Queries
 {
     public class GetProductsQueryHandler
-        : IQueryHandler<
-            GetProductsQuery,
-            ApiResponse<PagedResponse<ProductDto>>>
+        : IQueryHandler<GetProductsQuery, ApiResponse<PagedResponse<ProductDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ICurrentTenantService _currentTenant;
@@ -27,8 +25,7 @@ namespace Invento.Application.Features.Products.Queries
             GetProductsQuery request,
             CancellationToken cancellationToken)
         {
-            using var connection =
-                _connectionFactory.CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
 
             var sql = @"
             SELECT
@@ -86,27 +83,22 @@ namespace Invento.Application.Features.Products.Queries
                 request.PageSize
             };
 
-            using var multi =
-                await connection.QueryMultipleAsync(
+            using var multi = await connection.QueryMultipleAsync(
                     sql,
-                    parameters);
+                    parameters
+                    
+            );
 
-            var products =
-                (await multi.ReadAsync<ProductDto>())
-                .ToList();
+            var products = (await multi.ReadAsync<ProductDto>()).ToList();
 
-            var totalRecords =
-                await multi.ReadFirstAsync<int>();
+            var totalRecords = await multi.ReadFirstAsync<int>();
 
             var response =
                 new PagedResponse<ProductDto>
                 {
                     Items = products,
-
                     PageNumber = request.PageNumber,
-
                     PageSize = request.PageSize,
-
                     TotalRecords = totalRecords
                 };
 

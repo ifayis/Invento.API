@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Products.Commands
 {
-    public class DeleteProductCommandHandler
-        : ICommandHandler<DeleteProductCommand, ApiResponse<ProductDto>>
+    public class RestoreProductCommandHandler
+        : ICommandHandler<RestoreProductCommand, ApiResponse<ProductDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
 
-        public DeleteProductCommandHandler(
+        public RestoreProductCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant)
         {
@@ -21,15 +21,16 @@ namespace Invento.Application.Features.Products.Commands
         }
 
         public async Task<ApiResponse<ProductDto>> Handle(
-            DeleteProductCommand request,
+            RestoreProductCommand request,
             CancellationToken cancellationToken)
         {
             var product = await _context.Products
+                .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(x =>
                     x.Id == request.Id
                     && x.TenantId ==
                     _currentTenant.TenantId
-                    && !x.IsDeleted,
+                    && x.IsDeleted,
                     cancellationToken
                 );
 
@@ -39,12 +40,12 @@ namespace Invento.Application.Features.Products.Commands
                     .FailureResponse(
                         new List<string>
                         {
-                            "Product not found"
+                            "Hidden product not found"
                         }
                     );
             }
 
-            product.IsDeleted = true;
+            product.IsDeleted = false;
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -55,7 +56,7 @@ namespace Invento.Application.Features.Products.Commands
                         Id = product.Id,
                         Name = product.Name
                     },
-                    "Product hidden successfully"
+                    "Product restored successfully"
                 );
         }
     }

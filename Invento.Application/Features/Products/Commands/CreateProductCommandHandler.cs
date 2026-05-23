@@ -8,9 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Products.Commands
 {
     public class CreateProductCommandHandler
-        : ICommandHandler<
-            CreateProductCommand,
-            ApiResponse<ProductDto>>
+        : ICommandHandler<CreateProductCommand, ApiResponse<ProductDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
@@ -32,7 +30,8 @@ namespace Invento.Application.Features.Products.Commands
                     x.Id == request.CategoryId
                     && x.TenantId == _currentTenant.TenantId
                     && !x.IsDeleted,
-                    cancellationToken);
+                    cancellationToken
+                );
 
             if (category is null)
             {
@@ -41,58 +40,45 @@ namespace Invento.Application.Features.Products.Commands
                         new List<string>
                         {
                             "Category not found"
-                        });
+                        }
+                    );
             }
 
             var product = new Product
             {
                 TenantId = _currentTenant.TenantId,
-
                 Name = request.Name.Trim(),
-
                 SKU = request.SKU.Trim(),
-
                 CostPrice = request.CostPrice,
-
                 SellingPrice = request.SellingPrice,
-
                 CurrentStock = request.CurrentStock,
-
                 CategoryId = request.CategoryId
             };
 
             await _context.Products.AddAsync(
                 product,
-                cancellationToken);
+                cancellationToken
+            );
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             var response = new ProductDto
             {
                 Id = product.Id,
-
                 Name = product.Name,
-
                 SKU = product.SKU,
-
                 CostPrice = product.CostPrice,
-
                 SellingPrice = product.SellingPrice,
-
                 CurrentStock = product.CurrentStock,
-
                 CategoryName = category.Name,
-
-                IsDeleted = product.IsDeleted,
-
                 CreatedAt = product.CreatedAt
             };
 
             return ApiResponse<ProductDto>
                 .SuccessResponse(
                     response,
-                    "Product created successfully");
+                    "Product created successfully"
+                );
         }
     }
 }

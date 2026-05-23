@@ -48,7 +48,8 @@ namespace Invento.Application.Features.Products.Commands
                                x.Id == request.CategoryId &&
                                x.TenantId == _currentTenant.TenantId &&
                                !x.IsDeleted,
-                               cancellationToken);
+                               cancellationToken
+                           );
 
             if (category is null)
             {
@@ -57,7 +58,8 @@ namespace Invento.Application.Features.Products.Commands
                         new List<string>
                         {
                             "Category not found"
-                        });
+                        }
+                    );
             }
 
             product.Name = request.Name;
@@ -66,7 +68,6 @@ namespace Invento.Application.Features.Products.Commands
             product.SellingPrice = request.SellingPrice;
             product.CurrentStock = request.CurrentStock;
             product.CategoryId = request.CategoryId;
-            product.IsDeleted = request.IsDeleted;
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -75,21 +76,12 @@ namespace Invento.Application.Features.Products.Commands
                     new ProductDto
                     {
                         Id = product.Id,
-
                         Name = product.Name,
-
                         SKU = product.SKU,
-
                         CostPrice = product.CostPrice,
-
                         SellingPrice = product.SellingPrice,
-
                         CurrentStock = product.CurrentStock,
-
                         CategoryName = category.Name,
-
-                        IsDeleted = product.IsDeleted,
-
                         CreatedAt = product.CreatedAt
                     },
                     "Product updated successfully"
