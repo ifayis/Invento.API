@@ -11,7 +11,6 @@ namespace Invento.Application.Features.Customers.Queries
         : IQueryHandler<GetCustomerByIdQuery, ApiResponse<CustomerDto>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
-
         private readonly ICurrentTenantService _currentTenant;
 
         public GetCustomerByIdQueryHandler(
@@ -35,13 +34,12 @@ namespace Invento.Application.Features.Customers.Queries
             Email,
             PhoneNumber,
             Address,
-            CreatedAt
+            IsDeleted
         FROM Customers
         WHERE
             Id = @Id
             AND TenantId = @TenantId
-            AND IsDeleted = 0
-        ";
+            ";
 
             var customer = await connection
                 .QueryFirstOrDefaultAsync<CustomerDto>(

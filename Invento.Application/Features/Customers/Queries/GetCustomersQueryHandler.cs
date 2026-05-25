@@ -8,15 +8,10 @@ using Invento.Application.Interfaces;
 namespace Invento.Application.Features.Customers.Queries
 {
     public class GetCustomersQueryHandler
-        : IQueryHandler<
-            GetCustomersQuery,
-            ApiResponse<PagedResponse<CustomerDto>>>
+        : IQueryHandler<GetCustomersQuery, ApiResponse<PagedResponse<CustomerDto>>>
     {
-        private readonly IDbConnectionFactory
-            _connectionFactory;
-
-        private readonly ICurrentTenantService
-            _currentTenant;
+        private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ICurrentTenantService _currentTenant;
 
         public GetCustomersQueryHandler(
             IDbConnectionFactory connectionFactory,
@@ -39,11 +34,10 @@ namespace Invento.Application.Features.Customers.Queries
             Email,
             PhoneNumber,
             Address,
-            CreatedAt
+            IsDeleted
         FROM Customers
         WHERE
-            IsDeleted = 0
-            AND TenantId = @TenantId
+            TenantId = @TenantId
             AND
             (
                 @Search IS NULL
@@ -52,7 +46,7 @@ namespace Invento.Application.Features.Customers.Queries
                 OR PhoneNumber LIKE '%' + @Search + '%'
             )
 
-        ORDER BY CreatedAt DESC
+        ORDER BY Name
 
         OFFSET @Offset ROWS
         FETCH NEXT @PageSize ROWS ONLY;
@@ -60,8 +54,7 @@ namespace Invento.Application.Features.Customers.Queries
         SELECT COUNT(*)
         FROM Customers
         WHERE
-            IsDeleted = 0
-            AND TenantId = @TenantId
+            TenantId = @TenantId
             AND
             (
                 @Search IS NULL

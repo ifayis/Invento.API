@@ -10,7 +10,6 @@ namespace Invento.Application.Features.Customers.Commands
         : ICommandHandler<CreateCustomerCommand, ApiResponse<CustomerDto>>
     {
         private readonly IApplicationDbContext _context;
-
         private readonly ICurrentTenantService _currentTenant;
 
         public CreateCustomerCommandHandler(
@@ -44,10 +43,12 @@ namespace Invento.Application.Features.Customers.Commands
                 .SuccessResponse(
                     new CustomerDto
                     {
+                        Id = customer.Id,
                         Name = customer.Name,
                         Email = customer.Email,
-                        PhoneNumber = customer.Email,
-                        Address = customer.Address
+                        PhoneNumber = customer.PhoneNumber,
+                        Address = customer.Address,
+                        IsDeleted = customer.IsDeleted
                     },
                     "Customer created successfully"
                 );

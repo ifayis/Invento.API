@@ -1,4 +1,5 @@
 ﻿using Invento.Application.Features.Customer.Commands;
+using Invento.Application.Features.Customers.Commands;
 using Invento.Application.Features.Customers.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -42,6 +43,18 @@ namespace Invento.API.Controllers
                 {
                     Id = id
                 }
+            ));
+        }
+
+
+        [HttpPut("{id}/restore")]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            return Ok(await _mediator.Send(
+                    new RestoreCustomerCommand
+                    {
+                        Id = id
+                    }
             ));
         }
 

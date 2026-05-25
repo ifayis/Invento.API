@@ -1,19 +1,18 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
-using Invento.Application.Features.Customer.Commands;
 using Invento.Application.Features.Customers.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Customers.Commands
 {
-    public class DeleteCustomerCommandHandler
-        : ICommandHandler<DeleteCustomerCommand, ApiResponse<CustomerDeleteDto>>
+    public class RestoreCustomerCommandHandler
+        : ICommandHandler<RestoreCustomerCommand, ApiResponse<CustomerDeleteDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
 
-        public DeleteCustomerCommandHandler(
+        public RestoreCustomerCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant)
         {
@@ -22,14 +21,15 @@ namespace Invento.Application.Features.Customers.Commands
         }
 
         public async Task<ApiResponse<CustomerDeleteDto>> Handle(
-            DeleteCustomerCommand request,
+            RestoreCustomerCommand request,
             CancellationToken cancellationToken)
         {
             var customer = await _context.Customers
+                .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(x =>
                     x.Id == request.Id &&
                     x.TenantId == _currentTenant.TenantId &&
-                    !x.IsDeleted,
+                    x.IsDeleted,
                     cancellationToken);
 
             if (customer is null)
@@ -38,11 +38,12 @@ namespace Invento.Application.Features.Customers.Commands
                     .FailureResponse(
                         new List<string>
                         {
-                            "Customer not found"
-                        });
+                            "Hidden customer not found"
+                        }
+                    );
             }
 
-            customer.IsDeleted = true;
+            customer.IsDeleted = false;
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -54,7 +55,7 @@ namespace Invento.Application.Features.Customers.Commands
                         Name = customer.Name,
                         IsDeleted = customer.IsDeleted
                     },
-                    "Customer hidden successfully"
+                    "Customer restored successfully"
                 );
         }
     }
