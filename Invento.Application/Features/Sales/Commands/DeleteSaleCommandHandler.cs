@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Sales.Commands
 {
     public class DeleteSaleCommandHandler
-        : ICommandHandler<DeleteSaleCommand, ApiResponse<SaleDto>>
+        : ICommandHandler<DeleteSaleCommand, ApiResponse<DeleteSaleDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
@@ -21,7 +21,7 @@ namespace Invento.Application.Features.Sales.Commands
             _currentTenant = currentTenant;
         }
 
-        public async Task<ApiResponse<SaleDto>> Handle(
+        public async Task<ApiResponse<DeleteSaleDto>> Handle(
             DeleteSaleCommand request,
             CancellationToken cancellationToken)
         {
@@ -39,7 +39,7 @@ namespace Invento.Application.Features.Sales.Commands
 
                 if (sale is null)
                 {
-                    return ApiResponse<SaleDto>
+                    return ApiResponse<DeleteSaleDto>
                         .FailureResponse(
                             new List<string>
                             {
@@ -66,18 +66,19 @@ namespace Invento.Application.Features.Sales.Commands
 
                 await transaction.CommitAsync(cancellationToken);
 
-                return ApiResponse<SaleDto>
+                return ApiResponse<DeleteSaleDto>
                     .SuccessResponse(
-                    new SaleDto
+                    new DeleteSaleDto
                     {
-
+                        Id = sale.Id,
+                        InvoiceNumber = sale.InvoiceNumber,
+                        IsDeleted = true
                     },
                     "Sale deleted successfully");
             }
             catch
             {
-                await transaction.RollbackAsync(
-                    cancellationToken);
+                await transaction.RollbackAsync(cancellationToken);
 
                 throw;
             }

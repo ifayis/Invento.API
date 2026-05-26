@@ -2,6 +2,7 @@
 using Invento.Application.Common;
 using Invento.Application.Features.Sales.Command;
 using Invento.Application.Features.Sales.DTOs;
+using Invento.Application.Features.Sales.Extensions;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -33,9 +34,34 @@ public class CreateSaleCommandHandler
             decimal subTotal = 0;
             decimal totalTax = 0;
             decimal totalProfit = 0;
+            decimal totalCost = 0;
+
+            Invento.Domain.Entities.Customer? customer = null;
+
+            if (request.CustomerId.HasValue)
+            {
+                customer = await _context.Customers
+                    .FirstOrDefaultAsync(
+                    x => x.Id == request.CustomerId
+                    && x.TenantId == _currentTenant.TenantId
+                    && !x.IsDeleted,
+                    cancellationToken);
+
+                if (customer is null)
+                {
+                    return ApiResponse<SaleDetailsDto>
+                        .FailureResponse(
+                        new List<string>
+                        {
+                "Customer not found"
+                        });
+                }
+            }
 
             var sale = new Sale
             {
+                TenantId = _currentTenant.TenantId,
+                CustomerId = request.CustomerId,
                 InvoiceNumber = $"INV-{DateTime.UtcNow.Ticks}",
                 SaleDate = request.SaleDate,
                 DiscountAmount = request.DiscountAmount
@@ -81,7 +107,9 @@ public class CreateSaleCommandHandler
 
                 var totalPrice = itemSubTotal + taxAmount;
 
-                var profitAmount = ((product.SellingPrice - product.CostPrice) * item.Quantity);
+                var itemCost = product.CostPrice * item.Quantity;
+
+                var profitAmount = itemSubTotal - itemCost;
 
                 var oldMovements = await _context.StockMovements
                     .Where(x =>
@@ -106,7 +134,7 @@ public class CreateSaleCommandHandler
 
                 sale.SaleItems.Add(saleItem);
 
-                var stockMovement =
+                await _context.StockMovements.AddAsync(
                     new StockMovement
                     {
                         TenantId = _currentTenant.TenantId,
@@ -114,61 +142,40 @@ public class CreateSaleCommandHandler
                         Quantity = item.Quantity,
                         MovementType = "StockOut",
                         Remarks = "Sale completed",
-                        ReferenceNumber =sale.InvoiceNumber
-                    };
-
-                await _context.StockMovements.AddAsync(
-                    new StockMovement
-                    {
-                       TenantId = _currentTenant.TenantId,
-
-                         ProductId = product.Id,
-
-                         Quantity = item.Quantity,
-
-                         MovementType = "StockOut",
-
-                         Remarks = "Sale updated",
-
-                         ReferenceNumber = sale.InvoiceNumber
-
-                    }, cancellationToken
+                        ReferenceNumber = sale.InvoiceNumber
+                    },
+                    cancellationToken
                 );
 
                 subTotal += itemSubTotal;
                 totalTax += taxAmount;
+                totalCost += itemCost;
                 totalProfit += profitAmount;
             }
 
             sale.SubTotal = subTotal;
             sale.TaxAmount = totalTax;
-            sale.ProfitAmount = totalProfit;
-
             sale.TotalAmount = subTotal + totalTax - request.DiscountAmount;
+            sale.ProfitAmount = (sale.TotalAmount - sale.TaxAmount) - totalCost;
 
             await _context.Sales.AddAsync(
                 sale,
-                cancellationToken);
+                cancellationToken
+            );
 
             await _context.SaveChangesAsync( cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
 
             return ApiResponse<SaleDetailsDto>
-                .SuccessResponse(
-                new SaleDetailsDto
-                {
-                    InvoiceNumber = sale.InvoiceNumber,
-                    SaleDate = sale.SaleDate,
-                    TotalAmount = sale.TotalAmount
-                },
-                    "Sale created successfully"
-                );
+            .SuccessResponse(
+                sale.ToSaleDetailsDto(),
+                "Sale created successfully"
+            );
         }
         catch
         {
-            await transaction.RollbackAsync(
-                cancellationToken);
+            await transaction.RollbackAsync(cancellationToken);
 
             throw;
         }

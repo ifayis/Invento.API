@@ -2,165 +2,200 @@
 using Invento.Application.Common;
 using Invento.Application.Features.Sales.Command;
 using Invento.Application.Features.Sales.DTOs;
+using Invento.Application.Features.Sales.Extensions;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Invento.Application.Features.Sales.Commands;
-
-public class UpdateSaleCommandHandler
-    : ICommandHandler<UpdateSaleCommand, ApiResponse<SaleDto>>
+namespace Invento.Application.Features.Sales.Commands
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentTenantService _currentTenant;
-
-    public UpdateSaleCommandHandler(
-        IApplicationDbContext context,
-        ICurrentTenantService currentTenant)
+    public class UpdateSaleCommandHandler
+        : ICommandHandler<UpdateSaleCommand, ApiResponse<SaleDto>>
     {
-        _context = context;
-        _currentTenant = currentTenant;
-    }
+        private readonly IApplicationDbContext _context;
 
-    public async Task<ApiResponse<SaleDto>> Handle(
-        UpdateSaleCommand request,
-        CancellationToken cancellationToken)
-    {
-        using var transaction = await _context.BeginTransactionAsync();
+        private readonly ICurrentTenantService _currentTenant;
 
-        try
+        public UpdateSaleCommandHandler(
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
         {
-            var sale = await _context.Sales
-                .Include(x => x.SaleItems)
-                .FirstOrDefaultAsync(x =>
-                    x.Id == request.Id
-                    && x.TenantId == _currentTenant.TenantId
-                    && !x.IsDeleted,
+            _context = context;
+            _currentTenant = currentTenant;
+        }
+
+        public async Task<ApiResponse<SaleDto>> Handle(
+            UpdateSaleCommand request,
+            CancellationToken cancellationToken)
+        {
+            using var transaction =
+                await _context.BeginTransactionAsync();
+
+            try
+            {
+                var sale = await _context.Sales
+                    .Include(x => x.SaleItems)
+                    .FirstOrDefaultAsync(
+                        x =>
+                            x.Id == request.Id
+                            && x.TenantId ==
+                                _currentTenant.TenantId
+                            && !x.IsDeleted,
+                        cancellationToken
+                    );
+
+                if (sale is null)
+                {
+                    return ApiResponse<SaleDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Sale not found"
+                            }
+                        );
+                }
+
+                foreach (var oldItem in sale.SaleItems)
+                {
+                    var oldProduct =
+                        await _context.Products
+                        .FirstAsync(
+                            x =>
+                                x.Id == oldItem.ProductId
+                                && x.TenantId ==
+                                    _currentTenant.TenantId,
+                            cancellationToken
+                        );
+
+                    oldProduct.CurrentStock +=
+                        oldItem.Quantity;
+                }
+
+                _context.SaleItems.RemoveRange(
+                    sale.SaleItems);
+
+                await _context.SaveChangesAsync(
                     cancellationToken);
 
-            if (sale is null)
-            {
-                return ApiResponse<SaleDto>
-                    .FailureResponse(
-                        new List<string>
+                foreach (var item in sale.SaleItems.ToList())
+                {
+                    _context.SaleItems.Local.Remove(item);
+                }
+
+                sale.SaleItems.Clear();
+
+                decimal subTotal = 0;
+                decimal totalTax = 0;
+                decimal totalProfit = 0;
+                decimal totalCost = 0;
+
+                sale.CustomerId = request.CustomerId;
+                sale.SaleDate = request.SaleDate;
+                sale.DiscountAmount = request.DiscountAmount;
+
+                foreach (var item in request.Items)
+                {
+                    var product = await _context.Products
+                        .FirstOrDefaultAsync( x =>
+                                x.Id == item.ProductId
+                                && x.TenantId == _currentTenant.TenantId
+                                && !x.IsDeleted,
+                            cancellationToken
+                        );
+
+                    if (product is null)
+                    {
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
+                                    $"Product not found: {item.ProductId}"
+                                }
+                            );
+                    }
+
+                    if (item.Quantity <= 0)
+                    {
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
+                                    $"Quantity must be greater than zero for {product.Name}"
+                                }
+                            );
+                    }
+
+                    if (product.CurrentStock < item.Quantity)
+                    {
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
+                                    $"Insufficient stock for {product.Name}"
+                                }
+                            );
+                    }
+
+                    product.CurrentStock -= item.Quantity;
+
+                    var itemSubTotal = product.SellingPrice * item.Quantity;
+
+                    var taxAmount = (itemSubTotal * product.TaxRate) / 100;
+
+                    var totalPrice = itemSubTotal + taxAmount;
+
+                    var itemCost = product.CostPrice * item.Quantity;
+
+                    var profit = itemSubTotal - itemCost;
+
+                    var saleItem =
+                        new SaleItem
                         {
-                            "Sale not found"
-                        }
-                    );
-            }
+                            TenantId = _currentTenant.TenantId,
+                            SaleId = sale.Id,
+                            ProductId = product.Id,
+                            Quantity = item.Quantity,
+                            UnitPrice = product.SellingPrice,
+                            CostPrice = product.CostPrice,
+                            TaxRate = product.TaxRate,
+                            TaxAmount = taxAmount,
+                            TotalPrice = totalPrice,
+                            ProfitAmount = profit
+                        };
 
-            foreach (var item in sale.SaleItems)
-            {
-                var product = await _context.Products
-                    .FirstAsync(x =>
-                        x.Id == item.ProductId
-                        && x.TenantId == _currentTenant.TenantId,
-                        cancellationToken
-                    );
-
-                product.CurrentStock += item.Quantity;
-            }
-
-            _context.SaleItems.RemoveRange(
-                sale.SaleItems);
-
-            decimal subTotal = 0;
-            decimal totalTax = 0;
-            decimal totalProfit = 0;
-
-            sale.SaleDate = request.SaleDate;
-            sale.DiscountAmount =
-                request.DiscountAmount;
-
-            sale.SaleItems.Clear();
-
-            foreach (var item in request.Items)
-            {
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(x =>
-                        x.Id == item.ProductId
-                        && x.TenantId == _currentTenant.TenantId
-                        && !x.IsDeleted,
-                        cancellationToken
-                    );
-
-                if (product is null)
-                {
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                $"Product not found: {item.ProductId}"
-                            }
+                    await _context.SaleItems
+                        .AddAsync(
+                            saleItem,
+                            cancellationToken
                         );
+
+                    subTotal += itemSubTotal;
+                    totalTax += taxAmount;
+                    totalCost += itemCost;
+                    totalProfit += profit;
                 }
 
-                if (product.CurrentStock
-                    < item.Quantity)
-                {
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                $"Insufficient stock for {product.Name}"
-                            }
-                        );
-                }
+                sale.SubTotal = subTotal;
+                sale.TaxAmount = totalTax;
+                sale.TotalAmount = subTotal + totalTax - request.DiscountAmount;
+                sale.ProfitAmount = (sale.TotalAmount - sale.TaxAmount) - totalCost;
 
-                product.CurrentStock -= item.Quantity;
+                await _context.SaveChangesAsync(cancellationToken);
 
-                var itemSubTotal = product.SellingPrice * item.Quantity;
+                await transaction.CommitAsync(cancellationToken);
 
-                var taxAmount = (itemSubTotal * product.TaxRate) / 100;
-
-                var totalPrice = itemSubTotal + taxAmount;
-
-                var profit = (product.SellingPrice - product.CostPrice) * item.Quantity;
-
-                sale.SaleItems.Add(
-                    new SaleItem
-                    {  
-                        TenantId = _currentTenant.TenantId,
-                        ProductId = product.Id,
-                        Quantity = item.Quantity,
-                        UnitPrice = product.SellingPrice,
-                        CostPrice = product.CostPrice,
-                        TaxRate = product.TaxRate,
-                        TaxAmount = taxAmount,
-                        TotalPrice = totalPrice,
-                        ProfitAmount = profit
-                    });
-
-                subTotal += itemSubTotal;
-                totalTax += taxAmount;
-                totalProfit += profit;
+                return ApiResponse<SaleDto>
+                    .SuccessResponse(
+                        sale.ToSaleDto(),
+                        "Sale updated successfully"
+                    );
             }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
 
-            sale.SubTotal = subTotal;
-            sale.TaxAmount = totalTax;
-            sale.ProfitAmount = totalProfit;
-
-            sale.TotalAmount = subTotal + totalTax - request.DiscountAmount;
-
-            await _context.SaveChangesAsync(cancellationToken);
-
-            await transaction.CommitAsync(cancellationToken);
-
-            return ApiResponse<SaleDto>
-                .SuccessResponse(
-                new SaleDto
-                {
-                    InvoiceNumber = sale.InvoiceNumber,
-                    SaleDate = sale.SaleDate,
-                    TotalAmount = sale.TotalAmount
-                },
-                "Sale updated successfully");
-        }
-        catch
-        {
-            await transaction.RollbackAsync(cancellationToken);
-
-            throw;
+                throw;
+            }
         }
     }
 }

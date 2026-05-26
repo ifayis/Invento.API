@@ -47,6 +47,18 @@ namespace Invento.API.Controllers
         }
 
 
+        [HttpPut("{id}/restore")]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            return Ok(await _mediator.Send(
+                    new RestoreSaleCommand
+                    {
+                        Id = id
+                    }
+            ));
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -64,6 +76,7 @@ namespace Invento.API.Controllers
         {
             return Ok(await _mediator.Send(query));
         }
+
 
         [HttpGet("today")]
         public async Task<IActionResult> TodaySales()
@@ -99,6 +112,18 @@ namespace Invento.API.Controllers
                 {
                     FromDate =DateTime.UtcNow.AddMonths(-1),
                     ToDate = DateTime.UtcNow
+                }
+            ));
+        }
+
+
+        [HttpGet("customer/{customerId}")]
+        public async Task<IActionResult> GetCustomerSales(Guid customerId)
+        {
+            return Ok(await _mediator.Send(
+                new GetCustomerSalesQuery
+                {
+                    CustomerId = customerId
                 }
             ));
         }

@@ -30,6 +30,7 @@ namespace Invento.Application.Features.Sales.Queries
             var saleSql = @"
             SELECT
                 Id,
+                CustomerId,
                 InvoiceNumber,
                 SaleDate,
                 SubTotal,
@@ -64,7 +65,7 @@ namespace Invento.Application.Features.Sales.Queries
                     new
                     {
                         request.Id,
-                        TenatId = _currentTenant.TenantId
+                        TenantId = _currentTenant.TenantId
                     }
             );
 

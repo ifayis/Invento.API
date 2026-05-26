@@ -30,14 +30,15 @@ namespace Invento.Application.Features.Sales.Queries
             var sql = @"
             SELECT
                 Id,
+                CustomerId,
                 InvoiceNumber,
                 SaleDate,
                 TotalAmount,
                 ProfitAmount,
-                CreatedAt
+                IsDeleted
             FROM Sales
-            WHERE IsDeleted = 0
-            AND TenantId =@TenantId
+            WHERE TenantId = @TenantId
+
             AND
             (
                 @Search IS NULL
@@ -64,8 +65,8 @@ namespace Invento.Application.Features.Sales.Queries
 
             SELECT COUNT(*)
             FROM Sales
-            WHERE IsDeleted = 0
-            AND TenantId = @TenantId
+            WHERE TenantId = @TenantId
+
             AND
             (
                 @Search IS NULL
@@ -85,21 +86,15 @@ namespace Invento.Application.Features.Sales.Queries
                 OR SaleDate <= @ToDate
             );
             ";
-
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
-
                 request.Search,
-
                 request.FromDate,
-
                 request.ToDate,
-
                 Offset =
                     (request.PageNumber - 1)
                     * request.PageSize,
-
                 request.PageSize
             };
 
@@ -116,11 +111,8 @@ namespace Invento.Application.Features.Sales.Queries
                 new PagedResponse<SaleDto>
                 {
                     Items = sales,
-
                     PageNumber = request.PageNumber,
-
                     PageSize = request.PageSize,
-
                     TotalRecords = totalRecords
                 };
 

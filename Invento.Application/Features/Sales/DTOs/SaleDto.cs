@@ -10,6 +10,8 @@ namespace Invento.Application.Features.Sales.DTOs
     {
         public Guid Id { get; set; }
 
+        public Guid? CustomerId { get; set; }
+
         public string InvoiceNumber { get; set; } = string.Empty;
 
         public DateTime SaleDate { get; set; }
@@ -18,6 +20,6 @@ namespace Invento.Application.Features.Sales.DTOs
 
         public decimal ProfitAmount { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
