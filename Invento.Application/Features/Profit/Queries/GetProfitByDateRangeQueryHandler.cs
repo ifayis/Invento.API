@@ -42,8 +42,17 @@ namespace Invento.Application.Features.Profit.Queries
             WHERE
                 IsDeleted = 0
                 AND TenantId = @TenantId
-                AND SaleDate >= @FromDate
-                AND SaleDate <= @ToDate
+            AND
+            (
+                @FromDate IS NULL
+                OR SaleDate >= @FromDate
+            )
+
+            AND
+            (
+                @ToDate IS NULL
+                OR SaleDate <= @ToDate
+            )            
             ";
 
             var result = await connection

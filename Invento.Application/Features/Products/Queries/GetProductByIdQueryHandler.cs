@@ -36,7 +36,8 @@ namespace Invento.Application.Features.Products.Queries
                 p.SellingPrice,
                 p.CurrentStock,
                 c.Name AS CategoryName,
-                p.CreatedAt
+                p.CreatedAt,
+                p.LowStockThreshold
             FROM Products p
             INNER JOIN Categories c
                 ON p.CategoryId = c.Id

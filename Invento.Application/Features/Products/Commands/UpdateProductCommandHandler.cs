@@ -68,6 +68,7 @@ namespace Invento.Application.Features.Products.Commands
             product.SellingPrice = request.SellingPrice;
             product.CurrentStock = request.CurrentStock;
             product.CategoryId = request.CategoryId;
+            product.LowStockThreshold = request.LowStockThreshold;
 
             await _context.SaveChangesAsync(cancellationToken);
 

@@ -52,7 +52,8 @@ namespace Invento.Application.Features.Products.Commands
                 CostPrice = request.CostPrice,
                 SellingPrice = request.SellingPrice,
                 CurrentStock = request.CurrentStock,
-                CategoryId = request.CategoryId
+                CategoryId = request.CategoryId,
+                LowStockThreshold = request.LowStockThreshold
             };
 
             await _context.Products.AddAsync(

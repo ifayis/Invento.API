@@ -19,5 +19,7 @@
         public bool IsDeleted { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public int LowStockThreshold { get; set; }
     }
 }

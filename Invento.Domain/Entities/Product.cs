@@ -24,6 +24,8 @@ namespace Invento.Domain.Entities
 
         public bool IsDeleted { get; set; } = false;
 
+        public int LowStockThreshold { get; set; } = 10;
+
         public Category Category { get; set; } = default!;
 
         public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();

@@ -30,20 +30,21 @@ namespace Invento.Application.Features.Profit.Queries
 
             var sql = @"
             SELECT
+
             (
-                SELECT ISNULL(SUM(TotalAmount), 0)
+                SELECT ISNULL(SUM(TotalAmount),0)
                 FROM Sales
                 WHERE
                     IsDeleted = 0
-                    AND TenantId = @TenantId
+                    AND TenantId=@TenantId
             ) AS TotalRevenue,
 
             (
-                SELECT ISNULL(SUM(ProfitAmount), 0)
+                SELECT ISNULL(SUM(ProfitAmount),0)
                 FROM Sales
                 WHERE
                     IsDeleted = 0
-                    AND TenantId = @TenantId
+                    AND TenantId=@TenantId
             ) AS TotalProfit,
 
             (
@@ -51,7 +52,7 @@ namespace Invento.Application.Features.Profit.Queries
                 FROM Sales
                 WHERE
                     IsDeleted = 0
-                    AND TenantId = @TenantId
+                    AND TenantId=@TenantId
             ) AS TotalSales,
 
             (
@@ -59,7 +60,7 @@ namespace Invento.Application.Features.Profit.Queries
                 FROM Products
                 WHERE
                     IsDeleted = 0
-                    AND TenantId = @TenantId
+                    AND TenantId=@TenantId
             ) AS TotalProducts,
 
             (
@@ -67,8 +68,8 @@ namespace Invento.Application.Features.Profit.Queries
                 FROM Products
                 WHERE
                     IsDeleted = 0
-                    AND TenantId = @TenantId
-                    AND CurrentStock <= LowStockThreshold
+                    AND TenantId=@TenantId
+                    AND CurrentStock <= 10
             ) AS LowStockProducts
             ";
 

@@ -20,5 +20,7 @@ namespace Invento.Application.Features.Products.Commands
         public int CurrentStock { get; set; }
 
         public Guid CategoryId { get; set; }
+
+        public int LowStockThreshold { get; set; }
     }
 }
