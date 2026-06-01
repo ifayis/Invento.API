@@ -53,26 +53,28 @@ namespace Invento.Application.Features.StockMovements.Commands
                         );
                 }
 
-                if (request.MovementType == StockMovementType.StockOut)
+                switch (request.MovementType)
                 {
-                    if (product.CurrentStock < request.Quantity)
-                    {
-                        return ApiResponse<StockMovementDto>
-                            .FailureResponse(
-                                new List<string>
-                                {
-                                "Insufficient stock"
-                                }
-                            );
-                    }
+                    case StockMovementType.AdjustmentIn:
 
-                    product.CurrentStock -= request.Quantity;
-                }
-                else
-                {
-                    product.CurrentStock += request.Quantity;
-                }
+                        product.CurrentStock += request.Quantity;
+                        break;
 
+                    case StockMovementType.AdjustmentOut:
+
+                        if (product.CurrentStock < request.Quantity)
+                        {
+                            return ApiResponse<StockMovementDto>
+                                .FailureResponse(
+                                [
+                                    "Insufficient stock"
+                                ]);
+                        }
+
+                        product.CurrentStock -= request.Quantity;
+
+                        break;
+                }
                 Guid? userId = null;
 
                 var userIdClaim =
@@ -105,15 +107,28 @@ namespace Invento.Application.Features.StockMovements.Commands
                 await transaction.CommitAsync(cancellationToken);
 
                 return ApiResponse<StockMovementDto>
-                    .SuccessResponse(
-                    new StockMovementDto
-                       {
-                        MovementType = movement.MovementType,
-                        ReferenceNumber = movement.ReferenceNumber,
-                        ProductId = movement.ProductId
-                       },
-                        "Stock movement completed"
-                    );
+                .SuccessResponse(
+                new StockMovementDto
+                {
+                    Id = movement.Id,
+
+                    ProductId = product.Id,
+
+                    ProductName = product.Name,
+
+                    Quantity = movement.Quantity,
+
+                    MovementType = movement.MovementType,
+
+                    CurrentStockAfterMovement =
+                        product.CurrentStock,
+
+                    Remarks = movement.Remarks,
+
+                    ReferenceNumber =
+                        movement.ReferenceNumber,
+                },
+                "Stock movement completed");
             }
             catch
             {

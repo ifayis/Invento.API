@@ -69,7 +69,7 @@ namespace Invento.Application.Features.Profit.Queries
                 WHERE
                     IsDeleted = 0
                     AND TenantId=@TenantId
-                    AND CurrentStock <= 10
+                    AND CurrentStock <= LowStockThreshold
             ) AS LowStockProducts
             ";
 

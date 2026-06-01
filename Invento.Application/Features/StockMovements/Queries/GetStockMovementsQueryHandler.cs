@@ -2,7 +2,6 @@
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
-using Invento.Application.Features.StockMovements.DTOs;
 using Invento.Application.Interfaces;
 
 namespace Invento.Application.Features.StockMovements.Queries
@@ -29,81 +28,81 @@ namespace Invento.Application.Features.StockMovements.Queries
             using var connection = _connectionFactory.CreateConnection();
 
             var sql = @"
-        SELECT
-            sm.Id,
-            sm.ProductId,
-            p.Name AS ProductName,
-            sm.Quantity,
-            sm.MovementType,
-            sm.Remarks,
-            sm.ReferenceNumber,
-            sm.CreatedAt
-        FROM StockMovements sm
-        INNER JOIN Products p
-            ON sm.ProductId = p.Id
-        WHERE sm.IsDeleted = 0
-        AND sm.TenantId = @TenantId
-        AND
-        (
-            @ProductId IS NULL
-            OR sm.ProductId = @ProductId
-        )
-        AND
-        (
-            @MovementType IS NULL
-            OR sm.MovementType = @MovementType
-        )
-        AND
-        (
-            @Search IS NULL
-            OR p.Name LIKE '%' + @Search + '%'
-        )
-        AND
-        (
-            @FromDate IS NULL
-            OR sm.CreatedAt >= @FromDate
-        )
-        AND
-        (
-            @ToDate IS NULL
-            OR sm.CreatedAt <= @ToDate
-        )
-        ORDER BY sm.CreatedAt DESC
-        OFFSET @Offset ROWS
-        FETCH NEXT @PageSize ROWS ONLY;
+            SELECT
+                sm.Id,
+                sm.ProductId,
+                p.Name AS ProductName,
+                sm.Quantity,
+                sm.MovementType,
+                sm.Remarks,
+                sm.ReferenceNumber,
+                p.CurrentStock AS CurrentStockAfterMovement
+            FROM StockMovements sm
+            INNER JOIN Products p
+                ON sm.ProductId = p.Id
+            WHERE sm.IsDeleted = 0
+            AND sm.TenantId = @TenantId
+            AND
+            (
+                @ProductId IS NULL
+                OR sm.ProductId = @ProductId
+            )
+            AND
+            (
+                @MovementType IS NULL
+                OR sm.MovementType = @MovementType
+            )
+            AND
+            (
+                @Search IS NULL
+                OR p.Name LIKE '%' + @Search + '%'
+            )
+            AND
+            (
+                @FromDate IS NULL
+                OR sm.CreatedAt >= @FromDate
+            )
+            AND
+            (
+                @ToDate IS NULL
+                OR sm.CreatedAt <= @ToDate
+            )
+            ORDER BY sm.CreatedAt DESC
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
 
-        SELECT COUNT(*)
-        FROM StockMovements sm
-        INNER JOIN Products p
-            ON sm.ProductId = p.Id
-        WHERE sm.IsDeleted = 0
-        AND sm.TenantId = @TenantId
-        AND
-        (
-            @ProductId IS NULL
-            OR sm.ProductId = @ProductId
-        )
-        AND
-        (
-            @MovementType IS NULL
-            OR sm.MovementType = @MovementType
-        )
-        AND
-        (
-            @Search IS NULL
-            OR p.Name LIKE '%' + @Search + '%'
-        )
-        AND
-        (
-            @FromDate IS NULL
-            OR sm.CreatedAt >= @FromDate
-        )
-        AND
-        (
-            @ToDate IS NULL
-            OR sm.CreatedAt <= @ToDate
-        );
-        ";
+            SELECT COUNT(*)
+            FROM StockMovements sm
+            INNER JOIN Products p
+                ON sm.ProductId = p.Id
+            WHERE sm.IsDeleted = 0
+            AND sm.TenantId = @TenantId
+            AND
+            (
+                @ProductId IS NULL
+                OR sm.ProductId = @ProductId
+            )
+            AND
+            (
+                @MovementType IS NULL
+                OR sm.MovementType = @MovementType
+            )
+            AND
+            (
+                @Search IS NULL
+                OR p.Name LIKE '%' + @Search + '%'
+            )
+            AND
+            (
+                @FromDate IS NULL
+                OR sm.CreatedAt >= @FromDate
+            )
+            AND
+            (
+                @ToDate IS NULL
+                OR sm.CreatedAt <= @ToDate
+            );
+            ";
 
             var parameters = new
             {

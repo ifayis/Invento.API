@@ -4,10 +4,9 @@
     {
         Purchase = 1,
         Sale = 2,
-        Return = 3,
-        Damage = 4,
-        Adjustment = 5,
-        StockIn = 1,
-        StockOut = 2
+        SaleRestore = 3,
+        AdjustmentIn = 4,
+        AdjustmentOut = 5,
+        Return = 6
     }
 }

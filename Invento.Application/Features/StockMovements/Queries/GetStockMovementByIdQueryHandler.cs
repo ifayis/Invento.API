@@ -2,7 +2,6 @@
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
-using Invento.Application.Features.StockMovements.DTOs;
 using Invento.Application.Interfaces;
 
 namespace Invento.Application.Features.StockMovements.Queries
@@ -36,7 +35,7 @@ namespace Invento.Application.Features.StockMovements.Queries
                 sm.MovementType,
                 sm.Remarks,
                 sm.ReferenceNumber,
-                sm.CreatedAt
+                p.CurrentStock AS CurrentStockAfterMovement
             FROM StockMovements sm
             INNER JOIN Products p
                 ON sm.ProductId = p.Id

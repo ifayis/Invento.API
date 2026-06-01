@@ -1,7 +1,10 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Services;
 using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Interfaces;
+using Invento.Domain.Entities;
+using Invento.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Sales.Commands
@@ -11,6 +14,7 @@ namespace Invento.Application.Features.Sales.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
+        
 
         public RestoreSaleCommandHandler(
             IApplicationDbContext context,
@@ -24,8 +28,7 @@ namespace Invento.Application.Features.Sales.Commands
             RestoreSaleCommand request,
             CancellationToken cancellationToken)
         {
-            var sale =
-                await _context.Sales
+            var sale = await _context.Sales
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(
                     x => x.Id == request.Id
@@ -45,10 +48,17 @@ namespace Invento.Application.Features.Sales.Commands
                     );
             }
 
+            await _stockMovementService.CreateMovement(
+                product.Id,
+                item.Quantity,
+                StockMovementType.Sale.ToString(),
+                "Sale restored",
+                sale.InvoiceNumber
+            );
+
             sale.IsDeleted = false;
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return ApiResponse<DeleteSaleDto>
                 .SuccessResponse(

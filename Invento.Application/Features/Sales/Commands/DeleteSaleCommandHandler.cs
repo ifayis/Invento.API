@@ -1,8 +1,10 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Services;
 using Invento.Application.Features.Sales.Command;
 using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Interfaces;
+using Invento.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Sales.Commands
@@ -58,6 +60,15 @@ namespace Invento.Application.Features.Sales.Commands
                         );
 
                     product.CurrentStock += item.Quantity;
+
+                    await _stockMovementService.CreateMovement(
+                        product.Id,
+                        item.Quantity,
+                        StockMovementType.SaleRestore.ToString(),
+                        "Sale deleted",
+                        sale.InvoiceNumber
+                    );
+
                 }
 
                 sale.IsDeleted = true;

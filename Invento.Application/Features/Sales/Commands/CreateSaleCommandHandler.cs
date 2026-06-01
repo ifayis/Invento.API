@@ -1,10 +1,12 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Services;
 using Invento.Application.Features.Sales.Command;
 using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Features.Sales.Extensions;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
+using Invento.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Sales.Commands;
@@ -100,6 +102,15 @@ public class CreateSaleCommandHandler
                 }
 
                 product.CurrentStock -= item.Quantity;
+
+                await _stockMovementService.CreateMovement(
+                    product.Id,
+                    item.Quantity,
+                    StockMovementType.Sale.ToString(),
+                    "Product sold",
+                    sale.InvoiceNumber
+                );
+
 
                 var itemSubTotal = product.SellingPrice * item.Quantity;
 

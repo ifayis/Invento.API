@@ -1,5 +1,6 @@
 using Invento.API.Middleware;
 using Invento.Application.Common;
+using Invento.Application.Common.Services;
 using Invento.Application.Features.Auth.Commands;
 using Invento.Application.Interfaces;
 using Invento.Infrastructure.Extensions;
@@ -58,6 +59,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddApplicationServices();
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddScoped<StockMovementService>();
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
