@@ -14,14 +14,17 @@ namespace Invento.Application.Features.Sales.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
-        
+        private readonly StockMovementService _stockMovementService;
+
 
         public RestoreSaleCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            StockMovementService stockMovementService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _stockMovementService = stockMovementService;
         }
 
         public async Task<ApiResponse<DeleteSaleDto>> Handle(
@@ -30,6 +33,7 @@ namespace Invento.Application.Features.Sales.Commands
         {
             var sale = await _context.Sales
                 .IgnoreQueryFilters()
+                .Include(x => x.SaleItems)
                 .FirstOrDefaultAsync(
                     x => x.Id == request.Id
                     && x.TenantId == _currentTenant.TenantId
@@ -48,13 +52,44 @@ namespace Invento.Application.Features.Sales.Commands
                     );
             }
 
-            await _stockMovementService.CreateMovement(
-                product.Id,
-                item.Quantity,
-                StockMovementType.Sale.ToString(),
-                "Sale restored",
-                sale.InvoiceNumber
-            );
+            foreach (var item in sale.SaleItems)
+            {
+                var product = await _context.Products
+                    .FirstOrDefaultAsync(
+                        x => x.Id == item.ProductId
+                        && x.TenantId == _currentTenant.TenantId,
+                        cancellationToken);
+
+                if (product is null)
+                {
+                    return ApiResponse<DeleteSaleDto>
+                        .FailureResponse(
+                            new()
+                            {
+                    $"Product not found : {item.ProductId}"
+                            });
+                }
+
+                if (product.CurrentStock < item.Quantity)
+                {
+                    return ApiResponse<DeleteSaleDto>
+                        .FailureResponse(
+                            new()
+                            {
+                    $"Insufficient stock to restore sale for product {product.Name}"
+                            });
+                }
+
+                product.CurrentStock -= item.Quantity;
+
+                await _stockMovementService.CreateMovement(
+                    product.Id,
+                    item.Quantity,
+                    StockMovementType.Sale.ToString(),
+                    "Sale restored",
+                    sale.InvoiceNumber
+                );
+            }
 
             sale.IsDeleted = false;
 

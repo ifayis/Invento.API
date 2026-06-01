@@ -1,7 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Domain.Enums;
 using Invento.Application.Common;
-using Invento.Application.Features.StockMovements.DTOs;
 
 namespace Invento.Application.Features.StockMovements.Commands
 {

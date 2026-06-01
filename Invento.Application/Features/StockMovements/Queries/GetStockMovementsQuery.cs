@@ -1,5 +1,4 @@
 ﻿using Invento.Application.Abstractions;
-using Invento.Application.Features.StockMovements.DTOs;
 using Invento.Application.Common;
 
 namespace Invento.Application.Features.StockMovements.Queries

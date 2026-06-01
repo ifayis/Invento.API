@@ -17,6 +17,7 @@ public class CreateSaleCommandHandler
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
 
+
     public CreateSaleCommandHandler(
         IApplicationDbContext context, 
         ICurrentTenantService currentTenant)
@@ -102,15 +103,6 @@ public class CreateSaleCommandHandler
                 }
 
                 product.CurrentStock -= item.Quantity;
-
-                await _stockMovementService.CreateMovement(
-                    product.Id,
-                    item.Quantity,
-                    StockMovementType.Sale.ToString(),
-                    "Product sold",
-                    sale.InvoiceNumber
-                );
-
 
                 var itemSubTotal = product.SellingPrice * item.Quantity;
 

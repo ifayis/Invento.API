@@ -1,10 +1,12 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Services;
 using Invento.Application.Features.Sales.Command;
 using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Features.Sales.Extensions;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
+using Invento.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Sales.Commands
@@ -13,15 +15,17 @@ namespace Invento.Application.Features.Sales.Commands
         : ICommandHandler<UpdateSaleCommand, ApiResponse<SaleDto>>
     {
         private readonly IApplicationDbContext _context;
-
         private readonly ICurrentTenantService _currentTenant;
+        private readonly StockMovementService _stockMovementService;
 
         public UpdateSaleCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            StockMovementService stockMovementService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _stockMovementService = stockMovementService;
         }
 
         public async Task<ApiResponse<SaleDto>> Handle(
@@ -67,15 +71,21 @@ namespace Invento.Application.Features.Sales.Commands
                             cancellationToken
                         );
 
-                    oldProduct.CurrentStock +=
-                        oldItem.Quantity;
+                    oldProduct.CurrentStock += oldItem.Quantity;
+
+                    await _stockMovementService.CreateMovement(
+                        oldProduct.Id,
+                        oldItem.Quantity,
+                        StockMovementType.SaleRestore.ToString(),
+                        "Sale updated - old sale reversed",
+                        sale.InvoiceNumber
+                    );
+
                 }
 
-                _context.SaleItems.RemoveRange(
-                    sale.SaleItems);
+                _context.SaleItems.RemoveRange(sale.SaleItems);
 
-                await _context.SaveChangesAsync(
-                    cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
 
                 foreach (var item in sale.SaleItems.ToList())
                 {
@@ -86,8 +96,27 @@ namespace Invento.Application.Features.Sales.Commands
 
                 decimal subTotal = 0;
                 decimal totalTax = 0;
-                decimal totalProfit = 0;
                 decimal totalCost = 0;
+
+                if (request.CustomerId.HasValue)
+                {
+                    var customer = await _context.Customers
+                        .FirstOrDefaultAsync(
+                            x => x.Id == request.CustomerId
+                            && x.TenantId == _currentTenant.TenantId
+                            && !x.IsDeleted,
+                            cancellationToken);
+
+                    if (customer is null)
+                    {
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
+                    "Customer not found"
+                                });
+                    }
+                }
 
                 sale.CustomerId = request.CustomerId;
                 sale.SaleDate = request.SaleDate;
@@ -138,6 +167,14 @@ namespace Invento.Application.Features.Sales.Commands
 
                     product.CurrentStock -= item.Quantity;
 
+                    await _stockMovementService.CreateMovement(
+                        product.Id,
+                        item.Quantity,
+                        StockMovementType.Sale.ToString(),
+                        "Sale updated - new sale applied",
+                        sale.InvoiceNumber
+                    );
+
                     var itemSubTotal = product.SellingPrice * item.Quantity;
 
                     var taxAmount = (itemSubTotal * product.TaxRate) / 100;
@@ -172,7 +209,6 @@ namespace Invento.Application.Features.Sales.Commands
                     subTotal += itemSubTotal;
                     totalTax += taxAmount;
                     totalCost += itemCost;
-                    totalProfit += profit;
                 }
 
                 sale.SubTotal = subTotal;

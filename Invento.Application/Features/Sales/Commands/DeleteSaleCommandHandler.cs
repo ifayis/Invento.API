@@ -14,13 +14,17 @@ namespace Invento.Application.Features.Sales.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
+        private readonly StockMovementService _stockMovementService; 
 
         public DeleteSaleCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            StockMovementService stockMovementService
+            )
         {
             _context = context;
             _currentTenant = currentTenant;
+            _stockMovementService = stockMovementService;
         }
 
         public async Task<ApiResponse<DeleteSaleDto>> Handle(
