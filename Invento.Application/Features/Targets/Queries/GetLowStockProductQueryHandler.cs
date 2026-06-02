@@ -11,7 +11,6 @@ namespace Invento.Application.Features.Targets.Queries
         : IQueryHandler<GetLowStockProductsQuery, ApiResponse<List<StockAlertDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
-
         private readonly ICurrentTenantService _currentTenant;
 
         public GetLowStockProductsQueryHandler(
@@ -32,19 +31,33 @@ namespace Invento.Application.Features.Targets.Queries
             SELECT
                 p.Id AS ProductId,
                 p.Name AS ProductName,
+
+                c.Id AS CategoryId,
+                c.Name AS CategoryName,
+
                 p.CurrentStock,
-                ts.LowStockThreshold AS Threshold
+
+                ts.LowStockThreshold,
+                ts.CriticalStockThreshold,
+
+                p.IsDeleted
 
             FROM Products p
+
+            INNER JOIN Categories c
+                ON p.CategoryId = c.Id
 
             INNER JOIN TenantSettings ts
                 ON p.TenantId = ts.TenantId
 
             WHERE
-                p.IsDeleted = 0
-                AND p.TenantId = @TenantId
-                AND p.CurrentStock
-                    <= ts.LowStockThreshold
+                p.TenantId = @TenantId
+
+                AND p.IsDeleted = 0
+
+                AND p.CurrentStock <= ts.LowStockThreshold
+
+                AND p.CurrentStock > ts.CriticalStockThreshold
 
             ORDER BY p.CurrentStock ASC
             ";

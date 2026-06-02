@@ -9,5 +9,13 @@
         public decimal MonthlySalesTarget { get; set; }
 
         public decimal MonthlyProfitTarget { get; set; }
+
+        public decimal CurrentMonthSales { get; set; }
+
+        public decimal CurrentMonthProfit { get; set; }
+
+        public decimal SalesAchievementPercentage { get; set; }
+
+        public decimal ProfitAchievementPercentage { get; set; }
     }
 }
