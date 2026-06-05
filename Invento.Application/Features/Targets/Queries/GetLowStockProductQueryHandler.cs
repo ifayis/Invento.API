@@ -31,16 +31,13 @@ namespace Invento.Application.Features.Targets.Queries
             SELECT
                 p.Id AS ProductId,
                 p.Name AS ProductName,
-
-                c.Id AS CategoryId,
+                p.CategoryId,
                 c.Name AS CategoryName,
-
                 p.CurrentStock,
-
-                ts.LowStockThreshold,
+                p.LowStockThreshold,
                 ts.CriticalStockThreshold,
-
-                p.IsDeleted
+                p.IsDeleted,
+                'LOW' AS Status
 
             FROM Products p
 
@@ -52,10 +49,9 @@ namespace Invento.Application.Features.Targets.Queries
 
             WHERE
                 p.TenantId = @TenantId
-
                 AND p.IsDeleted = 0
 
-                AND p.CurrentStock <= ts.LowStockThreshold
+                AND p.CurrentStock <= p.LowStockThreshold
 
                 AND p.CurrentStock > ts.CriticalStockThreshold
 

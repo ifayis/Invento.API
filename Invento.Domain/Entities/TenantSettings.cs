@@ -6,10 +6,6 @@ namespace Invento.Domain.Entities
     {
         public Guid TenantId { get; set; }
 
-        public int LowStockThreshold { get; set; } = 10;
-
-        public int CriticalStockThreshold { get; set; } = 3;
-
         public decimal MonthlySalesTarget { get; set; }
 
         public decimal MonthlyProfitTarget { get; set; }

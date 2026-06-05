@@ -72,7 +72,8 @@ namespace Invento.Application.Features.Products.Commands
                 SellingPrice = product.SellingPrice,
                 CurrentStock = product.CurrentStock,
                 CategoryName = category.Name,
-                CreatedAt = product.CreatedAt
+                CreatedAt = product.CreatedAt,
+                LowStockThreshold = product.LowStockThreshold
             };
 
             return ApiResponse<ProductDto>

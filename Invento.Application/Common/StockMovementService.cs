@@ -29,7 +29,7 @@ namespace Invento.Application.Common.Services
                 TenantId = _currentTenant.TenantId,
 
                 ProductId = productId,
-
+                
                 Quantity = quantity,
 
                 MovementType = movementType,

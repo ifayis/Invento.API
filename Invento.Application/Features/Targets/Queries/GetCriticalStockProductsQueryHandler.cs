@@ -32,16 +32,13 @@ namespace Invento.Application.Features.Targets.Queries
             SELECT
                 p.Id AS ProductId,
                 p.Name AS ProductName,
-
-                c.Id AS CategoryId,
+                p.CategoryId,
                 c.Name AS CategoryName,
-
                 p.CurrentStock,
-
-                ts.LowStockThreshold,
+                p.LowStockThreshold,
                 ts.CriticalStockThreshold,
-
-                p.IsDeleted
+                p.IsDeleted,
+                'CRITICAL' AS Status
 
             FROM Products p
 
@@ -53,12 +50,11 @@ namespace Invento.Application.Features.Targets.Queries
 
             WHERE
                 p.TenantId = @TenantId
-
                 AND p.IsDeleted = 0
 
                 AND p.CurrentStock <= ts.CriticalStockThreshold
 
-            ORDER BY p.CurrentStock ASC 
+            ORDER BY p.CurrentStock ASC
             ";
 
             var result = await connection.QueryAsync<StockAlertDto>(
