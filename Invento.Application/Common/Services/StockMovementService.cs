@@ -6,7 +6,6 @@ namespace Invento.Application.Common.Services
     public class StockMovementService
     {
         private readonly IApplicationDbContext _context;
-
         private readonly ICurrentTenantService _currentTenant;
 
         public StockMovementService(
@@ -21,25 +20,23 @@ namespace Invento.Application.Common.Services
             Guid productId,
             int quantity,
             string movementType,
-            string? remarks = null,
-            string? referenceNumber = null)
+            int currentStockAfterMovement,
+            string? remarks,
+            string? referenceNumber
+)
         {
             var movement = new StockMovement
             {
                 TenantId = _currentTenant.TenantId,
-
                 ProductId = productId,
-                
                 Quantity = quantity,
-
                 MovementType = movementType,
-
+                CurrentStockAfterMovement = currentStockAfterMovement,
                 Remarks = remarks,
-
                 ReferenceNumber = referenceNumber
             };
-
             await _context.StockMovements.AddAsync(movement);
         }
+
     }
 }

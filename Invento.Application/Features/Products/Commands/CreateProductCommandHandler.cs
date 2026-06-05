@@ -3,7 +3,9 @@ using Invento.Application.Common;
 using Invento.Application.Features.Products.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
+using Invento.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Invento.Application.Common.Services;
 
 namespace Invento.Application.Features.Products.Commands
 {
@@ -12,13 +14,16 @@ namespace Invento.Application.Features.Products.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
+        private readonly StockMovementService _stockMovementService;
 
         public CreateProductCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            StockMovementService stockMovementService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _stockMovementService = stockMovementService;
         }
 
         public async Task<ApiResponse<ProductDto>> Handle(
@@ -59,6 +64,15 @@ namespace Invento.Application.Features.Products.Commands
             await _context.Products.AddAsync(
                 product,
                 cancellationToken
+            );
+
+            await _stockMovementService.CreateMovement(
+                product.Id,
+                product.CurrentStock,
+                StockMovementType.Purchase.ToString(),
+                product.CurrentStock,
+                "Opening stock",
+                "PRODUCT-CREATION"
             );
 
             await _context.SaveChangesAsync(cancellationToken);

@@ -8,12 +8,16 @@ namespace Invento.Domain.Entities
 
         public Guid ProductId { get; set; }
 
+        public Product Product { get; set; } = null!;
+
         public string AlertType { get; set; } = string.Empty;
 
         public int CurrentStock { get; set; }
 
+        public int ThresholdValue { get; set; }
+
         public bool IsResolved { get; set; }
 
-        public Product Product { get; set; } = null!;
+        public bool IsDeleted { get; set; }
     }
 }

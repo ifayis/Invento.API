@@ -33,6 +33,7 @@ namespace Invento.Application.Features.StockMovements.Queries
                 p.Name AS ProductName,
                 sm.Quantity,
                 sm.MovementType,
+                sm.CurrentStockAfterMovement,
                 sm.Remarks,
                 sm.ReferenceNumber,
                 p.CurrentStock AS CurrentStockAfterMovement

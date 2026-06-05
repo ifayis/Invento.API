@@ -16,14 +16,16 @@ public class CreateSaleCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
-
+    private readonly StockMovementService _stockMovementService;
 
     public CreateSaleCommandHandler(
         IApplicationDbContext context, 
-        ICurrentTenantService currentTenant)
+        ICurrentTenantService currentTenant,
+        StockMovementService stockMovementService)
     {
         _context = context;
         _currentTenant = currentTenant;
+        _stockMovementService = stockMovementService;
     }
 
     public async Task<ApiResponse<SaleDetailsDto>> Handle(
@@ -137,19 +139,14 @@ public class CreateSaleCommandHandler
 
                 sale.SaleItems.Add(saleItem);
 
-                await _context.StockMovements.AddAsync(
-                    new StockMovement
-                    {
-                        TenantId = _currentTenant.TenantId,
-                        ProductId = product.Id,
-                        Quantity = item.Quantity,
-                        MovementType = "StockOut",
-                        Remarks = "Sale completed",
-                        ReferenceNumber = sale.InvoiceNumber
-                    },
-                    cancellationToken
+                await _stockMovementService.CreateMovement(
+                    product.Id,
+                    item.Quantity,
+                    StockMovementType.Sale.ToString(),
+                    product.CurrentStock,
+                    "Sale completed",
+                    sale.InvoiceNumber
                 );
-
                 subTotal += itemSubTotal;
                 totalTax += taxAmount;
                 totalCost += itemCost;

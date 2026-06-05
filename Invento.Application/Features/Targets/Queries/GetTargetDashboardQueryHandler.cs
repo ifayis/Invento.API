@@ -41,8 +41,22 @@ namespace Invento.Application.Features.Targets.Queries
                     WHERE
                         s.TenantId = @TenantId
                         AND s.IsDeleted = 0
-                        AND MONTH(s.SaleDate) = MONTH(GETUTCDATE())
-                        AND YEAR(s.SaleDate) = YEAR(GETUTCDATE())
+                        ANDs.SaleDate >= DATEFROMPARTS(
+                            YEAR(GETUTCDATE()),
+                            MONTH(GETUTCDATE()),
+                            1
+                        )
+
+                        AND s.SaleDate <
+                        DATEADD(
+                            MONTH,
+                            1,
+                            DATEFROMPARTS(
+                                YEAR(GETUTCDATE()),
+                                MONTH(GETUTCDATE()),
+                                1
+                            )
+                        )
                 ), 0) AS CurrentMonthSales,
 
                 ts.MonthlyProfitTarget,
@@ -54,8 +68,22 @@ namespace Invento.Application.Features.Targets.Queries
                     WHERE
                         s.TenantId = @TenantId
                         AND s.IsDeleted = 0
-                        AND MONTH(s.SaleDate) = MONTH(GETUTCDATE())
-                        AND YEAR(s.SaleDate) = YEAR(GETUTCDATE())
+                        ANDs.SaleDate >= DATEFROMPARTS(
+                            YEAR(GETUTCDATE()),
+                            MONTH(GETUTCDATE()),
+                            1
+                        )
+
+                        AND s.SaleDate <
+                        DATEADD(
+                            MONTH,
+                            1,
+                            DATEFROMPARTS(
+                                YEAR(GETUTCDATE()),
+                                MONTH(GETUTCDATE()),
+                                1
+                            )
+                        )
                 ), 0) AS CurrentMonthProfit,
 
                 (

@@ -66,7 +66,6 @@ namespace Invento.Application.Features.Products.Commands
             product.SKU = request.SKU;
             product.CostPrice = request.CostPrice;
             product.SellingPrice = request.SellingPrice;
-            product.CurrentStock = request.CurrentStock;
             product.CategoryId = request.CategoryId;
             product.LowStockThreshold = request.LowStockThreshold;
 

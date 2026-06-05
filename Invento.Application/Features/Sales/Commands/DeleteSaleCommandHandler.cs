@@ -69,10 +69,10 @@ namespace Invento.Application.Features.Sales.Commands
                         product.Id,
                         item.Quantity,
                         StockMovementType.SaleRestore.ToString(),
+                        product.CurrentStock,
                         "Sale deleted",
                         sale.InvoiceNumber
                     );
-
                 }
 
                 sale.IsDeleted = true;

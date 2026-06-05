@@ -77,10 +77,10 @@ namespace Invento.Application.Features.Sales.Commands
                         oldProduct.Id,
                         oldItem.Quantity,
                         StockMovementType.SaleRestore.ToString(),
+                        oldProduct.CurrentStock,
                         "Sale updated - old sale reversed",
                         sale.InvoiceNumber
                     );
-
                 }
 
                 _context.SaleItems.RemoveRange(sale.SaleItems);
@@ -171,6 +171,7 @@ namespace Invento.Application.Features.Sales.Commands
                         product.Id,
                         item.Quantity,
                         StockMovementType.Sale.ToString(),
+                        product.CurrentStock,
                         "Sale updated - new sale applied",
                         sale.InvoiceNumber
                     );

@@ -86,6 +86,7 @@ namespace Invento.Application.Features.Sales.Commands
                     product.Id,
                     item.Quantity,
                     StockMovementType.Sale.ToString(),
+                    product.CurrentStock,
                     "Sale restored",
                     sale.InvoiceNumber
                 );
