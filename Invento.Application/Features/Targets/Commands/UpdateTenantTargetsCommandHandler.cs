@@ -46,10 +46,6 @@ namespace Invento.Application.Features.Targets.Commands
                     );
             }
 
-            settings.LowStockThreshold = request.LowStockThreshold;
-
-            settings.CriticalStockThreshold = request.CriticalStockThreshold;
-
             settings.MonthlySalesTarget = request.MonthlySalesTarget;
 
             settings.MonthlyProfitTarget = request.MonthlyProfitTarget;
@@ -60,8 +56,6 @@ namespace Invento.Application.Features.Targets.Commands
                 .SuccessResponse(
                 new TenantTargetDto
                 {
-                    CriticalStockThreshold = settings.CriticalStockThreshold,
-                    LowStockThreshold = settings.LowStockThreshold,
                     MonthlyProfitTarget = settings.MonthlyProfitTarget,
                     MonthlySalesTarget = settings.MonthlySalesTarget
                 },

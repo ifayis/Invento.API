@@ -36,7 +36,8 @@ namespace Invento.Application.Features.StockMovements.Queries
                 sm.CurrentStockAfterMovement,
                 sm.Remarks,
                 sm.ReferenceNumber,
-                p.CurrentStock AS CurrentStockAfterMovement
+                sm.CreatedAt,
+                sm.CreatedByUserId
             FROM StockMovements sm
             INNER JOIN Products p
                 ON sm.ProductId = p.Id

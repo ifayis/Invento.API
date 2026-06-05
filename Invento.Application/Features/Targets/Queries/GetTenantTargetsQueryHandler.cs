@@ -33,8 +33,6 @@ namespace Invento.Application.Features.Targets.Queries
 
             var targetSql = @"
                 SELECT
-                    LowStockThreshold,
-                    CriticalStockThreshold,
                     MonthlySalesTarget,
                     MonthlyProfitTarget
                 FROM TenantSettings

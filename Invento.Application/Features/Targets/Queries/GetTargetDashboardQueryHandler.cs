@@ -34,57 +34,67 @@ namespace Invento.Application.Features.Targets.Queries
             SELECT
                 ts.MonthlySalesTarget,
 
-                ISNULL(
+                ISNULL
                 (
-                    SELECT SUM(s.TotalAmount)
-                    FROM Sales s
-                    WHERE
-                        s.TenantId = @TenantId
-                        AND s.IsDeleted = 0
-                        ANDs.SaleDate >= DATEFROMPARTS(
-                            YEAR(GETUTCDATE()),
-                            MONTH(GETUTCDATE()),
-                            1
-                        )
-
-                        AND s.SaleDate <
-                        DATEADD(
-                            MONTH,
-                            1,
-                            DATEFROMPARTS(
+                    (
+                        SELECT SUM(s.TotalAmount)
+                        FROM Sales s
+                        WHERE
+                            s.TenantId = @TenantId
+                            AND s.IsDeleted = 0
+                            AND s.SaleDate >= DATEFROMPARTS
+                            (
                                 YEAR(GETUTCDATE()),
                                 MONTH(GETUTCDATE()),
                                 1
                             )
-                        )
-                ), 0) AS CurrentMonthSales,
+                            AND s.SaleDate <
+                                DATEADD
+                                (
+                                    MONTH,
+                                    1,
+                                    DATEFROMPARTS
+                                    (
+                                        YEAR(GETUTCDATE()),
+                                        MONTH(GETUTCDATE()),
+                                        1
+                                    )
+                                )
+                    ),
+                    0
+                ) AS CurrentMonthSales,
 
                 ts.MonthlyProfitTarget,
 
-                ISNULL(
+                ISNULL
                 (
-                    SELECT SUM(s.ProfitAmount)
-                    FROM Sales s
-                    WHERE
-                        s.TenantId = @TenantId
-                        AND s.IsDeleted = 0
-                        ANDs.SaleDate >= DATEFROMPARTS(
-                            YEAR(GETUTCDATE()),
-                            MONTH(GETUTCDATE()),
-                            1
-                        )
-
-                        AND s.SaleDate <
-                        DATEADD(
-                            MONTH,
-                            1,
-                            DATEFROMPARTS(
+                    (
+                        SELECT SUM(s.ProfitAmount)
+                        FROM Sales s
+                        WHERE
+                            s.TenantId = @TenantId
+                            AND s.IsDeleted = 0
+                            AND s.SaleDate >= DATEFROMPARTS
+                            (
                                 YEAR(GETUTCDATE()),
                                 MONTH(GETUTCDATE()),
                                 1
                             )
-                        )
-                ), 0) AS CurrentMonthProfit,
+                            AND s.SaleDate <
+                                DATEADD
+                                (
+                                    MONTH,
+                                    1,
+                                    DATEFROMPARTS
+                                    (
+                                        YEAR(GETUTCDATE()),
+                                        MONTH(GETUTCDATE()),
+                                        1
+                                    )
+                                )
+                    ),
+                    0
+                ) AS CurrentMonthProfit,
 
                 (
                     SELECT COUNT(*)
@@ -98,12 +108,10 @@ namespace Invento.Application.Features.Targets.Queries
                 (
                     SELECT COUNT(*)
                     FROM Products p
-                    INNER JOIN TenantSettings ts2
-                        ON p.TenantId = ts2.TenantId
                     WHERE
                         p.TenantId = @TenantId
                         AND p.IsDeleted = 0
-                        AND p.CurrentStock <= ts2.CriticalStockThreshold
+                        AND p.CurrentStock <= (p.LowStockThreshold / 2)
                 ) AS CriticalStockProducts
 
             FROM TenantSettings ts
@@ -112,7 +120,6 @@ namespace Invento.Application.Features.Targets.Queries
                 ts.TenantId = @TenantId
                 AND ts.IsDeleted = 0
             ";
-
             var dashboard =
                 await connection.QueryFirstOrDefaultAsync<DashboardTargetDto>(
                     sql,

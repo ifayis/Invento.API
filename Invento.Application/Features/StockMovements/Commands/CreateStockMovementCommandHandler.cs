@@ -52,6 +52,16 @@ namespace Invento.Application.Features.StockMovements.Commands
                         );
                 }
 
+                if (request.MovementType != StockMovementType.AdjustmentIn &&
+                    request.MovementType != StockMovementType.AdjustmentOut)
+                {
+                    return ApiResponse<StockMovementDto>
+                        .FailureResponse(
+                        [
+                            "Only AdjustmentIn and AdjustmentOut are allowed"
+                        ]);
+                }
+
                 switch (request.MovementType)
                 {
                     case StockMovementType.AdjustmentIn:
@@ -91,6 +101,7 @@ namespace Invento.Application.Features.StockMovements.Commands
                     ProductId = request.ProductId,
                     Quantity = request.Quantity,
                     MovementType = request.MovementType.ToString(),
+                    CurrentStockAfterMovement = product.CurrentStock,
                     Remarks = request.Remarks,
                     ReferenceNumber = request.ReferenceNumber,
                     CreatedByUserId = userId
