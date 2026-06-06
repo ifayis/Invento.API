@@ -57,5 +57,16 @@ namespace Invento.API.Controllers
                 )
             );
         }
+
+
+        [HttpGet("reorder-products")]
+        public async Task<IActionResult> ReorderProducts()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetReorderProductsQuery()
+                )
+            );
+        }
     }
 }
