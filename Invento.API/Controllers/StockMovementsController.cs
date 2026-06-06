@@ -44,5 +44,46 @@ namespace Invento.API.Controllers
                 }
             ));
         }
+
+
+        [HttpGet("dashboard")]
+        public async Task<IActionResult> Dashboard()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetInventoryDashboardQuery()
+                )
+            );
+        }
+
+
+        [HttpGet("fast-moving")]
+        public async Task<IActionResult> FastMoving(
+                [FromQuery] int top = 10)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetFastMovingProductsQuery
+                    {
+                        Top = top
+                    }
+                )
+            );
+        }
+
+
+        [HttpGet("dead-stock")]
+        public async Task<IActionResult> DeadStock(
+    [FromQuery] int days = 90)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetDeadStockProductsQuery
+                    {
+                        Days = days
+                    }
+                )
+            );
+        }
     }
 }
