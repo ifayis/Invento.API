@@ -76,5 +76,61 @@ namespace Invento.API.Controllers
                 }
             ));
         }
+
+
+        [HttpGet("top-customers")]
+        public async Task<IActionResult> TopCustomers(
+                [FromQuery] int top = 10)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetTopCustomersQuery
+                    {
+                        Top = top
+                    }
+                )
+            );
+        }
+
+
+        [HttpGet("{customerId}/sales-summary")]
+        public async Task<IActionResult> SalesSummary(
+            Guid customerId)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetCustomerSalesSummaryQuery
+                    {
+                        CustomerId = customerId
+                    }
+                )
+            );
+        }
+
+
+        [HttpGet("inactive")]
+        public async Task<IActionResult> InactiveCustomers(
+        [FromQuery] int days = 30)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetInactiveCustomersQuery
+                    {
+                        Days = days
+                    }
+                )
+            );
+        }
+
+
+        [HttpGet("dashboard")]
+        public async Task<IActionResult> Dashboard()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetCustomerDashboardQuery()
+                )
+            );
+        }
     }
 }

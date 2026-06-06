@@ -1,5 +1,5 @@
 ﻿using Invento.Application.Abstractions;
-using Invento.Application.Features.Customer.DTOs;
+using Invento.Application.Features.Customers.DTOs;
 using Invento.Application.Common;
 
 namespace Invento.Application.Features.Customers.Queries

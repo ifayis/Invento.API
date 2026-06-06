@@ -2,7 +2,7 @@
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
-using Invento.Application.Features.Customer.DTOs;
+using Invento.Application.Features.Customers.DTOs;
 using Invento.Application.Interfaces;
 
 namespace Invento.Application.Features.Customers.Queries

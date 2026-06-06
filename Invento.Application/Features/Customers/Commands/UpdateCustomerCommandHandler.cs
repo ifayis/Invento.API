@@ -1,7 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Customer.Commands;
-using Invento.Application.Features.Customer.DTOs;
+using Invento.Application.Features.Customers.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

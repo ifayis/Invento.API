@@ -1,4 +1,4 @@
-﻿namespace Invento.Application.Features.Customer.DTOs
+﻿namespace Invento.Application.Features.Customers.DTOs
 {
     public class CustomerDto
     {
