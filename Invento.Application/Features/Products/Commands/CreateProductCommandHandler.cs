@@ -54,9 +54,9 @@ namespace Invento.Application.Features.Products.Commands
                 TenantId = _currentTenant.TenantId,
                 Name = request.Name.Trim(),
                 SKU = request.SKU.Trim(),
-                CostPrice = request.CostPrice,
+                CostPrice = 0,
                 SellingPrice = request.SellingPrice,
-                CurrentStock = request.CurrentStock,
+                CurrentStock = 0,
                 CategoryId = request.CategoryId,
                 LowStockThreshold = request.LowStockThreshold
             };
@@ -64,15 +64,6 @@ namespace Invento.Application.Features.Products.Commands
             await _context.Products.AddAsync(
                 product,
                 cancellationToken
-            );
-
-            await _stockMovementService.CreateMovement(
-                product.Id,
-                product.CurrentStock,
-                StockMovementType.Purchase.ToString(),
-                product.CurrentStock,
-                "Opening stock",
-                "PRODUCT-CREATION"
             );
 
             await _context.SaveChangesAsync(cancellationToken);

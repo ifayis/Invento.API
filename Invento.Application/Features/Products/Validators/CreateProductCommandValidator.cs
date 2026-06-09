@@ -21,9 +21,6 @@ namespace Invento.Application.Features.Products.Validators
             RuleFor(x => x.SellingPrice)
                 .GreaterThanOrEqualTo(0);
 
-            RuleFor(x => x.CurrentStock)
-                .GreaterThanOrEqualTo(0);
-
             RuleFor(x => x.CategoryId)
                 .NotEmpty();
         }
