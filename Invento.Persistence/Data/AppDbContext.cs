@@ -62,6 +62,9 @@ namespace Invento.Persistence.Data
 
             modelBuilder.Entity<Supplier>()
                 .HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<Purchase>()
+                .HasQueryFilter(x => !x.IsDeleted);
         }
 
         public async Task<IDbContextTransaction>BeginTransactionAsync()

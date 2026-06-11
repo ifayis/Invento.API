@@ -1,0 +1,51 @@
+﻿using Invento.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Invento.Persistence.Configurations
+{
+    public class PurchaseConfiguration
+        : IEntityTypeConfiguration<Purchase>
+    {
+        public void Configure(
+            EntityTypeBuilder<Purchase> builder)
+        {
+            builder.ToTable("Purchases");
+
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.PurchaseNumber)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            builder.Property(x => x.SubTotal)
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(x => x.TaxAmount)
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(x => x.DiscountAmount)
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(x => x.TotalAmount)
+                .HasColumnType("decimal(18,2)");
+
+            builder.HasIndex(x => x.PurchaseNumber)
+                .IsUnique();
+
+            builder.HasIndex(x => x.PurchaseDate);
+
+            builder.HasOne(x => x.Supplier)
+                .WithMany(x => x.Purchases)
+                .HasForeignKey(x => x.SupplierId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(x => x.PurchaseItems)
+                .WithOne(x => x.Purchase)
+                .HasForeignKey(x => x.PurchaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasQueryFilter(x => !x.IsDeleted);
+        }
+    }
+}
