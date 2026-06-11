@@ -26,6 +26,12 @@ namespace Invento.Application.Interfaces
 
         DbSet<TenantSettings> TenantSettings { get; }
 
+        DbSet<Supplier> Suppliers { get; }
+
+        DbSet<Purchase> Purchases { get; }
+
+        DbSet<PurchaseItem> PurchaseItems { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
         Task<IDbContextTransaction> BeginTransactionAsync();

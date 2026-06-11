@@ -15,9 +15,6 @@ namespace Invento.Application.Features.Products.Validators
                 .NotEmpty()
                 .MaximumLength(100);
 
-            RuleFor(x => x.CostPrice)
-                .GreaterThanOrEqualTo(0);
-
             RuleFor(x => x.SellingPrice)
                 .GreaterThanOrEqualTo(0);
 

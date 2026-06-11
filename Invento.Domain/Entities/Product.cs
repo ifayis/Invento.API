@@ -33,5 +33,7 @@ namespace Invento.Domain.Entities
         public ICollection<StockMovement> StockMovements { get; set; }  = new List<StockMovement>();
 
         public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
+
+        public ICollection<PurchaseItem> PurchaseItems { get; set; } = new List<PurchaseItem>();
     }
 }

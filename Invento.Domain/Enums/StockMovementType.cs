@@ -4,18 +4,16 @@
     {
         Purchase = 1,
 
-        Sale = 2,
+        PurchaseReturn = 2,
 
-        SaleRestore = 3,
+        Sale = 3,
 
-        AdjustmentIn = 4,
+        SaleRestore = 4,
 
-        AdjustmentOut = 5,
+        AdjustmentIn = 5,
 
-        Return = 6,
+        AdjustmentOut = 6,
 
-        LowStockAlert = 7,
-
-        CriticalStockAlert = 8
+        Return = 7
     }
 }

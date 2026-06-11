@@ -35,6 +35,12 @@ namespace Invento.Persistence.Data
 
         public DbSet<TenantSettings> TenantSettings => Set<TenantSettings>();
 
+        public DbSet<Supplier> Suppliers => Set<Supplier>();
+
+        public DbSet<Purchase> Purchases => Set<Purchase>();
+
+        public DbSet<PurchaseItem> PurchaseItems => Set<PurchaseItem>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -52,6 +58,9 @@ namespace Invento.Persistence.Data
                 .HasQueryFilter(x => !x.IsDeleted);
 
             modelBuilder.Entity<StockMovement>()
+                .HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<Supplier>()
                 .HasQueryFilter(x => !x.IsDeleted);
         }
 
