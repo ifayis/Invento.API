@@ -171,8 +171,6 @@ namespace Invento.Application.Features.Purchases.Commands
 
                 await _context.SaveChangesAsync(cancellationToken);
 
-                purchase.PurchaseItems.Clear();
-
                 await transaction.CommitAsync(cancellationToken);
 
                 return ApiResponse<PurchaseDto>

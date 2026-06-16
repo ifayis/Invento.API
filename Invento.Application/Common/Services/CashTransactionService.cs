@@ -18,7 +18,7 @@ namespace Invento.Application.Common.Services
             _currentTenant = currentTenant;
         }
 
-        public async Task CreateTransaction(
+        public async Task<CashTransaction> CreateTransaction(
             CashTransactionType type,
             decimal amount,
             string description,
@@ -39,6 +39,10 @@ namespace Invento.Application.Common.Services
 
             await _context.CashTransactions
                 .AddAsync(transaction);
+
+            await _context.SaveChangesAsync(default);
+
+            return transaction;
         }
     }
 }
