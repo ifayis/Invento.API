@@ -1,0 +1,59 @@
+﻿using Invento.Application.Abstractions;
+using Invento.Application.Common;
+using Invento.Application.Features.Balance.DTOs;
+using Invento.Application.Interfaces;
+using Invento.Domain.Entities;
+using Invento.Domain.Enums;
+
+namespace Invento.Application.Features.Balance.Commands
+{
+    public class CreateManualIncomeCommandHandler
+        : ICommandHandler<
+            CreateManualIncomeCommand,
+            ApiResponse<CashTransactionDto>>
+    {
+        private readonly IApplicationDbContext _context;
+        private readonly ICurrentTenantService _currentTenant;
+
+        public CreateManualIncomeCommandHandler(
+            IApplicationDbContext context,
+            ICurrentTenantService currentTenant)
+        {
+            _context = context;
+            _currentTenant = currentTenant;
+        }
+
+        public async Task<ApiResponse<CashTransactionDto>> Handle(
+            CreateManualIncomeCommand request,
+            CancellationToken cancellationToken)
+        {
+            var transaction = new CashTransaction
+            {
+                TenantId = _currentTenant.TenantId,
+                TransactionType = CashTransactionType.ManualIncome,
+                Amount = request.Amount,
+                Description = request.Description.Trim(),
+                TransactionDate = request.TransactionDate
+            };
+
+            await _context.CashTransactions.AddAsync(
+                transaction,
+                cancellationToken);
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
+
+            return ApiResponse<CashTransactionDto>
+                .SuccessResponse(
+                    new CashTransactionDto
+                    {
+                        Id = transaction.Id,
+                        TransactionType = transaction.TransactionType,
+                        Amount = transaction.Amount,
+                        Description = transaction.Description,
+                        TransactionDate = transaction.TransactionDate
+                    },
+                    "Income added successfully");
+        }
+    }
+}
