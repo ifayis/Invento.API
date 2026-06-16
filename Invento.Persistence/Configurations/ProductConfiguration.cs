@@ -53,9 +53,6 @@ namespace Invento.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasQueryFilter(x => !x.IsDeleted);
-
-            builder.Property(x => x.LowStockThreshold)
-                .HasDefaultValue(10);
         }
     }
 }
