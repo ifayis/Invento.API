@@ -49,6 +49,66 @@ namespace Invento.API.Controllers
                         Count = count
                     }));
         }
+
+        [HttpGet("top-products")]
+        public async Task<IActionResult> TopProducts(
+    [FromQuery] int count = 10)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetTopProductsQuery
+                    {
+                        Count = count
+                    }));
+        }
+
+        [HttpGet("top-customers")]
+        public async Task<IActionResult> TopCustomers(
+            [FromQuery] int count = 10)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetTopCustomersQuery
+                    {
+                        Count = count
+                    }));
+        }
+
+        [HttpGet("top-suppliers")]
+        public async Task<IActionResult> TopSuppliers(
+            [FromQuery] int count = 10)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetTopSuppliersQuery
+                    {
+                        Count = count
+                    }));
+        }
+
+        [HttpGet("monthly-sales-chart")]
+        public async Task<IActionResult> MonthlySalesChart()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetMonthlySalesChartQuery()));
+        }
+
+        [HttpGet("monthly-purchases-chart")]
+        public async Task<IActionResult> MonthlyPurchasesChart()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetMonthlyPurchasesChartQuery()));
+        }
+
+        [HttpGet("monthly-profit-chart")]
+        public async Task<IActionResult> MonthlyProfitChart()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetMonthlyProfitChartQuery()));
+        }
     }
 
 }
