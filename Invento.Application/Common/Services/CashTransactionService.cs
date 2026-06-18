@@ -7,7 +7,6 @@ namespace Invento.Application.Common.Services
     public class CashTransactionService
     {
         private readonly IApplicationDbContext _context;
-
         private readonly ICurrentTenantService _currentTenant;
 
         public CashTransactionService(
@@ -39,8 +38,6 @@ namespace Invento.Application.Common.Services
 
             await _context.CashTransactions
                 .AddAsync(transaction);
-
-            await _context.SaveChangesAsync(default);
 
             return transaction;
         }

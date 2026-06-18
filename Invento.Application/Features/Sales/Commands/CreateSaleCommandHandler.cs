@@ -17,15 +17,18 @@ public class CreateSaleCommandHandler
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenant;
     private readonly StockMovementService _stockMovementService;
+    private readonly CashTransactionService _cashTransactionService;
 
     public CreateSaleCommandHandler(
         IApplicationDbContext context, 
         ICurrentTenantService currentTenant,
-        StockMovementService stockMovementService)
+        StockMovementService stockMovementService,
+        CashTransactionService cashTransactionService)
     {
         _context = context;
         _currentTenant = currentTenant;
         _stockMovementService = stockMovementService;
+        _cashTransactionService = cashTransactionService;
     }
 
     public async Task<ApiResponse<SaleDetailsDto>> Handle(
@@ -148,12 +151,55 @@ public class CreateSaleCommandHandler
             sale.SubTotal = subTotal;
             sale.TaxAmount = totalTax;
             sale.TotalAmount = subTotal + totalTax - request.DiscountAmount;
-            sale.ProfitAmount = (sale.TotalAmount - sale.TaxAmount) - totalCost;
+
+            if (request.PaidAmount > sale.TotalAmount)
+            {
+                return ApiResponse<SaleDetailsDto>
+                    .FailureResponse(
+                        new()
+                        {
+                "Paid amount cannot exceed total amount"
+                        });
+            }
+
+            sale.PaidAmount = request.PaidAmount;
+            sale.DueAmount = sale.TotalAmount - request.PaidAmount;
+
+            sale.PaymentStatus = sale.DueAmount == 0
+                    ? PaymentStatus.Paid
+                    : request.PaidAmount == 0
+                        ? PaymentStatus.Unpaid
+                        : PaymentStatus.PartiallyPaid;
+
+            if (request.PaidAmount > 0)
+            {
+                await _cashTransactionService.CreateTransaction(
+                    CashTransactionType.Sale,
+                    request.PaidAmount,
+                    $"Sale Payment - {sale.InvoiceNumber}",
+                    request.SaleDate);
+            }
+
+            sale.ProfitAmount = (sale.TotalAmount - sale.TaxAmount) - totalCost; 
 
             await _context.Sales.AddAsync(
                 sale,
                 cancellationToken
             );
+
+            if (request.CustomerId.HasValue
+                && request.PaidAmount > 0)
+            {
+                sale.Payments.Add(
+                    new CustomerPayment
+                    {
+                        TenantId = _currentTenant.TenantId,
+                        CustomerId = request.CustomerId.Value,
+                        Amount = request.PaidAmount,
+                        PaymentDate = request.SaleDate,
+                        Remarks = "Initial payment"
+                    });
+            }
 
             await _context.SaveChangesAsync( cancellationToken);
 

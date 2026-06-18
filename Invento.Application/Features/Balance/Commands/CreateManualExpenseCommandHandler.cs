@@ -53,7 +53,8 @@ namespace Invento.Application.Features.Balance.Commands
                         Description = transaction.Description,
                         TransactionDate = transaction.TransactionDate
                     },
-                    "Expense added successfully");
+                    "Expense added successfully"
+                );
         }
     }
 }

@@ -18,5 +18,7 @@ namespace Invento.Domain.Entities
         public bool IsDeleted { get; set; } = false;
 
         public ICollection<Sale> Sales { get; set; } = new List<Sale>();
+
+        public ICollection<CustomerPayment> Payments { get; set; } = new List<CustomerPayment>();
     }
 }

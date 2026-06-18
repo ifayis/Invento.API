@@ -41,6 +41,17 @@ public class SalesConfiguration : IEntityTypeConfiguration<Sale>
             .HasForeignKey(x => x.SaleId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(x => x.PaidAmount)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Property(x => x.DueAmount)
+            .HasColumnType("decimal(18,2)");
+
         builder.HasQueryFilter(x => !x.IsDeleted);
+
+        builder.HasMany(x => x.Payments)
+            .WithOne(x => x.Sale)
+            .HasForeignKey(x => x.SaleId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

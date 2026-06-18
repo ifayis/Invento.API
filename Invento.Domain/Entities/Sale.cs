@@ -1,4 +1,5 @@
-﻿using Invento.Shared.Common;
+﻿using Invento.Domain.Enums;
+using Invento.Shared.Common;
 
 namespace Invento.Domain.Entities;
 
@@ -22,9 +23,17 @@ public class Sale : BaseEntity
 
     public decimal TotalAmount { get; set; }
 
+    public decimal PaidAmount { get; set; }
+
+    public decimal DueAmount { get; set; }
+
+    public PaymentStatus PaymentStatus { get; set; }
+
     public decimal ProfitAmount { get; set; }
 
     public bool IsDeleted { get; set; } = false;
 
     public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
+
+    public ICollection<CustomerPayment> Payments { get; set; } = new List<CustomerPayment>();
 }

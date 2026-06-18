@@ -15,6 +15,8 @@ namespace Invento.Application.Features.Sales.Command
 
         public decimal DiscountAmount { get; set; }
 
+        public decimal PaidAmount { get; set; }
+
         public List<CreateSaleItemDto> Items { get; set; } = new();
     }
 }
