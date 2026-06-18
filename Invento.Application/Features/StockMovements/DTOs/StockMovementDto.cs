@@ -18,7 +18,5 @@
 
     public string? ReferenceNumber { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-
     public Guid? CreatedByUserId { get; set; }
 }

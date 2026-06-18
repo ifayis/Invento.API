@@ -37,7 +37,6 @@ namespace Invento.Application.Features.StockMovements.Queries
                 sm.CurrentStockAfterMovement,
                 sm.Remarks,
                 sm.ReferenceNumber,
-                sm.CreatedAt,
                 sm.CreatedByUserId
             FROM StockMovements sm
             INNER JOIN Products p
@@ -69,7 +68,7 @@ namespace Invento.Application.Features.StockMovements.Queries
                 @ToDate IS NULL
                 OR sm.CreatedAt <= @ToDate
             )
-            ORDER BY sm.CreatedAt DESC
+            ORDER BY sm.Id DESC
             OFFSET @Offset ROWS
             FETCH NEXT @PageSize ROWS ONLY;
 
