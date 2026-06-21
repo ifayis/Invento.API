@@ -57,6 +57,14 @@ namespace Invento.API.Controllers
             return Ok(
                 await _mediator.Send(query));
         }
+
+        [HttpGet("financial-dashboard")]
+        public async Task<IActionResult> FinancialDashboard()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetFinancialDashboardQuery()));
+        }
     }
 
 }
