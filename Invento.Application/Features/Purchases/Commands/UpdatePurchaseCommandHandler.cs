@@ -169,6 +169,17 @@ namespace Invento.Application.Features.Purchases.Commands
                 purchase.TotalAmount =
                     subTotal + totalTax - request.DiscountAmount;
 
+                purchase.DueAmount =
+                    purchase.TotalAmount
+                    - purchase.PaidAmount;
+
+                                purchase.PaymentStatus =
+                                    purchase.DueAmount <= 0
+                                        ? PaymentStatus.Paid
+                                        : purchase.PaidAmount > 0
+                                            ? PaymentStatus.PartiallyPaid
+                                            : PaymentStatus.Unpaid;
+
                 await _context.SaveChangesAsync(cancellationToken);
 
                 await transaction.CommitAsync(cancellationToken);

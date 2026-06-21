@@ -182,6 +182,13 @@ namespace Invento.Application.Features.Purchases.Commands
                     + totalTax
                     - request.DiscountAmount;
 
+                purchase.PaidAmount = 0;
+
+                purchase.DueAmount = purchase.TotalAmount;
+
+                purchase.PaymentStatus =
+                    PaymentStatus.Unpaid;
+
                 await _context.Purchases.AddAsync(
                     purchase,
                     cancellationToken);
