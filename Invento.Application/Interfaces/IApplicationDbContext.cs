@@ -36,6 +36,8 @@ namespace Invento.Application.Interfaces
 
         DbSet<CustomerPayment> CustomerPayments { get; }
 
+        DbSet<SupplierPayment> SupplierPayments { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
         Task<IDbContextTransaction> BeginTransactionAsync();

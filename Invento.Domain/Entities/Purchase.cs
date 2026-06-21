@@ -1,4 +1,5 @@
-﻿using Invento.Shared.Common;
+﻿using Invento.Domain.Enums;
+using Invento.Shared.Common;
 
 namespace Invento.Domain.Entities
 {
@@ -24,9 +25,18 @@ namespace Invento.Domain.Entities
 
         public decimal TotalAmount { get; set; }
 
+        public decimal PaidAmount { get; set; }
+
+        public decimal DueAmount { get; set; }
+
+        public PaymentStatus PaymentStatus { get; set; }
+
         public bool IsDeleted { get; set; }
 
         public ICollection<PurchaseItem> PurchaseItems
         { get; set; } = new List<PurchaseItem>();
+
+        public ICollection<SupplierPayment> Payments
+        { get; set; } = new List<SupplierPayment>();
     }
 }

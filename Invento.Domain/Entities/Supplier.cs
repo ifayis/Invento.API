@@ -18,5 +18,8 @@ namespace Invento.Domain.Entities
 
         public ICollection<Purchase> Purchases { get; set; }
             = new List<Purchase>();
+
+        public ICollection<SupplierPayment> Payments
+        { get; set; } = new List<SupplierPayment>();
     }
 }

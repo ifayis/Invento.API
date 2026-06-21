@@ -45,6 +45,8 @@ namespace Invento.Persistence.Data
 
         public DbSet<CustomerPayment> CustomerPayments => Set<CustomerPayment>();
 
+        public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -74,6 +76,9 @@ namespace Invento.Persistence.Data
                 .HasQueryFilter(x => !x.IsDeleted);
 
             modelBuilder.Entity<CustomerPayment>()
+                .HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<SupplierPayment>()
                 .HasQueryFilter(x => !x.IsDeleted);
         }
 

@@ -30,6 +30,12 @@ namespace Invento.Persistence.Configurations
             builder.Property(x => x.TotalAmount)
                 .HasColumnType("decimal(18,2)");
 
+            builder.Property(x => x.PaidAmount)
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(x => x.DueAmount)
+                .HasColumnType("decimal(18,2)");
+
             builder.HasIndex(x => x.PurchaseNumber)
                 .IsUnique();
 
@@ -44,6 +50,11 @@ namespace Invento.Persistence.Configurations
                 .WithOne(x => x.Purchase)
                 .HasForeignKey(x => x.PurchaseId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(x => x.Payments)
+                .WithOne(x => x.Purchase)
+                .HasForeignKey(x => x.PurchaseId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasQueryFilter(x => !x.IsDeleted);
         }
