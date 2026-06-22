@@ -109,6 +109,38 @@ namespace Invento.API.Controllers
                 await _mediator.Send(
                     new GetMonthlyProfitChartQuery()));
         }
+
+        [HttpGet("sales-trend")]
+        public async Task<IActionResult> SalesTrend()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetSalesTrendQuery()));
+        }
+
+        [HttpGet("overview")]
+        public async Task<IActionResult> Overview()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetDashboardOverviewQuery()));
+        }
+
+        [HttpGet("cashflow-trend")]
+        public async Task<IActionResult> CashFlowTrend()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetCashFlowTrendQuery()));
+        }
+
+        [HttpGet("profit-trend")]
+        public async Task<IActionResult> ProfitTrend()
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetProfitTrendQuery()));
+        }
     }
 
 }
