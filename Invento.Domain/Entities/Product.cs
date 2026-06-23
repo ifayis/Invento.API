@@ -26,6 +26,8 @@ namespace Invento.Domain.Entities
 
         public int LowStockThreshold { get; set; } = 10;
 
+        public int CriticalStockThreshold { get; set; } = 5;
+
         public Category Category { get; set; } = default!;
 
         public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();

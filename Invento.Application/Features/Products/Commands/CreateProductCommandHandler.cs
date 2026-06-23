@@ -58,7 +58,8 @@ namespace Invento.Application.Features.Products.Commands
                 SellingPrice = request.SellingPrice,
                 CurrentStock = 0,
                 CategoryId = request.CategoryId,
-                LowStockThreshold = request.LowStockThreshold
+                LowStockThreshold = request.LowStockThreshold,
+                CriticalStockThreshold = request.CriticalStockThreshold
             };
 
             await _context.Products.AddAsync(
@@ -78,7 +79,8 @@ namespace Invento.Application.Features.Products.Commands
                 CurrentStock = product.CurrentStock,
                 CategoryName = category.Name,
                 CreatedAt = product.CreatedAt,
-                LowStockThreshold = product.LowStockThreshold
+                LowStockThreshold = product.LowStockThreshold,
+                CriticalStockThreshold = product.CriticalStockThreshold
             };
 
             return ApiResponse<ProductDto>

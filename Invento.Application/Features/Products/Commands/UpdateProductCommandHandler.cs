@@ -67,6 +67,7 @@ namespace Invento.Application.Features.Products.Commands
             product.SellingPrice = request.SellingPrice;
             product.CategoryId = request.CategoryId;
             product.LowStockThreshold = request.LowStockThreshold;
+            product.CriticalStockThreshold = request.CriticalStockThreshold;
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -82,7 +83,8 @@ namespace Invento.Application.Features.Products.Commands
                         CurrentStock = product.CurrentStock,
                         CategoryName = category.Name,
                         CreatedAt = product.CreatedAt,
-                        LowStockThreshold = product.LowStockThreshold
+                        LowStockThreshold = product.LowStockThreshold,
+                        CriticalStockThreshold = product.CriticalStockThreshold
                     },
                     "Product updated successfully"
                 );

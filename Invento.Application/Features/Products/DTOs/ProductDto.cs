@@ -23,5 +23,7 @@
         public DateTime CreatedAt { get; set; }
 
         public int LowStockThreshold { get; set; }
+
+        public int CriticalStockThreshold { get; set; }
     }
 }

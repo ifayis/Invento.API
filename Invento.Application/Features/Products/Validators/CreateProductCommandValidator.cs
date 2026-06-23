@@ -20,6 +20,9 @@ namespace Invento.Application.Features.Products.Validators
 
             RuleFor(x => x.CategoryId)
                 .NotEmpty();
+
+            RuleFor(x => x.CriticalStockThreshold)
+                .GreaterThanOrEqualTo(0);
         }
     }
 }
