@@ -1,5 +1,7 @@
+using Hangfire;
 using Invento.API.Middleware;
 using Invento.Application.Common;
+using Invento.Application.Common.Jobs;
 using Invento.Application.Common.Services;
 using Invento.Application.Features.Auth.Commands;
 using Invento.Application.Interfaces;
@@ -103,6 +105,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseHangfireDashboard("/hangfire");
+
 app.UseCustomExceptionMiddleware();
 
 app.UseRequestLoggingMiddleware();
@@ -114,5 +119,37 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var recurringJobs =
+        scope.ServiceProvider
+            .GetRequiredService<IRecurringJobService>();
+
+    RecurringJob.AddOrUpdate(
+        "low-stock-check",
+        () => recurringJobs.ExecuteLowStockCheck(),
+        Cron.Hourly);
+
+    RecurringJob.AddOrUpdate(
+        "sales-target-check",
+        () => recurringJobs.ExecuteSalesTargetCheck(),
+        Cron.Daily);
+
+    RecurringJob.AddOrUpdate(
+        "profit-target-check",
+        () => recurringJobs.ExecuteProfitTargetCheck(),
+        Cron.Daily);
+
+    RecurringJob.AddOrUpdate(
+        "receivable-check",
+        () => recurringJobs.ExecuteReceivableCheck(),
+        Cron.Daily);
+
+    RecurringJob.AddOrUpdate(
+        "payable-check",
+        () => recurringJobs.ExecutePayableCheck(),
+        Cron.Daily);
+}
 
 app.Run();
