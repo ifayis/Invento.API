@@ -53,11 +53,14 @@ namespace Invento.Persistence.Data
 
         public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
 
+        public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
         public override async Task<int> SaveChangesAsync(
-          CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default)
         {
-            var entries =
-                ChangeTracker
+            var auditLogs = new List<AuditLog>();
+
+            var entries = ChangeTracker
                 .Entries<AuditableEntity>();
 
             foreach (var entry in entries)
@@ -72,6 +75,26 @@ namespace Invento.Persistence.Data
                         entry.Entity.CreatedBy =
                             _currentUser.UserId ?? "System";
 
+                        auditLogs.Add(
+                            new AuditLog
+                            {
+                                TenantId = entry.Entity.TenantId,
+
+                                UserId =
+                                    _currentUser.UserId ?? "System",
+
+                                EntityName =
+                                    entry.Entity.GetType().Name,
+
+                                ActionType = "Create",
+
+                                RecordId =
+                                    entry.Entity.Id.ToString(),
+
+                                CreatedAt =
+                                    DateTime.UtcNow
+                            });
+
                         break;
 
                     case EntityState.Modified:
@@ -81,9 +104,58 @@ namespace Invento.Persistence.Data
 
                         entry.Entity.UpdatedBy =
                             _currentUser.UserId ?? "System";
-                        
+
+                        auditLogs.Add(
+                            new AuditLog
+                            {
+                                TenantId = entry.Entity.TenantId,
+
+                                UserId =
+                                    _currentUser.UserId ?? "System",
+
+                                EntityName =
+                                    entry.Entity.GetType().Name,
+
+                                ActionType = "Update",
+
+                                RecordId =
+                                    entry.Entity.Id.ToString(),
+
+                                CreatedAt =
+                                    DateTime.UtcNow
+                            });
+
+                        break;
+
+                    case EntityState.Deleted:
+
+                        auditLogs.Add(
+                            new AuditLog
+                            {
+                                TenantId = entry.Entity.TenantId,
+
+                                UserId =
+                                    _currentUser.UserId ?? "System",
+
+                                EntityName =
+                                    entry.Entity.GetType().Name,
+
+                                ActionType = "Delete",
+
+                                RecordId =
+                                    entry.Entity.Id.ToString(),
+
+                                CreatedAt =
+                                    DateTime.UtcNow
+                            });
+
                         break;
                 }
+            }
+
+            if (auditLogs.Any())
+            {
+                AuditLogs.AddRange(auditLogs);
             }
 
             return await base.SaveChangesAsync(
@@ -129,6 +201,9 @@ namespace Invento.Persistence.Data
 
             modelBuilder.Entity<User>()
                 .HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(x => x.TenantId);
         }
 
         public async Task<IDbContextTransaction>BeginTransactionAsync()

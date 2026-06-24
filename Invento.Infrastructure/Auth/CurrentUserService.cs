@@ -14,11 +14,12 @@ namespace Invento.Infrastructure.Auth
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public string? UserId =>
+        public string UserId =>
             _httpContextAccessor
                 .HttpContext?
                 .User?
                 .FindFirst("Name")
-                ?.Value;
+                ?.Value
+            ?? "System";
     }
 }
