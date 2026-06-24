@@ -31,7 +31,7 @@ namespace Invento.Persistence.Configurations
                 .HasColumnType("decimal(18,2)");
 
             builder.HasOne(x => x.Product)
-                .WithMany()
+                .WithMany(x => x.SaleItems)
                 .HasForeignKey(x => x.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
