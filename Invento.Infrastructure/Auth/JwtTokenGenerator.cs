@@ -28,7 +28,7 @@ public class JwtTokenGenerator
             new Claim("Name",user.Id.ToString()),
             new Claim("TenantId",user.TenantId.ToString()),
             new Claim("Email",user.Email),
-            new Claim("Role",user.Role)
+            new Claim("Role",user.Role.ToString())
         };
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
 

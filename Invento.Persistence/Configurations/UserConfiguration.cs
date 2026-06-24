@@ -24,7 +24,7 @@ namespace Invento.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(x => x.Role)
-                .HasMaxLength(50);
+                .HasConversion<int>();
 
             builder.HasIndex(x => x.Email)
                 .IsUnique();

@@ -16,9 +16,9 @@ public class Tenant : BaseEntity
 
     public string? TaxNumber { get; set; }
 
-    public string? Website { get; set; }
+    public bool IsDeleted { get; set; }
 
-    public bool IsDeleted { get; set; } = false;
+    public string? Website { get; set; }
 
     public ICollection<User> Users { get; set; } = new List<User>();
 }

@@ -35,6 +35,10 @@ namespace Invento.Infrastructure.Extensions
                 IRecurringJobService,
                 RecurringJobService>();
 
+            services.AddScoped<
+                ICurrentUserService,
+                CurrentUserService>();
+
             services.AddHangfire(config =>
             {
                 config.SetDataCompatibilityLevel(

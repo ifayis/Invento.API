@@ -1,18 +1,17 @@
-﻿using Invento.Shared.Common;
+﻿using Invento.Domain.Enums;
+using Invento.Shared.Common;
 
 namespace Invento.Domain.Entities
 {
     public class User : AuditableEntity
     {
-        public Guid TenantId { get; set; }
-
         public string FullName { get; set; } = string.Empty;
 
         public string Email { get; set; } = string.Empty;
 
         public string PasswordHash { get; set; } = string.Empty;
 
-        public string Role { get; set; } = "Admin";
+        public UserRole Role { get; set; } = UserRole.Admin;
 
         public bool IsActive { get; set; } = true;
 

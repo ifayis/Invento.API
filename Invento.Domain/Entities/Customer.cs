@@ -2,10 +2,8 @@
 
 namespace Invento.Domain.Entities
 {
-    public class Customer : BaseEntity
+    public class Customer : AuditableEntity
     {
-        public Guid TenantId { get; set; }
-
         public string Name { get; set; }
             = string.Empty;
 
@@ -14,8 +12,6 @@ namespace Invento.Domain.Entities
         public string? PhoneNumber { get; set; }
 
         public string? Address { get; set; }
-
-        public bool IsDeleted { get; set; } = false;
 
         public ICollection<Sale> Sales { get; set; } = new List<Sale>();
 

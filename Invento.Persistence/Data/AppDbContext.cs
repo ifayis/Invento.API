@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
+using Invento.Shared.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -8,9 +9,14 @@ namespace Invento.Persistence.Data
     public class AppDbContext
         : DbContext, IApplicationDbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
+        private readonly ICurrentUserService _currentUser;
+
+        public AppDbContext(
+            DbContextOptions<AppDbContext> options,
+            ICurrentUserService currentUser)
             : base(options)
         {
+            _currentUser = currentUser;
         }
 
         public DbSet<Tenant> Tenants => Set<Tenant>();
@@ -47,6 +53,43 @@ namespace Invento.Persistence.Data
 
         public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
 
+        public override async Task<int> SaveChangesAsync(
+          CancellationToken cancellationToken = default)
+        {
+            var entries =
+                ChangeTracker
+                .Entries<AuditableEntity>();
+
+            foreach (var entry in entries)
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+
+                        entry.Entity.CreatedAt =
+                            DateTime.UtcNow;
+
+                        entry.Entity.CreatedBy =
+                            _currentUser.UserId ?? "System";
+
+                        break;
+
+                    case EntityState.Modified:
+
+                        entry.Entity.UpdatedAt =
+                            DateTime.UtcNow;
+
+                        entry.Entity.UpdatedBy =
+                            _currentUser.UserId ?? "System";
+                        
+                        break;
+                }
+            }
+
+            return await base.SaveChangesAsync(
+                cancellationToken);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -79,6 +122,12 @@ namespace Invento.Persistence.Data
                 .HasQueryFilter(x => !x.IsDeleted);
 
             modelBuilder.Entity<SupplierPayment>()
+                .HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<Customer>()
+                .HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<User>()
                 .HasQueryFilter(x => !x.IsDeleted);
         }
 

@@ -3,6 +3,7 @@ using Invento.Application.Common;
 using Invento.Application.Features.Auth.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
+using Invento.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Auth.Commands;
@@ -65,7 +66,7 @@ public class RegisterCommandHandler
                 PasswordHasher.Hash(
                     request.Password),
 
-            Role = "Admin",
+            Role = UserRole.Admin,
 
             TenantId = tenant.Id
         };
