@@ -12,8 +12,48 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.ContentType =
+            "application/json";
+
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new
+            {
+                Message =
+                    "Too many requests. Please try again later."
+            },
+            cancellationToken: token);
+    };
+
+    options.AddPolicy(
+        "AuthPolicy",
+        httpContext =>
+        {
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey:
+                    httpContext.Connection.RemoteIpAddress?.ToString()
+                    ?? "unknown",
+
+                factory: _ =>
+                    new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+
+                        Window = TimeSpan.FromMinutes(1),
+
+                        QueueLimit = 0,
+
+                        AutoReplenishment = true
+                    });
+        });
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -113,6 +153,8 @@ app.UseCustomExceptionMiddleware();
 app.UseRequestLoggingMiddleware();
 
 app.UseHttpsRedirection();
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 

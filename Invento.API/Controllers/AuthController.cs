@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Features.Auth.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Invento.API.Controllers
 {
@@ -16,7 +17,7 @@ namespace Invento.API.Controllers
             _mediator = mediator;
         }
 
-
+        [EnableRateLimiting("AuthPolicy")]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterCommand command)
         {
@@ -30,7 +31,7 @@ namespace Invento.API.Controllers
             return Ok(result);
         }
 
-
+        [EnableRateLimiting("AuthPolicy")]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginCommand command)
         {
@@ -44,7 +45,7 @@ namespace Invento.API.Controllers
             return Ok(result);
         }
 
-
+        [EnableRateLimiting("AuthPolicy")]
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(RefreshTokenCommand command)
         {
