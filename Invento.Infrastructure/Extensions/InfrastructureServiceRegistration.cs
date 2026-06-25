@@ -1,9 +1,11 @@
 ﻿using Hangfire;
 using Hangfire.SqlServer;
+using Invento.Application.Common;
 using Invento.Application.Common.Jobs;
 using Invento.Application.Interfaces;
 using Invento.Infrastructure.Auth;
 using Invento.Infrastructure.Caching;
+using Invento.Infrastructure.Email;
 using Invento.Infrastructure.Jobs;
 using Invento.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authorization;
@@ -74,6 +76,13 @@ namespace Invento.Infrastructure.Extensions
                             DisableGlobalLocks = true
                         });
             });
+
+            services.Configure<EmailSettings>(
+            configuration.GetSection("EmailSettings"));
+
+            services.AddScoped<
+                IEmailService, 
+                SmtpEmailService>();
 
             services.AddHangfireServer();
 

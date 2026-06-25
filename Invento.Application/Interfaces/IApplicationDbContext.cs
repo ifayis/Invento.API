@@ -12,6 +12,8 @@ namespace Invento.Application.Interfaces
 
         DbSet<RefreshToken> RefreshTokens { get; }
 
+        DbSet<PasswordResetToken> PasswordResetTokens { get; }
+
         DbSet<Product> Products { get; }
 
         DbSet<Category> Categories { get; }

@@ -25,6 +25,8 @@ namespace Invento.Persistence.Data
 
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
+        public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+
         public DbSet<Category> Categories => Set<Category>();
 
         public DbSet<Product> Products => Set<Product>();
