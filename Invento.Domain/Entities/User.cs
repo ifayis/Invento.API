@@ -17,6 +17,10 @@ namespace Invento.Domain.Entities
 
         public Tenant Tenant { get; set; } = default!;
 
+        public bool MustChangePassword { get; set; } = false;
+
+        public Guid? CreatedByUserId { get; set; }
+
         public virtual ICollection<RefreshToken> RefreshTokens
         { get; set; } = new List<RefreshToken>();
 

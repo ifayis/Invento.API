@@ -67,8 +67,8 @@ public class RegisterCommandHandler
                     request.Password),
 
             Role = UserRole.Admin,
-
-            TenantId = tenant.Id
+            TenantId = tenant.Id,
+            MustChangePassword = false
         };
 
         await _context.Users.AddAsync(

@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Features.Auth.Commands;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -89,6 +90,22 @@ namespace Invento.API.Controllers
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(ResetPasswordCommand command)
+        {
+            var result =
+                await _mediator.Send(command);
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordCommand command)
         {
             var result =
                 await _mediator.Send(command);
