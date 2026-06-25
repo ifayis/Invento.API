@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Payables.Commands;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Payables.Commands;
 using Invento.Application.Features.Payables.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -6,9 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
+    [Authorize(Policy = Permissions.Payables)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class PayablesController : ControllerBase
     {
         private readonly IMediator _mediator;

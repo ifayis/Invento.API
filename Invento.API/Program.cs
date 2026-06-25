@@ -5,6 +5,7 @@ using Invento.Application.Common.Jobs;
 using Invento.Application.Common.Services;
 using Invento.Application.Features.Auth.Commands;
 using Invento.Application.Interfaces;
+using Invento.Infrastructure.Auth;
 using Invento.Infrastructure.Extensions;
 using Invento.Persistence.Data;
 using Invento.Persistence.Extensions;
@@ -103,6 +104,7 @@ builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddScoped<StockMovementService>();
 builder.Services.AddScoped<CashTransactionService>();
+builder.Services.AddPermissionPolicies();
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
@@ -136,6 +138,79 @@ builder.Services
                 RoleClaimType = "Role"
             };
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        Permissions.Dashboard,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Dashboard)));
+
+    options.AddPolicy(
+        Permissions.Products,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Products)));
+
+    options.AddPolicy(
+        Permissions.Categories,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Categories)));
+
+    options.AddPolicy(
+        Permissions.Customers,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Customers)));
+
+    options.AddPolicy(
+        Permissions.Suppliers,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Suppliers)));
+
+    options.AddPolicy(
+        Permissions.Sales,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Sales)));
+
+    options.AddPolicy(
+        Permissions.Purchases,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Purchases)));
+
+    options.AddPolicy(
+        Permissions.Reports,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Reports)));
+
+    options.AddPolicy(
+        Permissions.Company,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Company)));
+
+    options.AddPolicy(
+        Permissions.Targets,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Targets)));
+});
 
 var app = builder.Build();
 

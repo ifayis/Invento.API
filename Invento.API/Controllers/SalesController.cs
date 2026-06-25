@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Sales.Command;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Sales.Command;
 using Invento.Application.Features.Sales.Commands;
 using Invento.Application.Features.Sales.Queries;
 using MediatR;
@@ -7,10 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
-
+    [Authorize(Policy = Permissions.Sales)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+  
     public class SalesController : ControllerBase
     {
         private readonly IMediator _mediator;

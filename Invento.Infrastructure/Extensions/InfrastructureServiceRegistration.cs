@@ -1,13 +1,14 @@
-﻿using Invento.Application.Common.Jobs;
+﻿using Hangfire;
+using Hangfire.SqlServer;
+using Invento.Application.Common.Jobs;
 using Invento.Application.Interfaces;
 using Invento.Infrastructure.Auth;
 using Invento.Infrastructure.Caching;
 using Invento.Infrastructure.Jobs;
 using Invento.Infrastructure.Tenancy;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Hangfire;
-using Hangfire.SqlServer;
 
 namespace Invento.Infrastructure.Extensions
 {
@@ -19,9 +20,13 @@ namespace Invento.Infrastructure.Extensions
         {
             services.AddHttpContextAccessor();
 
-            services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+            services.AddScoped<
+                IJwtTokenGenerator, 
+                JwtTokenGenerator>();
 
-            services.AddScoped<ICurrentTenantService, CurrentTenantService>();
+            services.AddScoped<
+                ICurrentTenantService, 
+                CurrentTenantService>();
 
             services.AddStackExchangeRedisCache(options =>
             {
@@ -29,7 +34,9 @@ namespace Invento.Infrastructure.Extensions
                     configuration["Redis:ConnectionString"];
             });
 
-            services.AddScoped<ICacheService, RedisCacheService>();
+            services.AddScoped<
+                ICacheService, 
+                RedisCacheService>();
 
             services.AddScoped<
                 IRecurringJobService,
@@ -38,6 +45,10 @@ namespace Invento.Infrastructure.Extensions
             services.AddScoped<
                 ICurrentUserService,
                 CurrentUserService>();
+
+            services.AddSingleton<
+                IAuthorizationHandler,
+                PermissionHandler>();
 
             services.AddHangfire(config =>
             {

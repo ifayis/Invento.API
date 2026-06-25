@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Balance.Commands;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Balance.Commands;
 using Invento.Application.Features.Balance.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -6,9 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
+    [Authorize(Policy = Permissions.Balance)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class BalanceController : ControllerBase
     {
         private readonly IMediator _mediator;

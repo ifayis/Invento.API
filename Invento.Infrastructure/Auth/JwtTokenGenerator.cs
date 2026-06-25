@@ -23,13 +23,22 @@ public class JwtTokenGenerator
 
     public string GenerateAccessToken(User user)
     {
-        var claims = new[]
+        var permissions =
+            RolePermissions.GetPermissions(user.Role);
+
+        var claims = new List<Claim>
         {
-            new Claim("Name",user.Id.ToString()),
-            new Claim("TenantId",user.TenantId.ToString()),
-            new Claim("Email",user.Email),
-            new Claim("Role",user.Role.ToString())
+            new("Name", user.Id.ToString()),
+            new("TenantId", user.TenantId.ToString()),
+            new("Email", user.Email),
+            new("Role", user.Role.ToString())
         };
+
+        claims.AddRange(
+            permissions.Select(
+                p => new Claim("Permission", p))
+        ); 
+        
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
 
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

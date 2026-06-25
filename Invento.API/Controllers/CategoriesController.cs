@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Categories.Commands;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Categories.Commands;
 using Invento.Application.Features.Categories.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -6,10 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
-
+    [Authorize(Policy = Permissions.Categories)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class CategoriesController : ControllerBase
     {
         private readonly IMediator _mediator;

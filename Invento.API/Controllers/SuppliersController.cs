@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Suppliers.Commands;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Suppliers.Commands;
 using Invento.Application.Features.Suppliers.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -6,9 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
+    [Authorize(Policy = Permissions.Suppliers)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class SuppliersController : ControllerBase
     {
         private readonly IMediator _mediator;

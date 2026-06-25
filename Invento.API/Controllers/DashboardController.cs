@@ -1,13 +1,15 @@
-﻿using Invento.Application.Features.Dashboard.Queries;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Dashboard.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
+    [Authorize(Policy = Permissions.Dashboard)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class DashboardController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -52,7 +54,7 @@ namespace Invento.API.Controllers
 
         [HttpGet("top-products")]
         public async Task<IActionResult> TopProducts(
-    [FromQuery] int count = 10)
+            [FromQuery] int count = 10)
         {
             return Ok(
                 await _mediator.Send(

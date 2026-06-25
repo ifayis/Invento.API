@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Purchases.Commands;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Purchases.Commands;
 using Invento.Application.Features.Purchases.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -6,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
+    [Authorize(Policy = Permissions.Purchases)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class PurchasesController : ControllerBase
     {
         private readonly IMediator _mediator;

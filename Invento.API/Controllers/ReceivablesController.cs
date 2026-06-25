@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Receivables.Commands;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Receivables.Commands;
 using Invento.Application.Features.Receivables.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -6,9 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
+    [Authorize(Policy = Permissions.Receivables)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class ReceivablesController : ControllerBase
     {
         private readonly IMediator _mediator;

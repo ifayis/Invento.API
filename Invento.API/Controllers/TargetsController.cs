@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Targets.Commands;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Targets.Commands;
 using Invento.Application.Features.Targets.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -6,10 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
-
+    [Authorize(Policy = Permissions.Targets)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class TargetsController : ControllerBase
     {
         private readonly IMediator _mediator;

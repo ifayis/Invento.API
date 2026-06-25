@@ -1,13 +1,15 @@
-﻿using Invento.Application.Features.Reports.Queries;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Reports.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
+    [Authorize(Policy = Permissions.Reports)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class ReportsController : ControllerBase
     {
         private readonly IMediator _mediator;

@@ -1,14 +1,15 @@
-﻿using Invento.Application.Features.Profit.Queries;
+﻿using Invento.Application.Common;
+using Invento.Application.Features.Profit.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
-
+    [Authorize(Policy = Permissions.Profit)]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class ProfitController : ControllerBase
     {
         private readonly IMediator _mediator;
