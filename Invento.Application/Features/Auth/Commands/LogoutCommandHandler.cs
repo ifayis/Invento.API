@@ -3,47 +3,55 @@ using Invento.Application.Common;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Invento.Application.Features.Auth.Commands;
-
-public class LogoutCommandHandler
-    : ICommandHandler<LogoutCommand, ApiResponse<string>>
+namespace Invento.Application.Features.Auth.Commands
 {
-    private readonly IApplicationDbContext _context;
-
-    public LogoutCommandHandler(
-        IApplicationDbContext context)
+    public class LogoutCommandHandler
+        : ICommandHandler<LogoutCommand, ApiResponse<string>>
     {
-        _context = context;
-    }
+        private readonly IApplicationDbContext _context;
 
-    public async Task<ApiResponse<string>> Handle(
-            LogoutCommand request,
-            CancellationToken cancellationToken)
-    {
-        var token = await _context.RefreshTokens
-            .FirstOrDefaultAsync(x =>
-                x.Token == request.RefreshToken,
-                cancellationToken
-            );
-
-        if (token is null)
+        public LogoutCommandHandler(
+            IApplicationDbContext context)
         {
-            return ApiResponse<string>
-                .FailureResponse(
-                    new List<string>
-                    {
-                        "Token not found"
-                    },
-                    "Logout failed"
-                );
+            _context = context;
         }
 
-        token.IsRevoked = true;
-        token.RevokedAt = DateTime.UtcNow;
+        public async Task<ApiResponse<string>> Handle(
+            LogoutCommand request,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            {
+                return ApiResponse<string>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                            "Refresh token is required."
+                        },
+                        "Logout failed");
+            }
 
-        await _context.SaveChangesAsync(cancellationToken);
+            var token = await _context.RefreshTokens
+                .FirstOrDefaultAsync(
+                    x => x.Token == request.RefreshToken,
+                    cancellationToken);
 
-        return ApiResponse<string>
-            .SuccessResponse("Logged out successfully");
+            if (token is null || token.IsRevoked)
+            {
+                return ApiResponse<string>
+                    .SuccessResponse(
+                        "Logged out successfully.");
+            }
+
+            token.IsRevoked = true;
+            token.RevokedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
+
+            return ApiResponse<string>
+                .SuccessResponse(
+                    "Logged out successfully.");
+        }
     }
 }
