@@ -4,6 +4,7 @@ using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Features.Categories.DTOs;
 using Invento.Application.Interfaces;
+using Invento.Shared.Pagination;
 
 namespace Invento.Application.Features.Categories.Queries
 {
@@ -79,10 +80,10 @@ namespace Invento.Application.Features.Categories.Queries
             var response =
                 new PagedResponse<CategoryDto>
                 {
-                    Items = categories,
+                    Items = categories.ToList(),
                     PageNumber = request.PageNumber,
                     PageSize = request.PageSize,
-                    TotalRecords = totalRecords
+                    TotalCount = totalRecords
                 };
 
             return ApiResponse<

@@ -4,6 +4,7 @@ using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Features.Balance.DTOs;
 using Invento.Application.Interfaces;
+using Invento.Shared.Pagination;
 
 namespace Invento.Application.Features.Balance.Queries
 {
@@ -83,7 +84,7 @@ namespace Invento.Application.Features.Balance.Queries
                     Items = items.ToList(),
                     PageNumber = request.PageNumber,
                     PageSize = request.PageSize,
-                    TotalRecords = totalRecords
+                    TotalCount = totalRecords
                 };
 
             return ApiResponse<PagedResponse<CashTransactionDto>>

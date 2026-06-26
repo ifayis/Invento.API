@@ -1,6 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Purchases.DTOs;
+using Invento.Shared.Pagination;
 
 namespace Invento.Application.Features.Purchases.Queries
 {

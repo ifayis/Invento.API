@@ -15,7 +15,7 @@ namespace Invento.Persistence.Extensions
                 this IServiceCollection services,
                 IConfiguration configuration)
             {
-            services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
+            services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
 
             services.AddScoped<IApplicationDbContext, AppDbContext>();
 

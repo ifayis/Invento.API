@@ -4,6 +4,7 @@ using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Features.Customers.DTOs;
 using Invento.Application.Interfaces;
+using Invento.Shared.Pagination;
 
 namespace Invento.Application.Features.Customers.Queries
 {
@@ -88,7 +89,7 @@ namespace Invento.Application.Features.Customers.Queries
                     Items = customers.ToList(),
                     PageNumber = request.PageNumber,
                     PageSize = request.PageSize,
-                    TotalRecords = totalRecords
+                    TotalCount = totalRecords
                 };
 
             return ApiResponse<PagedResponse<CustomerDto>>

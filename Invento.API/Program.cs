@@ -106,39 +106,6 @@ builder.Services.AddScoped<StockMovementService>();
 builder.Services.AddScoped<CashTransactionService>();
 builder.Services.AddPermissionPolicies();
 
-builder.Services.Configure<JwtSettings>(
-    builder.Configuration.GetSection("JwtSettings"));
-
-var jwtSettings = builder.Configuration
-    .GetSection("JwtSettings")
-    .Get<JwtSettings>();
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters =
-            new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-
-                ValidIssuer = jwtSettings!.Issuer,
-                ValidAudience = jwtSettings.Audience,
-
-                IssuerSigningKey =
-                    new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(
-                            jwtSettings.SecretKey)
-                    ),
-
-                NameClaimType = "Name",
-                RoleClaimType = "Role"
-            };
-    });
-
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(
@@ -210,7 +177,82 @@ builder.Services.AddAuthorization(options =>
             policy.Requirements.Add(
                 new PermissionRequirement(
                     Permissions.Targets)));
+
+    options.AddPolicy(
+        Permissions.Users,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Users)));
+
+    options.AddPolicy(
+        Permissions.StockMovements,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.StockMovements)));
+
+    options.AddPolicy(
+        Permissions.Receivables,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Receivables)));
+
+    options.AddPolicy(
+        Permissions.Payables,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Payables)));
+
+    options.AddPolicy(
+        Permissions.Balance,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Balance)));
+
+    options.AddPolicy(
+        Permissions.Profit,
+        policy =>
+            policy.Requirements.Add(
+                new PermissionRequirement(
+                    Permissions.Profit)));
 });
+
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("JwtSettings"));
+
+var jwtSettings = builder.Configuration
+    .GetSection("JwtSettings")
+    .Get<JwtSettings>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer = jwtSettings!.Issuer,
+                ValidAudience = jwtSettings.Audience,
+
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(
+                            jwtSettings.SecretKey)
+                    ),
+
+                NameClaimType = "Name",
+                RoleClaimType = "Role"
+            };
+    });
 
 var app = builder.Build();
 

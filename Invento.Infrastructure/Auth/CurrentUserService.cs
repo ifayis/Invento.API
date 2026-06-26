@@ -15,11 +15,42 @@ namespace Invento.Infrastructure.Auth
         }
 
         public string UserId =>
-            _httpContextAccessor
-                .HttpContext?
+            _httpContextAccessor.HttpContext?
                 .User?
-                .FindFirst("Name")
-                ?.Value
+                .FindFirst("Name")?
+                .Value
             ?? "System";
+
+        public Guid TenantId
+        {
+            get
+            {
+                var tenantId =
+                    _httpContextAccessor.HttpContext?
+                        .User?
+                        .FindFirst("TenantId")?
+                        .Value;
+
+                return Guid.TryParse(
+                    tenantId,
+                    out var id)
+                    ? id
+                    : Guid.Empty;
+            }
+        }
+
+        public string Email =>
+            _httpContextAccessor.HttpContext?
+                .User?
+                .FindFirst("Email")?
+                .Value
+            ?? string.Empty;
+
+        public string Role =>
+            _httpContextAccessor.HttpContext?
+                .User?
+                .FindFirst("Role")?
+                .Value
+            ?? string.Empty;
     }
 }

@@ -3,6 +3,7 @@ using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Interfaces;
+using Invento.Shared.Pagination;
 
 namespace Invento.Application.Features.StockMovements.Queries
 {
@@ -131,10 +132,10 @@ namespace Invento.Application.Features.StockMovements.Queries
             var response =
                 new PagedResponse<StockMovementDto>
                 {
-                    Items = items,
+                    Items = items.ToList(),
                     PageNumber = request.PageNumber,
                     PageSize = request.PageSize,
-                    TotalRecords = totalRecords
+                    TotalCount = totalRecords
                 };
 
             return ApiResponse<PagedResponse<StockMovementDto>>

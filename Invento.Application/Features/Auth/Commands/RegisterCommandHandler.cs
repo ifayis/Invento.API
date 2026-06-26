@@ -29,11 +29,14 @@ public class RegisterCommandHandler
             RegisterCommand request,
             CancellationToken cancellationToken)
     {
+        var normalizedEmail =
+            request.Email.Trim().ToLowerInvariant();
+
         var existingUser =
             await _context.Users
-            .FirstOrDefaultAsync(
-                x => x.Email == request.Email,
-                cancellationToken);
+                .FirstOrDefaultAsync(
+                    x => x.Email.ToLower() == normalizedEmail,
+                    cancellationToken);
 
         if (existingUser != null)
         {
@@ -48,7 +51,7 @@ public class RegisterCommandHandler
         var tenant = new Tenant
         {
             CompanyName = request.CompanyName,
-            Email = request.Email
+            Email = normalizedEmail
         };
 
         await _context.Tenants.AddAsync(
@@ -61,7 +64,7 @@ public class RegisterCommandHandler
         var user = new User
         {
             FullName = request.FullName,
-            Email = request.Email,
+            Email = normalizedEmail,
             PasswordHash =
                 PasswordHasher.Hash(
                     request.Password),

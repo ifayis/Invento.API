@@ -5,18 +5,23 @@ using System.Data;
 
 namespace Invento.Persistence.Connections
 {
-    public class SqlConnectionFactory : IDbConnectionFactory
+    public class SqlConnectionFactory
+        : IDbConnectionFactory
     {
-        private readonly IConfiguration _configuration;
+        private readonly string _connectionString;
 
-        public SqlConnectionFactory(IConfiguration configuration)
+        public SqlConnectionFactory(
+            IConfiguration configuration)
         {
-            _configuration = configuration;
+            _connectionString =
+                configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException(
+                    "Database connection string 'DefaultConnection' was not found.");
         }
 
         public IDbConnection CreateConnection()
         {
-            return new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            return new SqlConnection(_connectionString);
         }
     }
 }

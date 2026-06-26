@@ -108,6 +108,10 @@ namespace Invento.Infrastructure.Auth
                             Permissions.Users)));
             });
 
+            services.AddSingleton<
+                IAuthorizationHandler,
+                PermissionHandler>();
+
             return services;
         }
     }
