@@ -26,8 +26,10 @@ namespace Invento.Persistence.Configurations
             builder.Property(x => x.Role)
                 .HasConversion<int>();
 
-            builder.HasIndex(x => x.Email)
-                .IsUnique();
+            builder.HasIndex(x => new
+            {
+                x.Email
+            }).IsUnique();
 
             builder.HasOne(x => x.Tenant)
                 .WithMany(x => x.Users)
