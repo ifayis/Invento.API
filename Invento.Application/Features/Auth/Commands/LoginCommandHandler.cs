@@ -45,6 +45,17 @@ namespace Invento.Application.Features.Auth.Commands
                     );
             }
 
+            if (!user.IsActive)
+            {
+                return ApiResponse<AuthResponseDto>
+                    .FailureResponse(
+                        new()
+                        {
+                "Your account has been deactivated."
+                        },
+                        "Login failed");
+            }
+
             var passwordValid =
                 PasswordHasher.Verify(
                     request.Password,
