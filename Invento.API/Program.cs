@@ -60,6 +60,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddResponseCompressionServices();
+
 builder.Services.AddApiVersioningServices();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -147,6 +149,8 @@ app.UseCustomExceptionMiddleware();
 app.UseRequestLoggingMiddleware();
 
 app.UseHttpsRedirection();
+
+app.UseResponseCompression();
 
 app.UseRateLimiter();
 
