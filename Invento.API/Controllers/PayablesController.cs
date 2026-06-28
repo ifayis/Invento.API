@@ -1,4 +1,5 @@
-﻿using Invento.Application.Common;
+﻿using Asp.Versioning;
+using Invento.Application.Common;
 using Invento.Application.Features.Payables.Commands;
 using Invento.Application.Features.Payables.Queries;
 using MediatR;
@@ -9,7 +10,8 @@ namespace Invento.API.Controllers
 {
     [Authorize(Policy = Permissions.Payables)]
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
 
     public class PayablesController : ControllerBase
     {

@@ -1,4 +1,5 @@
-﻿using Invento.Application.Features.Auth.Commands;
+﻿using Asp.Versioning;
+using Invento.Application.Features.Auth.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,9 @@ namespace Invento.API.Controllers
 {
 
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;

@@ -1,4 +1,5 @@
-﻿using Invento.Application.Common;
+﻿using Asp.Versioning;
+using Invento.Application.Common;
 using Invento.Application.Features.Customer.Commands;
 using Invento.Application.Features.Customers.Commands;
 using Invento.Application.Features.Customers.Queries;
@@ -10,7 +11,8 @@ namespace Invento.API.Controllers
 {
     [Authorize(Policy = Permissions.Customers)]
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class CustomersController : ControllerBase
     {
         private readonly IMediator _mediator;

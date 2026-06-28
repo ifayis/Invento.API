@@ -1,4 +1,5 @@
-﻿using Invento.Application.Common;
+﻿using Asp.Versioning;
+using Invento.Application.Common;
 using Invento.Application.Features.Purchases.Commands;
 using Invento.Application.Features.Purchases.Queries;
 using MediatR;
@@ -9,7 +10,9 @@ namespace Invento.API.Controllers
 {
     [Authorize(Policy = Permissions.Purchases)]
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+
     public class PurchasesController : ControllerBase
     {
         private readonly IMediator _mediator;

@@ -1,5 +1,7 @@
 using Hangfire;
+using Invento.API.Extensions;
 using Invento.API.Middleware;
+using Invento.API.Swagger;
 using Invento.Application.Common;
 using Invento.Application.Common.Jobs;
 using Invento.Application.Common.Services;
@@ -7,11 +9,9 @@ using Invento.Application.Features.Auth.Commands;
 using Invento.Application.Interfaces;
 using Invento.Infrastructure.Auth;
 using Invento.Infrastructure.Extensions;
-using Invento.Persistence.Data;
 using Invento.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -57,169 +57,28 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc(
-        "v1",
-        new OpenApiInfo
-        {
-            Title = "Invento API",
-            Version = "v1"
-        });
+builder.Services.AddApiVersioningServices();
 
-    var securityScheme = new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Description = "Enter JWT Bearer token ONLY",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        Reference = new OpenApiReference
-        {
-            Id = "Bearer",
-            Type = ReferenceType.SecurityScheme
-        }
-    };
+builder.Services.AddEndpointsApiExplorer();
 
-    options.AddSecurityDefinition(
-        "Bearer", securityScheme
-    );
+builder.Services.AddSwaggerGen();
 
-    options.AddSecurityRequirement(
-        new OpenApiSecurityRequirement
-        {
-            {
-                securityScheme,
-                Array.Empty<string>()
-            }
-        });
-});
+builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 
 builder.Services.AddApplicationServices();
+
 builder.Services.AddPersistenceServices(builder.Configuration);
+
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
 builder.Services.AddScoped<StockMovementService>();
+
 builder.Services.AddScoped<CashTransactionService>();
+
 builder.Services.AddPermissionPolicies();
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(
-        Permissions.Dashboard,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Dashboard)));
-
-    options.AddPolicy(
-        Permissions.Products,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Products)));
-
-    options.AddPolicy(
-        Permissions.Categories,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Categories)));
-
-    options.AddPolicy(
-        Permissions.Customers,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Customers)));
-
-    options.AddPolicy(
-        Permissions.Suppliers,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Suppliers)));
-
-    options.AddPolicy(
-        Permissions.Sales,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Sales)));
-
-    options.AddPolicy(
-        Permissions.Purchases,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Purchases)));
-
-    options.AddPolicy(
-        Permissions.Reports,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Reports)));
-
-    options.AddPolicy(
-        Permissions.Company,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Company)));
-
-    options.AddPolicy(
-        Permissions.Targets,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Targets)));
-
-    options.AddPolicy(
-        Permissions.Users,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Users)));
-
-    options.AddPolicy(
-        Permissions.StockMovements,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.StockMovements)));
-
-    options.AddPolicy(
-        Permissions.Receivables,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Receivables)));
-
-    options.AddPolicy(
-        Permissions.Payables,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Payables)));
-
-    options.AddPolicy(
-        Permissions.Balance,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Balance)));
-
-    options.AddPolicy(
-        Permissions.Profit,
-        policy =>
-            policy.Requirements.Add(
-                new PermissionRequirement(
-                    Permissions.Profit)));
-});
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
@@ -236,31 +95,49 @@ builder.Services
             new TokenValidationParameters
             {
                 ValidateIssuer = true,
+
                 ValidateAudience = true,
+
                 ValidateLifetime = true,
+
                 ValidateIssuerSigningKey = true,
 
                 ValidIssuer = jwtSettings!.Issuer,
+
                 ValidAudience = jwtSettings.Audience,
 
                 IssuerSigningKey =
                     new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(
-                            jwtSettings.SecretKey)
-                    ),
+                            jwtSettings.SecretKey)),
 
                 NameClaimType = "Name",
+
                 RoleClaimType = "Role"
             };
     });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+
+    app.UseSwaggerUI(options =>
+    {
+        var provider =
+            app.Services.GetRequiredService<
+                Asp.Versioning.ApiExplorer
+                .IApiVersionDescriptionProvider>();
+
+        foreach (var description in
+            provider.ApiVersionDescriptions)
+        {
+            options.SwaggerEndpoint(
+                $"/swagger/{description.GroupName}/swagger.json",
+                $"Invento API {description.GroupName.ToUpperInvariant()}");
+        }
+    });
 }
 
 app.UseHangfireDashboard("/hangfire");

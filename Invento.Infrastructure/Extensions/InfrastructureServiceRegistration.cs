@@ -48,10 +48,6 @@ namespace Invento.Infrastructure.Extensions
                 ICurrentUserService,
                 CurrentUserService>();
 
-            services.AddSingleton<
-                IAuthorizationHandler,
-                PermissionHandler>();
-
             services.AddHangfire(config =>
             {
                 config.SetDataCompatibilityLevel(

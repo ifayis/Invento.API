@@ -1,15 +1,18 @@
-﻿using Invento.Application.Features.Users.Commands;
-using Invento.Application.Features.Users.Queries;
+﻿using Asp.Versioning;
 using Invento.Application.Common;
+using Invento.Application.Features.Users.Commands;
+using Invento.Application.Features.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Invento.API.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
     [Authorize(Policy = Permissions.Users)]
+    [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+
     public class UsersController : ControllerBase
     {
         private readonly IMediator _mediator;

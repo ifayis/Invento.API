@@ -1,4 +1,5 @@
-﻿using Invento.Application.Common;
+﻿using Asp.Versioning;
+using Invento.Application.Common;
 using Invento.Application.Features.Categories.Commands;
 using Invento.Application.Features.Categories.Queries;
 using MediatR;
@@ -9,7 +10,8 @@ namespace Invento.API.Controllers
 {
     [Authorize(Policy = Permissions.Categories)]
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
 
     public class CategoriesController : ControllerBase
     {

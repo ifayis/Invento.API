@@ -1,4 +1,5 @@
-﻿using Invento.Application.Common;
+﻿using Asp.Versioning;
+using Invento.Application.Common;
 using Invento.Application.Features.Profit.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,8 @@ namespace Invento.API.Controllers
 {
     [Authorize(Policy = Permissions.Profit)]
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
 
     public class ProfitController : ControllerBase
     {
