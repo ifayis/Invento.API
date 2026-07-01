@@ -1,11 +1,21 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
 using Invento.Application.Features.Dashboard.DTOs;
 
 namespace Invento.Application.Features.Dashboard.Queries
 {
     public class GetDashboardSummaryQuery
-    : IQuery<ApiResponse<DashboardSummaryDto>>
+    : IQuery<ApiResponse<DashboardSummaryDto>>,
+        ICacheableQuery
     {
+        public TimeSpan Expiration =>
+            CacheDurations.Dashboard;
+
+        public string GetCacheKey()
+        {
+            return CacheKeys.Dashboard();
+        }
+
     }
 }

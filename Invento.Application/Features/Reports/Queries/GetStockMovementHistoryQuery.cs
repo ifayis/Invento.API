@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
 using Invento.Shared.Pagination;
 
 namespace Invento.Application.Features.Reports.Queries

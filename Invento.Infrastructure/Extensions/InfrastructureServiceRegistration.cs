@@ -11,6 +11,7 @@ using Invento.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace Invento.Infrastructure.Extensions
 {

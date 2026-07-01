@@ -21,8 +21,11 @@ namespace Invento.Application.Common
 
             services.AddTransient(
                 typeof(IPipelineBehavior<,>),
-                typeof(ValidationBehavior<,>)
-            );
+                typeof(ValidationBehavior<,>));
+
+            services.AddTransient(
+                typeof(IPipelineBehavior<,>),
+                typeof(CachingBehavior<,>));
 
             return services;
         }
