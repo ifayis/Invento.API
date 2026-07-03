@@ -1,5 +1,6 @@
 using Hangfire;
 using Invento.API.Extensions;
+using Invento.API.Health;
 using Invento.API.Middleware;
 using Invento.API.Swagger;
 using Invento.Application.Common;
@@ -11,6 +12,7 @@ using Invento.Infrastructure.Auth;
 using Invento.Infrastructure.Extensions;
 using Invento.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -81,6 +83,8 @@ builder.Services.AddScoped<StockMovementService>();
 builder.Services.AddScoped<CashTransactionService>();
 
 builder.Services.AddPermissionPolicies();
+
+builder.Services.AddHealthCheckServices(builder.Configuration);
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
@@ -191,5 +195,37 @@ using (var scope = app.Services.CreateScope())
         () => recurringJobs.ExecutePayableCheck(),
         Cron.Daily);
 }
+
+app.MapHealthChecks(
+    "/health/live",
+    new HealthCheckOptions
+    {
+        Predicate = check =>
+            check.Tags.Contains("live"),
+
+        ResponseWriter =
+            HealthCheckResponseWriter.WriteResponseAsync
+    });
+
+app.MapHealthChecks(
+    "/health/ready",
+    new HealthCheckOptions
+    {
+        Predicate = check =>
+            check.Tags.Contains("ready"),
+
+        ResponseWriter =
+            HealthCheckResponseWriter.WriteResponseAsync
+    });
+
+app.MapHealthChecks(
+    "/health",
+    new HealthCheckOptions
+    {
+        Predicate = _ => true,
+
+        ResponseWriter =
+            HealthCheckResponseWriter.WriteResponseAsync
+    });
 
 app.Run();
