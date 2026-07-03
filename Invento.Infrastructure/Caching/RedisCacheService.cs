@@ -1,71 +1,59 @@
 ﻿using System.Text.Json;
 using Invento.Application.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
-using StackExchange.Redis;
 
-namespace Invento.Infrastructure.Caching;
-
-public class RedisCacheService : ICacheService
+namespace Invento.Infrastructure.Caching
 {
-    private readonly IDistributedCache _cache;
-    private readonly IConnectionMultiplexer _redis;
-
-    public RedisCacheService(
-        IDistributedCache cache,
-        IConnectionMultiplexer redis)
+    public class RedisCacheService : ICacheService
     {
-        _cache = cache;
-        _redis = redis;
-    }
+        private readonly IDistributedCache _cache;
 
-    public async Task<T?> GetAsync<T>(string key)
-    {
-        var cachedData = await _cache.GetStringAsync(key);
-
-        if (string.IsNullOrWhiteSpace(
-            cachedData))
+        public RedisCacheService(
+            IDistributedCache cache)
         {
-            return default;
+            _cache = cache;
         }
 
-        return JsonSerializer.Deserialize<T>(
-            cachedData,
-            new JsonSerializerOptions
+        public async Task<T?> GetAsync<T>(
+            string key)
+        {
+            var cachedData =
+                await _cache.GetStringAsync(key);
+
+            if (string.IsNullOrWhiteSpace(cachedData))
             {
-                PropertyNamingPolicy =
-                    JsonNamingPolicy.CamelCase
-            });
-    }
+                return default;
+            }
 
-    public async Task SetAsync<T>(
-        string key,
-        T value,
-        TimeSpan? expiry = null)
-    {
-        var options =
-            new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = expiry
-            };
+            return JsonSerializer.Deserialize<T>(
+                cachedData);
+        }
 
-        var jsonData = JsonSerializer.Serialize(
-            value,
-            new JsonSerializerOptions
-            {
-                PropertyNamingPolicy =
-                    JsonNamingPolicy.CamelCase
-            });
+        public async Task SetAsync<T>(
+            string key,
+            T value,
+            TimeSpan? expiry = null)
+        {
+            var options =
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow =
+                        expiry ?? TimeSpan.FromMinutes(5)
+                };
 
-        await _cache.SetStringAsync(
-            key,
-            jsonData,
-            options
-        );
+            var jsonData =
+                JsonSerializer.Serialize(value);
 
-    }
+            await _cache.SetStringAsync(
+                key,
+                jsonData,
+                options);
+        }
 
-    public async Task RemoveAsync(string key)
-    {
-        await _cache.RemoveAsync(key);
+        public async Task RemoveAsync(
+            string key)
+        {
+            await _cache.RemoveAsync(key);
+        }
     }
 }
