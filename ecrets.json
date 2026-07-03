@@ -1,0 +1,62 @@
+[1mdiff --git a/Invento.API/appsettings.json b/Invento.API/appsettings.json[m
+[1mindex f57dcdc..7a66a15 100644[m
+[1m--- a/Invento.API/appsettings.json[m
+[1m+++ b/Invento.API/appsettings.json[m
+[36m@@ -2,30 +2,53 @@[m
+   "ConnectionStrings": {[m
+     "DefaultConnection": "Server=localhost\\SQLEXPRESS;Database=InventoDB;Trusted_Connection=True;TrustServerCertificate=True;"[m
+   },[m
+[32m+[m
+   "JwtSettings": {[m
+[31m-    "SecretKey": "THIS_IS_SUPER_SECRET_KEY_FOR_INVENTO_2026",[m
+     "Issuer": "InventoAPI",[m
+     "Audience": "InventoClient",[m
+     "AccessTokenExpirationMinutes": 15,[m
+     "RefreshTokenExpirationDays": 7[m
+   },[m
+[32m+[m
+   "EmailSettings": {[m
+     "Host": "smtp.gmail.com",[m
+     "Port": 587,[m
+[31m-    "Username": "connectinvento@gmail.com",[m
+[31m-    "Password": "ddno zupu htlw szpe",[m
+[32m+[m[32m    "Username": "connectInvento",[m
+     "FromEmail": "connectinvento@gmail.com",[m
+     "FromName": "Invento",[m
+     "EnableSsl": true[m
+   },[m
+[32m+[m
+   "Redis": {[m
+     "ConnectionString": "localhost:6379"[m
+   },[m
+[32m+[m
+[32m+[m[32m  "Serilog": {[m
+[32m+[m[32m    "MinimumLevel": {[m
+[32m+[m[32m      "Default": "Information",[m
+[32m+[m[32m      "Override": {[m
+[32m+[m[32m        "Microsoft": "Warning",[m
+[32m+[m[32m        "Microsoft.AspNetCore": "Warning",[m
+[32m+[m[32m        "Microsoft.EntityFrameworkCore": "Warning",[m
+[32m+[m[32m        "Hangfire": "Information"[m
+[32m+[m[32m      }[m
+[32m+[m[32m    },[m
+[32m+[m
+[32m+[m[32m    "Enrich": [[m
+[32m+[m[32m      "FromLogContext"[m
+[32m+[m[32m    ],[m
+[32m+[m
+[32m+[m[32m    "Properties": {[m
+[32m+[m[32m      "Application": "Invento.API"[m
+[32m+[m[32m    }[m
+[32m+[m[32m  },[m
+[32m+[m
+   "Logging": {[m
+     "LogLevel": {[m
+       "Default": "Information",[m
+       "Microsoft.AspNetCore": "Warning"[m
+     }[m
+   },[m
+[32m+[m
+   "AllowedHosts": "*"[m
+ }[m
+\ No newline at end of file[m

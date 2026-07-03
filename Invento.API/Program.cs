@@ -14,10 +14,22 @@ using Invento.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty(
+            "Application",
+            "Invento.API");
+});
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -91,8 +103,44 @@ builder.Services.Configure<JwtSettings>(
 
 var jwtSettings = builder.Configuration
     .GetSection("JwtSettings")
-    .Get<JwtSettings>();
+    .Get<JwtSettings>()
+    ?? throw new InvalidOperationException(
+        "JwtSettings configuration is missing.");
 
+if (string.IsNullOrWhiteSpace(
+    jwtSettings.SecretKey))
+{
+    throw new InvalidOperationException(
+        "JwtSettings:SecretKey is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(
+    jwtSettings.Issuer))
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Issuer is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(
+    jwtSettings.Audience))
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Audience is not configured.");
+}
+
+if (jwtSettings.AccessTokenExpirationMinutes <= 0)
+{
+    throw new InvalidOperationException(
+        "JwtSettings:AccessTokenExpirationMinutes " +
+        "must be greater than zero.");
+}
+
+if (jwtSettings.RefreshTokenExpirationDays <= 0)
+{
+    throw new InvalidOperationException(
+        "JwtSettings:RefreshTokenExpirationDays " +
+        "must be greater than zero.");
+}
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -108,7 +156,7 @@ builder.Services
 
                 ValidateIssuerSigningKey = true,
 
-                ValidIssuer = jwtSettings!.Issuer,
+                ValidIssuer = jwtSettings.Issuer,
 
                 ValidAudience = jwtSettings.Audience,
 
@@ -122,6 +170,54 @@ builder.Services
                 RoleClaimType = "Role"
             };
     });
+
+var emailSettings = builder.Configuration
+    .GetSection("EmailSettings")
+    .Get<EmailSettings>()
+    ?? throw new InvalidOperationException(
+        "EmailSettings configuration is missing.");
+
+if (string.IsNullOrWhiteSpace(
+    emailSettings.Host))
+{
+    throw new InvalidOperationException(
+        "EmailSettings:Host is not configured.");
+}
+
+if (emailSettings.Port <= 0 ||
+    emailSettings.Port > 65535)
+{
+    throw new InvalidOperationException(
+        "EmailSettings:Port must be between 1 and 65535.");
+}
+
+if (string.IsNullOrWhiteSpace(
+    emailSettings.Username))
+{
+    throw new InvalidOperationException(
+        "EmailSettings:Username is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(
+    emailSettings.Password))
+{
+    throw new InvalidOperationException(
+        "EmailSettings:Password is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(
+    emailSettings.FromEmail))
+{
+    throw new InvalidOperationException(
+        "EmailSettings:FromEmail is not configured.");
+}
+
+if (string.IsNullOrWhiteSpace(
+    emailSettings.FromName))
+{
+    throw new InvalidOperationException(
+        "EmailSettings:FromName is not configured.");
+}
 
 var app = builder.Build();
 
@@ -148,10 +244,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHangfireDashboard("/hangfire");
 
-app.UseCustomExceptionMiddleware();
-
-app.UseRequestLoggingMiddleware();
-
 app.UseHttpsRedirection();
 
 app.UseResponseCompression();
@@ -159,6 +251,10 @@ app.UseResponseCompression();
 app.UseRateLimiter();
 
 app.UseAuthentication();
+
+app.UseRequestLoggingMiddleware();
+
+app.UseCustomExceptionMiddleware();
 
 app.UseAuthorization();
 
@@ -228,4 +324,17 @@ app.MapHealthChecks(
             HealthCheckResponseWriter.WriteResponseAsync
     });
 
-app.Run();
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(
+        ex,
+        "Invento API terminated unexpectedly.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

@@ -1,0 +1,156 @@
+[35mInvento.API/Controllers/AuthController.cs[m[36m:[m[32m81[m[36m:[m        public async Task<IActionResult> Forgot[1;31mPassword[m(Forgot[1;31mPassword[mCommand command)
+[35mInvento.API/Controllers/AuthController.cs[m[36m:[m[32m95[m[36m:[m        public async Task<IActionResult> Reset[1;31mPassword[m(Reset[1;31mPassword[mCommand command)
+[35mInvento.API/Controllers/AuthController.cs[m[36m:[m[32m111[m[36m:[m        public async Task<IActionResult> Change[1;31mPassword[m(Change[1;31mPassword[mCommand command)
+[35mInvento.API/Program.cs[m[36m:[m[32m202[m[36m:[m    emailSettings.[1;31mPassword[m))
+[35mInvento.API/Program.cs[m[36m:[m[32m205[m[36m:[m        "EmailSettings:[1;31mPassword[m is not configured.");
+[35mInvento.Application/Common/EmailSettings.cs[m[36m:[m[32m11[m[36m:[m        public string [1;31mPassword[m { get; set; } = string.Empty;
+[35mInvento.Application/Common/EmailTemplates.cs[m[36m:[m[32m5[m[36m:[m        public static string Temporary[1;31mPassword[m(
+[35mInvento.Application/Common/EmailTemplates.cs[m[36m:[m[32m27[m[36m:[m                        <td><b>Temporary [1;31mPassword[m</b></td>
+[35mInvento.Application/Common/PasswordGenerator.cs[m[36m:[m[32m5[m[36m:[m    public static class [1;31mPassword[mGenerator
+[35mInvento.Application/Common/PasswordHasher.cs[m[36m:[m[32m3[m[36m:[m    public static class [1;31mPassword[mHasher
+[35mInvento.Application/Common/PasswordHasher.cs[m[36m:[m[32m7[m[36m:[m            return BCrypt.Net.BCrypt.Hash[1;31mPassword[m(password);
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommand.cs[m[36m:[m[32m6[m[36m:[m    public class Change[1;31mPassword[mCommand
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommand.cs[m[36m:[m[32m9[m[36m:[m        public string Current[1;31mPassword[m { get; set; }
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommand.cs[m[36m:[m[32m12[m[36m:[m        public string New[1;31mPassword[m { get; set; }
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommand.cs[m[36m:[m[32m15[m[36m:[m        public string Confirm[1;31mPassword[m { get; set; }
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m8[m[36m:[m    public class Change[1;31mPassword[mCommandHandler
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m10[m[36m:[m            Change[1;31mPassword[mCommand,
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m17[m[36m:[m        public Change[1;31mPassword[mCommandHandler(
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m26[m[36m:[m            Change[1;31mPassword[mCommand request,
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m59[m[36m:[m            if (![1;31mPassword[mHasher.Verify(
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m60[m[36m:[m                request.Current[1;31mPassword[m,
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m61[m[36m:[m                user.[1;31mPassword[mHash))
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m71[m[36m:[m            if ([1;31mPassword[mHasher.Verify(
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m72[m[36m:[m                request.New[1;31mPassword[m,
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m73[m[36m:[m                user.[1;31mPassword[mHash))
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m83[m[36m:[m            user.[1;31mPassword[mHash =
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m84[m[36m:[m                [1;31mPassword[mHasher.Hash(
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m85[m[36m:[m                    request.New[1;31mPassword[m);
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m87[m[36m:[m            user.MustChange[1;31mPassword[m = false;
+[35mInvento.Application/Features/Auth/Commands/ChangePasswordCommandHandler.cs[m[36m:[m[32m108[m[36m:[m                    "[1;31mPassword[m changed successfully. Please login again.");
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommand.cs[m[36m:[m[32m6[m[36m:[m    public class Forgot[1;31mPassword[mCommand
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommandHandler.cs[m[36m:[m[32m11[m[36m:[m    public class Forgot[1;31mPassword[mCommandHandler
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommandHandler.cs[m[36m:[m[32m13[m[36m:[m            Forgot[1;31mPassword[mCommand,
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommandHandler.cs[m[36m:[m[32m20[m[36m:[m        public Forgot[1;31mPassword[mCommandHandler(
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommandHandler.cs[m[36m:[m[32m29[m[36m:[m            Forgot[1;31mPassword[mCommand request,
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommandHandler.cs[m[36m:[m[32m54[m[36m:[m                await _context.[1;31mPassword[mResetTokens
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommandHandler.cs[m[36m:[m[32m76[m[36m:[m                new [1;31mPassword[mResetToken
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommandHandler.cs[m[36m:[m[32m86[m[36m:[m            await _context.[1;31mPassword[mResetTokens
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommandHandler.cs[m[36m:[m[32m92[m[36m:[m                <h2>[1;31mPassword[m Reset</h2>
+[35mInvento.Application/Features/Auth/Commands/ForgotPasswordCommandHandler.cs[m[36m:[m[32m113[m[36m:[m                "Invento [1;31mPassword[m Reset",
+[35mInvento.Application/Features/Auth/Commands/LoginCommand.cs[m[36m:[m[32m12[m[36m:[m        public string [1;31mPassword[m { get; set; } = string.Empty;
+[35mInvento.Application/Features/Auth/Commands/LoginCommandHandler.cs[m[36m:[m[32m60[m[36m:[m                [1;31mPassword[mHasher.Verify(
+[35mInvento.Application/Features/Auth/Commands/LoginCommandHandler.cs[m[36m:[m[32m61[m[36m:[m                    request.[1;31mPassword[m,
+[35mInvento.Application/Features/Auth/Commands/LoginCommandHandler.cs[m[36m:[m[32m62[m[36m:[m                    user.[1;31mPassword[mHash
+[35mInvento.Application/Features/Auth/Commands/LoginCommandHandler.cs[m[36m:[m[32m117[m[36m:[m                        MustChange[1;31mPassword[m = user.MustChange[1;31mPassword[m
+[35mInvento.Application/Features/Auth/Commands/RegisterCommand.cs[m[36m:[m[32m21[m[36m:[m        public string [1;31mPassword[m { get; set; } = string.Empty;
+[35mInvento.Application/Features/Auth/Commands/RegisterCommandHandler.cs[m[36m:[m[32m68[m[36m:[m            [1;31mPassword[mHash =
+[35mInvento.Application/Features/Auth/Commands/RegisterCommandHandler.cs[m[36m:[m[32m69[m[36m:[m                [1;31mPassword[mHasher.Hash(
+[35mInvento.Application/Features/Auth/Commands/RegisterCommandHandler.cs[m[36m:[m[32m70[m[36m:[m                    request.[1;31mPassword[m),
+[35mInvento.Application/Features/Auth/Commands/RegisterCommandHandler.cs[m[36m:[m[32m74[m[36m:[m            MustChange[1;31mPassword[m = false
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommand.cs[m[36m:[m[32m6[m[36m:[m    public class Reset[1;31mPassword[mCommand
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommand.cs[m[36m:[m[32m11[m[36m:[m        public string New[1;31mPassword[m { get; set; } = string.Empty;
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommand.cs[m[36m:[m[32m13[m[36m:[m        public string Confirm[1;31mPassword[m { get; set; } = string.Empty;
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m10[m[36m:[m    public class Reset[1;31mPassword[mCommandHandler
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m12[m[36m:[m            Reset[1;31mPassword[mCommand,
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m17[m[36m:[m        public Reset[1;31mPassword[mCommandHandler(
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m24[m[36m:[m            Reset[1;31mPassword[mCommand request,
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m34[m[36m:[m                await _context.[1;31mPassword[mResetTokens
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m50[m[36m:[m                        "[1;31mPassword[m reset failed");
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m59[m[36m:[m                            "[1;31mPassword[m reset token has expired."
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m61[m[36m:[m                        "[1;31mPassword[m reset failed");
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m64[m[36m:[m            resetToken.User.[1;31mPassword[mHash =
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m65[m[36m:[m                [1;31mPassword[mHasher.Hash(
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m66[m[36m:[m                    request.New[1;31mPassword[m);
+[35mInvento.Application/Features/Auth/Commands/ResetPasswordCommandHandler.cs[m[36m:[m[32m89[m[36m:[m                    "[1;31mPassword[m reset successfully. Please login again.");
+[35mInvento.Application/Features/Auth/DTOs/AuthResponseDto.cs[m[36m:[m[32m14[m[36m:[m        public bool MustChange[1;31mPassword[m { get; set; }
+[35mInvento.Application/Features/Auth/Validators/ChangePasswordCommandValidator.cs[m[36m:[m[32m6[m[36m:[m    public class Change[1;31mPassword[mCommandValidator
+[35mInvento.Application/Features/Auth/Validators/ChangePasswordCommandValidator.cs[m[36m:[m[32m7[m[36m:[m        : AbstractValidator<Change[1;31mPassword[mCommand>
+[35mInvento.Application/Features/Auth/Validators/ChangePasswordCommandValidator.cs[m[36m:[m[32m9[m[36m:[m        public Change[1;31mPassword[mCommandValidator()
+[35mInvento.Application/Features/Auth/Validators/ChangePasswordCommandValidator.cs[m[36m:[m[32m11[m[36m:[m            RuleFor(x => x.Current[1;31mPassword[m)
+[35mInvento.Application/Features/Auth/Validators/ChangePasswordCommandValidator.cs[m[36m:[m[32m14[m[36m:[m            RuleFor(x => x.New[1;31mPassword[m)
+[35mInvento.Application/Features/Auth/Validators/ChangePasswordCommandValidator.cs[m[36m:[m[32m18[m[36m:[m            RuleFor(x => x.Confirm[1;31mPassword[m)
+[35mInvento.Application/Features/Auth/Validators/ChangePasswordCommandValidator.cs[m[36m:[m[32m19[m[36m:[m                .Equal(x => x.New[1;31mPassword[m)
+[35mInvento.Application/Features/Auth/Validators/ChangePasswordCommandValidator.cs[m[36m:[m[32m21[m[36m:[m                    "[1;31mPassword[ms do not match.");
+[35mInvento.Application/Features/Auth/Validators/ForgotPasswordCommandValidator.cs[m[36m:[m[32m6[m[36m:[m    public class Forgot[1;31mPassword[mCommandValidator
+[35mInvento.Application/Features/Auth/Validators/ForgotPasswordCommandValidator.cs[m[36m:[m[32m7[m[36m:[m        : AbstractValidator<Forgot[1;31mPassword[mCommand>
+[35mInvento.Application/Features/Auth/Validators/ForgotPasswordCommandValidator.cs[m[36m:[m[32m9[m[36m:[m        public Forgot[1;31mPassword[mCommandValidator()
+[35mInvento.Application/Features/Auth/Validators/LoginCommandValidator.cs[m[36m:[m[32m19[m[36m:[m            RuleFor(x => x.[1;31mPassword[m)
+[35mInvento.Application/Features/Auth/Validators/RegisterCommandValidator.cs[m[36m:[m[32m27[m[36m:[m            RuleFor(x => x.[1;31mPassword[m)
+[35mInvento.Application/Features/Auth/Validators/ResetPasswordCommandValidator.cs[m[36m:[m[32m6[m[36m:[m    public class Reset[1;31mPassword[mCommandValidator
+[35mInvento.Application/Features/Auth/Validators/ResetPasswordCommandValidator.cs[m[36m:[m[32m7[m[36m:[m        : AbstractValidator<Reset[1;31mPassword[mCommand>
+[35mInvento.Application/Features/Auth/Validators/ResetPasswordCommandValidator.cs[m[36m:[m[32m9[m[36m:[m        public Reset[1;31mPassword[mCommandValidator()
+[35mInvento.Application/Features/Auth/Validators/ResetPasswordCommandValidator.cs[m[36m:[m[32m15[m[36m:[m            RuleFor(x => x.New[1;31mPassword[m)
+[35mInvento.Application/Features/Auth/Validators/ResetPasswordCommandValidator.cs[m[36m:[m[32m19[m[36m:[m                    "[1;31mPassword[m must be at least 8 characters.");
+[35mInvento.Application/Features/Auth/Validators/ResetPasswordCommandValidator.cs[m[36m:[m[32m21[m[36m:[m            RuleFor(x => x.Confirm[1;31mPassword[m)
+[35mInvento.Application/Features/Auth/Validators/ResetPasswordCommandValidator.cs[m[36m:[m[32m22[m[36m:[m                .Equal(x => x.New[1;31mPassword[m)
+[35mInvento.Application/Features/Auth/Validators/ResetPasswordCommandValidator.cs[m[36m:[m[32m24[m[36m:[m                    "[1;31mPassword[ms do not match.");
+[35mInvento.Application/Features/Users/Commands/ChangeUserRoleCommandHandler.cs[m[36m:[m[32m131[m[36m:[m                        MustChange[1;31mPassword[m =
+[35mInvento.Application/Features/Users/Commands/ChangeUserRoleCommandHandler.cs[m[36m:[m[32m132[m[36m:[m                            targetUser.MustChange[1;31mPassword[m,
+[35mInvento.Application/Features/Users/Commands/CreateUserCommand.cs[m[36m:[m[32m17[m[36m:[m        public string [1;31mPassword[m { get; set; }
+[35mInvento.Application/Features/Users/Commands/CreateUserCommandHandler.cs[m[36m:[m[32m128[m[36m:[m                    [1;31mPassword[mHash =
+[35mInvento.Application/Features/Users/Commands/CreateUserCommandHandler.cs[m[36m:[m[32m129[m[36m:[m                        [1;31mPassword[mHasher.Hash(
+[35mInvento.Application/Features/Users/Commands/CreateUserCommandHandler.cs[m[36m:[m[32m130[m[36m:[m                            request.[1;31mPassword[m),
+[35mInvento.Application/Features/Users/Commands/CreateUserCommandHandler.cs[m[36m:[m[32m136[m[36m:[m                    MustChange[1;31mPassword[m = true,
+[35mInvento.Application/Features/Users/Commands/CreateUserCommandHandler.cs[m[36m:[m[32m152[m[36m:[m                EmailTemplates.Temporary[1;31mPassword[m(
+[35mInvento.Application/Features/Users/Commands/CreateUserCommandHandler.cs[m[36m:[m[32m156[m[36m:[m                    request.[1;31mPassword[m,
+[35mInvento.Application/Features/Users/Commands/CreateUserCommandHandler.cs[m[36m:[m[32m175[m[36m:[m                        MustChange[1;31mPassword[m =
+[35mInvento.Application/Features/Users/Commands/CreateUserCommandHandler.cs[m[36m:[m[32m176[m[36m:[m                            user.MustChange[1;31mPassword[m,
+[35mInvento.Application/Features/Users/Commands/UpdateMyProfileCommandHandler.cs[m[36m:[m[32m95[m[36m:[m                        MustChange[1;31mPassword[m =
+[35mInvento.Application/Features/Users/Commands/UpdateMyProfileCommandHandler.cs[m[36m:[m[32m96[m[36m:[m                            user.MustChange[1;31mPassword[m,
+[35mInvento.Application/Features/Users/Commands/UpdateUserCommandHandler.cs[m[36m:[m[32m126[m[36m:[m                        MustChange[1;31mPassword[m =
+[35mInvento.Application/Features/Users/Commands/UpdateUserCommandHandler.cs[m[36m:[m[32m127[m[36m:[m                            targetUser.MustChange[1;31mPassword[m,
+[35mInvento.Application/Features/Users/DTOs/UserDto.cs[m[36m:[m[32m19[m[36m:[m        public bool MustChange[1;31mPassword[m { get; set; }
+[35mInvento.Application/Features/Users/Queries/GetMyProfileQueryHandler.cs[m[36m:[m[32m53[m[36m:[m    MustChange[1;31mPassword[m,
+[35mInvento.Application/Features/Users/Queries/GetUserByIdQueryHandler.cs[m[36m:[m[32m47[m[36m:[m                MustChange[1;31mPassword[m,
+[35mInvento.Application/Features/Users/Queries/GetUsersQueryHandler.cs[m[36m:[m[32m42[m[36m:[m                MustChange[1;31mPassword[m,
+[35mInvento.Application/Features/Users/Validators/CreateUserCommandValidator.cs[m[36m:[m[32m19[m[36m:[m            RuleFor(x => x.[1;31mPassword[m)
+[35mInvento.Application/Interfaces/IApplicationDbContext.cs[m[36m:[m[32m15[m[36m:[m        DbSet<[1;31mPassword[mResetToken> [1;31mPassword[mResetTokens { get; }
+[35mInvento.Domain/Entities/PasswordResetToken.cs[m[36m:[m[32m5[m[36m:[m    public class [1;31mPassword[mResetToken : BaseEntity
+[35mInvento.Domain/Entities/User.cs[m[36m:[m[32m12[m[36m:[m        public string [1;31mPassword[mHash { get; set; } = string.Empty;
+[35mInvento.Domain/Entities/User.cs[m[36m:[m[32m20[m[36m:[m        public bool MustChange[1;31mPassword[m { get; set; } = false;
+[35mInvento.Domain/Entities/User.cs[m[36m:[m[32m27[m[36m:[m        public virtual ICollection<[1;31mPassword[mResetToken> [1;31mPassword[mResetTokens
+[35mInvento.Domain/Entities/User.cs[m[36m:[m[32m28[m[36m:[m        { get; set; } = new List<[1;31mPassword[mResetToken>();
+[35mInvento.Infrastructure/Email/SmtpEmailService.cs[m[36m:[m[32m34[m[36m:[m                    _settings.[1;31mPassword[m);
+[35mInvento.Persistence/Configurations/PasswordResetTokenConfiguration.cs[m[36m:[m[32m7[m[36m:[m    public class [1;31mPassword[mResetTokenConfiguration
+[35mInvento.Persistence/Configurations/PasswordResetTokenConfiguration.cs[m[36m:[m[32m8[m[36m:[m        : IEntityTypeConfiguration<[1;31mPassword[mResetToken>
+[35mInvento.Persistence/Configurations/PasswordResetTokenConfiguration.cs[m[36m:[m[32m11[m[36m:[m            EntityTypeBuilder<[1;31mPassword[mResetToken> builder)
+[35mInvento.Persistence/Configurations/PasswordResetTokenConfiguration.cs[m[36m:[m[32m13[m[36m:[m            builder.ToTable("[1;31mPassword[mResetTokens");
+[35mInvento.Persistence/Configurations/PasswordResetTokenConfiguration.cs[m[36m:[m[32m30[m[36m:[m                .WithMany(x => x.[1;31mPassword[mResetTokens)
+[35mInvento.Persistence/Configurations/UserConfiguration.cs[m[36m:[m[32m23[m[36m:[m            builder.Property(x => x.[1;31mPassword[mHash)
+[35mInvento.Persistence/Data/AppDbContext.cs[m[36m:[m[32m28[m[36m:[m        public DbSet<[1;31mPassword[mResetToken> [1;31mPassword[mResetTokens => Set<[1;31mPassword[mResetToken>();
+[35mInvento.Persistence/Migrations/20260523070305_InitialCreate.Designer.cs[m[36m:[m[32m475[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260523104318_productmodulechanges.Designer.cs[m[36m:[m[32m475[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260525101810_Salesmodule.Designer.cs[m[36m:[m[32m480[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260526102643_ProductModule.Designer.cs[m[36m:[m[32m485[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260606192122_latestupdate.Designer.cs[m[36m:[m[32m482[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260616174412_latestupdate1.Designer.cs[m[36m:[m[32m633[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260618145559_latestupdate2.Designer.cs[m[36m:[m[32m666[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260623141221_latestupdate3.Designer.cs[m[36m:[m[32m760[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260623160703_latestupdate4.Designer.cs[m[36m:[m[32m767[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260623162328_latestupdate5.Designer.cs[m[36m:[m[32m767[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260624175453_latestupdate6.Designer.cs[m[36m:[m[32m775[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260625090952_latestupdate7.Designer.cs[m[36m:[m[32m821[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.Designer.cs[m[36m:[m[32m242[m[36m:[m            modelBuilder.Entity("Invento.Domain.Entities.[1;31mPassword[mResetToken", b =>
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.Designer.cs[m[36m:[m[32m276[m[36m:[m                    b.ToTable("[1;31mPassword[mResetTokens", (string)null);
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.Designer.cs[m[36m:[m[32m858[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.Designer.cs[m[36m:[m[32m903[m[36m:[m            modelBuilder.Entity("Invento.Domain.Entities.[1;31mPassword[mResetToken", b =>
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.Designer.cs[m[36m:[m[32m906[m[36m:[m                        .WithMany("[1;31mPassword[mResetTokens")
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.Designer.cs[m[36m:[m[32m1108[m[36m:[m                    b.Navigation("[1;31mPassword[mResetTokens");
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m15[m[36m:[m                name: "[1;31mPassword[mResetTokens",
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m27[m[36m:[m                    table.PrimaryKey("PK_[1;31mPassword[mResetTokens", x => x.Id);
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m29[m[36m:[m                        name: "FK_[1;31mPassword[mResetTokens_Users_UserId",
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m37[m[36m:[m                name: "IX_[1;31mPassword[mResetTokens_ExpiresAt",
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m38[m[36m:[m                table: "[1;31mPassword[mResetTokens",
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m42[m[36m:[m                name: "IX_[1;31mPassword[mResetTokens_TokenHash",
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m43[m[36m:[m                table: "[1;31mPassword[mResetTokens",
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m48[m[36m:[m                name: "IX_[1;31mPassword[mResetTokens_UserId",
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m49[m[36m:[m                table: "[1;31mPassword[mResetTokens",
+[35mInvento.Persistence/Migrations/20260625101645_emailupdate.cs[m[36m:[m[32m57[m[36m:[m                name: "[1;31mPassword[mResetTokens");
+[35mInvento.Persistence/Migrations/AppDbContextModelSnapshot.cs[m[36m:[m[32m239[m[36m:[m            modelBuilder.Entity("Invento.Domain.Entities.[1;31mPassword[mResetToken", b =>
+[35mInvento.Persistence/Migrations/AppDbContextModelSnapshot.cs[m[36m:[m[32m273[m[36m:[m                    b.ToTable("[1;31mPassword[mResetTokens", (string)null);
+[35mInvento.Persistence/Migrations/AppDbContextModelSnapshot.cs[m[36m:[m[32m858[m[36m:[m                    b.Property<bool>("MustChange[1;31mPassword[m")
+[35mInvento.Persistence/Migrations/AppDbContextModelSnapshot.cs[m[36m:[m[32m861[m[36m:[m                    b.Property<string>("[1;31mPassword[mHash")
+[35mInvento.Persistence/Migrations/AppDbContextModelSnapshot.cs[m[36m:[m[32m906[m[36m:[m            modelBuilder.Entity("Invento.Domain.Entities.[1;31mPassword[mResetToken", b =>
+[35mInvento.Persistence/Migrations/AppDbContextModelSnapshot.cs[m[36m:[m[32m909[m[36m:[m                        .WithMany("[1;31mPassword[mResetTokens")
+[35mInvento.Persistence/Migrations/AppDbContextModelSnapshot.cs[m[36m:[m[32m1111[m[36m:[m                    b.Navigation("[1;31mPassword[mResetTokens");
