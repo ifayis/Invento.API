@@ -228,6 +228,14 @@ if (string.IsNullOrWhiteSpace(
         "JwtSettings:SecretKey is not configured.");
 }
 
+if (Encoding.UTF8.GetByteCount(
+        jwtSettings.SecretKey) < 32)
+{
+    throw new InvalidOperationException(
+        "JwtSettings:SecretKey must be at least " +
+        "32 bytes long.");
+}
+
 if (string.IsNullOrWhiteSpace(
     jwtSettings.Issuer))
 {
