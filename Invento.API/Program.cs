@@ -256,7 +256,8 @@ if (jwtSettings.RefreshTokenExpirationDays <= 0)
         "must be greater than zero.");
 }
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication(
+        JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters =
@@ -270,9 +271,11 @@ builder.Services
 
                 ValidateIssuerSigningKey = true,
 
-                ValidIssuer = jwtSettings.Issuer,
+                ValidIssuer =
+                    jwtSettings.Issuer,
 
-                ValidAudience = jwtSettings.Audience,
+                ValidAudience =
+                    jwtSettings.Audience,
 
                 IssuerSigningKey =
                     new SymmetricSecurityKey(
@@ -281,7 +284,10 @@ builder.Services
 
                 NameClaimType = "Name",
 
-                RoleClaimType = "Role"
+                RoleClaimType = "Role",
+
+                ClockSkew =
+                    TimeSpan.FromSeconds(30)
             };
     });
 
