@@ -43,7 +43,12 @@ builder.Host.UseSerilog((context, services, configuration) =>
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.OnRejected = async (context, token) =>
+    options.RejectionStatusCode =
+        StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = async (
+        context,
+        cancellationToken) =>
     {
         context.HttpContext.Response.ContentType =
             "application/json";
@@ -54,29 +59,46 @@ builder.Services.AddRateLimiter(options =>
                 Message =
                     "Too many requests. Please try again later."
             },
-            cancellationToken: token);
+            cancellationToken:
+                cancellationToken);
     };
 
     options.AddPolicy(
         "AuthPolicy",
         httpContext =>
         {
-            return RateLimitPartition.GetFixedWindowLimiter(
-                partitionKey:
-                    httpContext.Connection.RemoteIpAddress?.ToString()
-                    ?? "unknown",
+            var remoteIpAddress =
+                httpContext.Connection
+                    .RemoteIpAddress;
 
-                factory: _ =>
-                    new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = 5,
+            var partitionKey =
+                remoteIpAddress is null
+                    ? "unknown"
+                    : remoteIpAddress
+                        .MapToIPv4()
+                        .ToString();
 
-                        Window = TimeSpan.FromMinutes(1),
+            return RateLimitPartition
+                .GetFixedWindowLimiter(
+                    partitionKey:
+                        partitionKey,
 
-                        QueueLimit = 0,
+                    factory: _ =>
+                        new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 5,
 
-                        AutoReplenishment = true
-                    });
+                            Window =
+                                TimeSpan.FromMinutes(1),
+
+                            QueueLimit = 0,
+
+                            QueueProcessingOrder =
+                                QueueProcessingOrder
+                                    .OldestFirst,
+
+                            AutoReplenishment = true
+                        });
         });
 });
 
