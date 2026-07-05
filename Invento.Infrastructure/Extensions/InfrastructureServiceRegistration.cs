@@ -77,10 +77,17 @@ namespace Invento.Infrastructure.Extensions
             configuration.GetSection("EmailSettings"));
 
             services.AddScoped<
-                IEmailService, 
+                IEmailService,
                 SmtpEmailService>();
 
-            services.AddHangfireServer();
+            var runHangfireServer =
+                configuration.GetValue<bool>(
+                    "Hangfire:RunServer");
+
+            if (runHangfireServer)
+            {
+                services.AddHangfireServer();
+            }
 
             return services;
         }
