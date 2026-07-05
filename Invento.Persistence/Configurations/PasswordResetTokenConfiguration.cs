@@ -29,7 +29,11 @@ namespace Invento.Persistence.Configurations
             builder.HasOne(x => x.User)
                 .WithMany(x => x.PasswordResetTokens)
                 .HasForeignKey(x => x.UserId)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasQueryFilter(
+                x => !x.User.IsDeleted);
         }
     }
 }

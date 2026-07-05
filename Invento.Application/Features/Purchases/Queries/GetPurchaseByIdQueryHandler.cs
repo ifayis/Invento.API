@@ -81,6 +81,7 @@ namespace Invento.Application.Features.Purchases.Queries
                 ON pi.ProductId = pr.Id
             WHERE
                 pi.PurchaseId = @PurchaseId
+                AND pi.TenantId = @TenantId
             ";
 
             var items =
@@ -88,7 +89,8 @@ namespace Invento.Application.Features.Purchases.Queries
                     itemSql,
                     new
                     {
-                        PurchaseId = purchase.Id
+                        PurchaseId = purchase.Id,
+                        TenantId = _currentTenant.TenantId
                     });
 
             purchase.Items = items.ToList();

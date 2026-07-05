@@ -1,5 +1,6 @@
 ﻿using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
+using Invento.Persistence.Auditing;
 using Invento.Shared.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -60,119 +61,318 @@ namespace Invento.Persistence.Data
         public override async Task<int> SaveChangesAsync(
             CancellationToken cancellationToken = default)
         {
+            ChangeTracker.DetectChanges();
+
             var auditLogs = new List<AuditLog>();
 
-            var entries = ChangeTracker
-                .Entries<AuditableEntity>();
+            var auditableEntries = ChangeTracker
+                .Entries<AuditableEntity>()
+                .Where(x =>
+                    x.State == EntityState.Added ||
+                    x.State == EntityState.Modified ||
+                    x.State == EntityState.Deleted)
+                .ToList();
 
-            foreach (var entry in entries)
+            var saleItemEntries = ChangeTracker
+                .Entries<SaleItem>()
+                .Where(x =>
+                    x.State == EntityState.Added ||
+                    x.State == EntityState.Deleted)
+                .ToList();
+
+            var purchaseItemEntries = ChangeTracker
+                .Entries<PurchaseItem>()
+                .Where(x =>
+                    x.State == EntityState.Added ||
+                    x.State == EntityState.Deleted)
+                .ToList();
+
+            var now = DateTime.UtcNow;
+
+            foreach (var entry in auditableEntries)
+            {
+                var entity = entry.Entity;
+
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        {
+                            entity.CreatedAt = now;
+
+                            entity.CreatedBy =
+                                _currentUser.UserId;
+
+                            auditLogs.Add(
+                                new AuditLog
+                                {
+                                    TenantId = entity.TenantId,
+
+                                    UserId =
+                                        _currentUser.UserId,
+
+                                    EntityName =
+                                        entry.Metadata.ClrType.Name,
+
+                                    ActionType = "Create",
+
+                                    RecordId =
+                                        entity.Id.ToString(),
+
+                                    OldValues = null,
+
+                                    NewValues =
+                                        AuditValueSerializer
+                                            .GetCreatedValues(entry),
+
+                                    CreatedAt = now
+                                });
+
+                            break;
+                        }
+
+                    case EntityState.Modified:
+                        {
+                            entity.UpdatedAt = now;
+
+                            entity.UpdatedBy =
+                                _currentUser.UserId;
+
+                            var isSoftDelete =
+                                entry.Properties.Any(
+                                    property =>
+                                        property.Metadata.Name ==
+                                            nameof(
+                                                AuditableEntity.IsDeleted)
+                                        &&
+                                        property.IsModified
+                                        &&
+                                        property.OriginalValue
+                                            is bool oldValue
+                                        &&
+                                        property.CurrentValue
+                                            is bool newValue
+                                        &&
+                                        !oldValue
+                                        &&
+                                        newValue);
+
+                            auditLogs.Add(
+                                new AuditLog
+                                {
+                                    TenantId = entity.TenantId,
+
+                                    UserId =
+                                        _currentUser.UserId,
+
+                                    EntityName =
+                                        entry.Metadata.ClrType.Name,
+
+                                    ActionType =
+                                        isSoftDelete
+                                            ? "SoftDelete"
+                                            : "Update",
+
+                                    RecordId =
+                                        entity.Id.ToString(),
+
+                                    OldValues =
+                                        AuditValueSerializer
+                                            .GetOldValues(entry),
+
+                                    NewValues =
+                                        AuditValueSerializer
+                                            .GetNewValues(entry),
+
+                                    CreatedAt = now
+                                });
+
+                            break;
+                        }
+
+                    case EntityState.Deleted:
+                        {
+                            auditLogs.Add(
+                                new AuditLog
+                                {
+                                    TenantId = entity.TenantId,
+
+                                    UserId =
+                                        _currentUser.UserId,
+
+                                    EntityName =
+                                        entry.Metadata.ClrType.Name,
+
+                                    ActionType = "Delete",
+
+                                    RecordId =
+                                        entity.Id.ToString(),
+
+                                    OldValues =
+                                        AuditValueSerializer
+                                            .GetCreatedValues(entry),
+
+                                    NewValues = null,
+
+                                    CreatedAt = now
+                                });
+
+                            break;
+                        }
+                }
+            }
+
+            foreach (var entry in saleItemEntries)
             {
                 switch (entry.State)
                 {
                     case EntityState.Added:
+                        {
+                            auditLogs.Add(
+                                new AuditLog
+                                {
+                                    TenantId =
+                                        entry.Entity.TenantId,
 
-                        entry.Entity.CreatedAt =
-                            DateTime.UtcNow;
+                                    UserId =
+                                        _currentUser.UserId,
 
-                        entry.Entity.CreatedBy =
-                            _currentUser.UserId ?? "System";
+                                    EntityName =
+                                        nameof(SaleItem),
 
-                        auditLogs.Add(
-                            new AuditLog
-                            {
-                                TenantId = entry.Entity.TenantId,
+                                    ActionType = "Create",
 
-                                UserId =
-                                    _currentUser.UserId ?? "System",
+                                    RecordId =
+                                        entry.Entity.Id.ToString(),
 
-                                EntityName =
-                                    entry.Entity.GetType().Name,
+                                    OldValues = null,
 
-                                ActionType = "Create",
+                                    NewValues =
+                                        AuditValueSerializer
+                                            .GetCreatedValues(entry),
 
-                                RecordId =
-                                    entry.Entity.Id.ToString(),
+                                    CreatedAt = now
+                                });
 
-                                CreatedAt =
-                                    DateTime.UtcNow
-                            });
-
-                        break;
-
-                    case EntityState.Modified:
-
-                        entry.Entity.UpdatedAt =
-                            DateTime.UtcNow;
-
-                        entry.Entity.UpdatedBy =
-                            _currentUser.UserId ?? "System";
-
-                        auditLogs.Add(
-                            new AuditLog
-                            {
-                                TenantId = entry.Entity.TenantId,
-
-                                UserId =
-                                    _currentUser.UserId ?? "System",
-
-                                EntityName =
-                                    entry.Entity.GetType().Name,
-
-                                ActionType = "Update",
-
-                                RecordId =
-                                    entry.Entity.Id.ToString(),
-
-                                CreatedAt =
-                                    DateTime.UtcNow
-                            });
-
-                        break;
+                            break;
+                        }
 
                     case EntityState.Deleted:
+                        {
+                            auditLogs.Add(
+                                new AuditLog
+                                {
+                                    TenantId =
+                                        entry.Entity.TenantId,
 
-                        auditLogs.Add(
-                            new AuditLog
-                            {
-                                TenantId = entry.Entity.TenantId,
+                                    UserId =
+                                        _currentUser.UserId,
 
-                                UserId =
-                                    _currentUser.UserId ?? "System",
+                                    EntityName =
+                                        nameof(SaleItem),
 
-                                EntityName =
-                                    entry.Entity.GetType().Name,
+                                    ActionType = "Delete",
 
-                                ActionType = "Delete",
+                                    RecordId =
+                                        entry.Entity.Id.ToString(),
 
-                                RecordId =
-                                    entry.Entity.Id.ToString(),
+                                    OldValues =
+                                        AuditValueSerializer
+                                            .GetCreatedValues(entry),
 
-                                CreatedAt =
-                                    DateTime.UtcNow
-                            });
+                                    NewValues = null,
 
-                        break;
+                                    CreatedAt = now
+                                });
+
+                            break;
+                        }
                 }
             }
 
-            if (auditLogs.Any())
+            foreach (var entry in purchaseItemEntries)
             {
-                AuditLogs.AddRange(auditLogs);
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        {
+                            auditLogs.Add(
+                                new AuditLog
+                                {
+                                    TenantId =
+                                        entry.Entity.TenantId,
+
+                                    UserId =
+                                        _currentUser.UserId,
+
+                                    EntityName =
+                                        nameof(PurchaseItem),
+
+                                    ActionType = "Create",
+
+                                    RecordId =
+                                        entry.Entity.Id.ToString(),
+
+                                    OldValues = null,
+
+                                    NewValues =
+                                        AuditValueSerializer
+                                            .GetCreatedValues(entry),
+
+                                    CreatedAt = now
+                                });
+
+                            break;
+                        }
+
+                    case EntityState.Deleted:
+                        {
+                            auditLogs.Add(
+                                new AuditLog
+                                {
+                                    TenantId =
+                                        entry.Entity.TenantId,
+
+                                    UserId =
+                                        _currentUser.UserId,
+
+                                    EntityName =
+                                        nameof(PurchaseItem),
+
+                                    ActionType = "Delete",
+
+                                    RecordId =
+                                        entry.Entity.Id.ToString(),
+
+                                    OldValues =
+                                        AuditValueSerializer
+                                            .GetCreatedValues(entry),
+
+                                    NewValues = null,
+
+                                    CreatedAt = now
+                                });
+
+                            break;
+                        }
+                }
+            }
+
+            if (auditLogs.Count > 0)
+            {
+                await AuditLogs.AddRangeAsync(
+                    auditLogs,
+                    cancellationToken);
             }
 
             return await base.SaveChangesAsync(
                 cancellationToken);
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfigurationsFromAssembly(
                 typeof(AppDbContext).Assembly);
-
-            modelBuilder.Entity<Product>()
-                .HasQueryFilter(x => !x.IsDeleted);
 
             modelBuilder.Entity<Category>()
                 .HasQueryFilter(x => !x.IsDeleted);

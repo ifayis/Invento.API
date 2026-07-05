@@ -1,5 +1,6 @@
 using Hangfire;
 using Invento.API.Extensions;
+using Invento.API.Hangfire;
 using Invento.API.Health;
 using Invento.API.Middleware;
 using Invento.API.Swagger;
@@ -13,12 +14,21 @@ using Invento.Infrastructure.Extensions;
 using Invento.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<ForwardedHeadersOptions>(
+    options =>
+    {
+        options.ForwardedHeaders =
+            ForwardedHeaders.XForwardedFor |
+            ForwardedHeaders.XForwardedProto;
+    });
 
 builder.Host.UseSerilog((context, services, configuration) =>
 {
@@ -72,6 +82,33 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddControllers();
 
+var allowedOrigins =
+    builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>()
+    ?? Array.Empty<string>();
+
+if (builder.Environment.IsProduction() &&
+    allowedOrigins.Length == 0)
+{
+    throw new InvalidOperationException(
+        "Cors:AllowedOrigins must be configured " +
+        "for Production.");
+}
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        "FrontendPolicy",
+        policy =>
+        {
+            policy
+                .WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddResponseCompressionServices();
@@ -86,10 +123,65 @@ builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 
 builder.Services.AddApplicationServices();
 
-builder.Services.AddPersistenceServices(builder.Configuration);
+var defaultConnectionString =
+    builder.Configuration.GetConnectionString(
+        "DefaultConnection");
 
-builder.Services.AddInfrastructureServices(builder.Configuration);
+if (string.IsNullOrWhiteSpace(
+    defaultConnectionString))
+{
+    throw new InvalidOperationException(
+        "ConnectionStrings:DefaultConnection " +
+        "is not configured.");
+}
 
+var redisConnectionString =
+    builder.Configuration[
+        "Redis:ConnectionString"];
+
+if (string.IsNullOrWhiteSpace(
+    redisConnectionString))
+{
+    throw new InvalidOperationException(
+        "Redis:ConnectionString " +
+        "is not configured.");
+}
+
+if (builder.Environment.IsProduction())
+{
+    if (defaultConnectionString.Contains(
+        "localhost",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException(
+            "Production SQL Server configuration " +
+            "must not use localhost.");
+    }
+
+    if (defaultConnectionString.Contains(
+        @"\SQLEXPRESS",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException(
+            "Production SQL Server configuration " +
+            "must not use SQL Express.");
+    }
+
+    if (redisConnectionString.Contains(
+        "localhost",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException(
+            "Production Redis configuration " +
+            "must not use localhost.");
+    }
+}
+
+builder.Services.AddPersistenceServices(
+    builder.Configuration);
+
+builder.Services.AddInfrastructureServices(
+    builder.Configuration);
 builder.Services.AddScoped<StockMovementService>();
 
 builder.Services.AddScoped<CashTransactionService>();
@@ -242,11 +334,20 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHangfireDashboard("/hangfire");
+app.UseForwardedHeaders();
 
-app.UseHttpsRedirection();
+var httpsRedirectionEnabled =
+    builder.Configuration.GetValue<bool>(
+        "HttpsRedirection:Enabled");
+
+if (httpsRedirectionEnabled)
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseResponseCompression();
+
+app.UseCors("FrontendPolicy");
 
 app.UseRateLimiter();
 
@@ -258,10 +359,26 @@ app.UseCustomExceptionMiddleware();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseHangfireDashboard(
+    "/hangfire",
+    new DashboardOptions
+    {
+        Authorization =
+        [
+            new HangfireAuthorizationFilter()
+        ]
+    });
 
-using (var scope = app.Services.CreateScope())
+app.MapControllers();
+var registerRecurringJobs =
+    builder.Configuration.GetValue<bool>(
+        "Hangfire:RegisterRecurringJobs");
+
+if (registerRecurringJobs)
 {
+    using var scope =
+        app.Services.CreateScope();
+
     var recurringJobs =
         scope.ServiceProvider
             .GetRequiredService<IRecurringJobService>();
@@ -299,8 +416,20 @@ app.MapHealthChecks(
         Predicate = check =>
             check.Tags.Contains("live"),
 
-        ResponseWriter =
-            HealthCheckResponseWriter.WriteResponseAsync
+        ResponseWriter = async (
+            context,
+            report) =>
+        {
+            context.Response.ContentType =
+                "application/json";
+
+            await context.Response.WriteAsJsonAsync(
+                new
+                {
+                    Status =
+                        report.Status.ToString()
+                });
+        }
     });
 
 app.MapHealthChecks(
@@ -310,20 +439,35 @@ app.MapHealthChecks(
         Predicate = check =>
             check.Tags.Contains("ready"),
 
-        ResponseWriter =
-            HealthCheckResponseWriter.WriteResponseAsync
+        ResponseWriter = async (
+            context,
+            report) =>
+        {
+            context.Response.ContentType =
+                "application/json";
+
+            await context.Response.WriteAsJsonAsync(
+                new
+                {
+                    Status =
+                        report.Status.ToString()
+                });
+        }
     });
 
-app.MapHealthChecks(
-    "/health",
-    new HealthCheckOptions
-    {
-        Predicate = _ => true,
+if (app.Environment.IsDevelopment())
+{
+    app.MapHealthChecks(
+        "/health",
+        new HealthCheckOptions
+        {
+            Predicate = _ => true,
 
-        ResponseWriter =
-            HealthCheckResponseWriter.WriteResponseAsync
-    });
-
+            ResponseWriter =
+                HealthCheckResponseWriter
+                    .WriteResponseAsync
+        });
+}
 try
 {
     app.Run();

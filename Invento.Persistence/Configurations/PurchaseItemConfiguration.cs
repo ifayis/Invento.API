@@ -35,6 +35,9 @@ namespace Invento.Persistence.Configurations
                 .WithMany(x => x.PurchaseItems)
                 .HasForeignKey(x => x.PurchaseId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasQueryFilter(
+                x => !x.Product.IsDeleted);
         }
     }
 }

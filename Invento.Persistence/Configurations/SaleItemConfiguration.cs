@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Invento.Persistence.Configurations
 {
-    public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
+    public class SaleItemConfiguration
+        : IEntityTypeConfiguration<SaleItem>
     {
-        public void Configure(EntityTypeBuilder<SaleItem> builder)
+        public void Configure(
+            EntityTypeBuilder<SaleItem> builder)
         {
             builder.ToTable("SaleItems");
 
@@ -30,9 +32,13 @@ namespace Invento.Persistence.Configurations
             builder.Property(x => x.ProfitAmount)
                 .HasColumnType("decimal(18,2)");
 
+            builder.HasQueryFilter(
+                x => !x.Sale.IsDeleted);
+
             builder.HasOne(x => x.Product)
                 .WithMany(x => x.SaleItems)
                 .HasForeignKey(x => x.ProductId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(x => x.Sale)
