@@ -57,7 +57,7 @@ namespace Invento.API.Controllers
 
             if (!result.Success)
             {
-                return BadRequest(result);
+                return Unauthorized(result);
             }
 
             return Ok(result);
