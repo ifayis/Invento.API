@@ -6,9 +6,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Auth.Commands
 {
     public class LogoutCommandHandler
-        : ICommandHandler<LogoutCommand, ApiResponse<string>>
+        : ICommandHandler<
+            LogoutCommand,
+            ApiResponse<string>>
     {
-        private readonly IApplicationDbContext _context;
+        private readonly IApplicationDbContext
+            _context;
 
         public LogoutCommandHandler(
             IApplicationDbContext context)
@@ -20,7 +23,8 @@ namespace Invento.Application.Features.Auth.Commands
             LogoutCommand request,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            if (string.IsNullOrWhiteSpace(
+                request.RefreshToken))
             {
                 return ApiResponse<string>
                     .FailureResponse(
@@ -31,12 +35,20 @@ namespace Invento.Application.Features.Auth.Commands
                         "Logout failed");
             }
 
-            var token = await _context.RefreshTokens
-                .FirstOrDefaultAsync(
-                    x => x.Token == request.RefreshToken,
-                    cancellationToken);
+            var refreshTokenHash =
+                RefreshTokenHasher.Hash(
+                    request.RefreshToken);
 
-            if (token is null || token.IsRevoked)
+            var token =
+                await _context.RefreshTokens
+                    .FirstOrDefaultAsync(
+                        x =>
+                            x.Token ==
+                                refreshTokenHash,
+                        cancellationToken);
+
+            if (token is null ||
+                token.IsRevoked)
             {
                 return ApiResponse<string>
                     .SuccessResponse(
@@ -44,7 +56,9 @@ namespace Invento.Application.Features.Auth.Commands
             }
 
             token.IsRevoked = true;
-            token.RevokedAt = DateTime.UtcNow;
+
+            token.RevokedAt =
+                DateTime.UtcNow;
 
             await _context.SaveChangesAsync(
                 cancellationToken);

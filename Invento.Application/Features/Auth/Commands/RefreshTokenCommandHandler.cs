@@ -25,13 +25,17 @@ public class RefreshTokenCommandHandler
             RefreshTokenCommand request,
             CancellationToken cancellationToken)
     {
+        var refreshTokenHash =
+            RefreshTokenHasher.Hash(
+            request.RefreshToken);
+
         var storedToken =
             await _context.RefreshTokens
             .Include(x => x.User)
-            .FirstOrDefaultAsync(x =>
-                x.Token ==
-                    request.RefreshToken
-                && !x.IsRevoked,
+            .FirstOrDefaultAsync(
+                x =>
+                    x.Token == refreshTokenHash
+                    && !x.IsRevoked,
                 cancellationToken);
 
         if (storedToken is null)
@@ -61,16 +65,24 @@ public class RefreshTokenCommandHandler
         storedToken.IsRevoked = true;
         storedToken.RevokedAt = DateTime.UtcNow;
 
-        var newRefreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+        var newRefreshToken =
+            _jwtTokenGenerator.GenerateRefreshToken();
+
+        var newRefreshTokenHash =
+            RefreshTokenHasher.Hash(
+                newRefreshToken);
 
         var refreshTokenEntity =
             new RefreshToken
             {
                 UserId = storedToken.UserId,
 
-                Token = newRefreshToken,
+                Token = newRefreshTokenHash,
 
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
+                ExpiresAt =
+                    DateTime.UtcNow.AddDays(7),
+
+                IsRevoked = false
             };
 
         await _context.RefreshTokens

@@ -88,17 +88,25 @@ namespace Invento.Application.Features.Auth.Commands
 
             var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
 
-            var refreshTokenValue = _jwtTokenGenerator.GenerateRefreshToken();
+            var refreshTokenValue =
+                _jwtTokenGenerator.GenerateRefreshToken();
+
+            var refreshTokenHash =
+                RefreshTokenHasher.Hash(
+                    refreshTokenValue);
 
             var refreshToken =
                 new RefreshToken
                 {
                     UserId = user.Id,
-                    Token = refreshTokenValue,
-                    ExpiresAt = DateTime.UtcNow.AddDays(7),
+
+                    Token = refreshTokenHash,
+
+                    ExpiresAt =
+                        DateTime.UtcNow.AddDays(7),
+
                     IsRevoked = false
                 };
-
             await _context.RefreshTokens
                 .AddAsync(
                     refreshToken,
