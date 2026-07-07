@@ -232,5 +232,44 @@ namespace Invento.Infrastructure.Jobs
                     item.PaymentStatus);
             }
         }
+
+        public async Task ExecuteRefreshTokenCleanup()
+        {
+            var cutoffDate =
+                DateTime.UtcNow.AddDays(-30);
+
+            var tokensToDelete =
+                await _context.RefreshTokens
+                    .IgnoreQueryFilters()
+                    .Where(x =>
+                        x.ExpiresAt < cutoffDate
+                        ||
+                        (
+                            x.IsRevoked
+                            &&
+                            x.RevokedAt.HasValue
+                            &&
+                            x.RevokedAt.Value < cutoffDate
+                        ))
+                    .ToListAsync();
+
+            if (!tokensToDelete.Any())
+            {
+                _logger.LogInformation(
+                    "Refresh Token Cleanup | No old tokens found.");
+
+                return;
+            }
+
+            _context.RefreshTokens.RemoveRange(
+                tokensToDelete);
+
+            await _context.SaveChangesAsync(
+                CancellationToken.None);
+
+            _logger.LogInformation(
+                "Refresh Token Cleanup | Deleted Tokens: {Count}",
+                tokensToDelete.Count);
+        }
     }
 }

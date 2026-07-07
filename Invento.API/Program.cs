@@ -436,6 +436,7 @@ app.UseHangfireDashboard(
     });
 
 app.MapControllers();
+
 var registerRecurringJobs =
     builder.Configuration.GetValue<bool>(
         "Hangfire:RegisterRecurringJobs");
@@ -472,6 +473,11 @@ if (registerRecurringJobs)
     RecurringJob.AddOrUpdate(
         "payable-check",
         () => recurringJobs.ExecutePayableCheck(),
+        Cron.Daily);
+
+    RecurringJob.AddOrUpdate(
+        "refresh-token-cleanup",
+        () => recurringJobs.ExecuteRefreshTokenCleanup(),
         Cron.Daily);
 }
 
