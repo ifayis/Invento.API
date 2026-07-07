@@ -22,6 +22,16 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge =
+        TimeSpan.FromDays(365);
+
+    options.IncludeSubDomains = true;
+
+    options.Preload = false;
+});
+
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.AddServerHeader = false;
@@ -114,6 +124,42 @@ var allowedOrigins =
         .GetSection("Cors:AllowedOrigins")
         .Get<string[]>()
     ?? Array.Empty<string>();
+
+allowedOrigins =
+    allowedOrigins
+        .Where(x =>
+            !string.IsNullOrWhiteSpace(x))
+        .Select(x =>
+            x.Trim().TrimEnd('/'))
+        .Distinct(
+            StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+
+foreach (var origin in allowedOrigins)
+{
+    if (!Uri.TryCreate(
+            origin,
+            UriKind.Absolute,
+            out var originUri))
+    {
+        throw new InvalidOperationException(
+            $"Invalid CORS origin: {origin}");
+    }
+
+    if (originUri.Scheme != Uri.UriSchemeHttp &&
+        originUri.Scheme != Uri.UriSchemeHttps)
+    {
+        throw new InvalidOperationException(
+            $"CORS origin must use HTTP or HTTPS: {origin}");
+    }
+
+    if (builder.Environment.IsProduction() &&
+        originUri.Scheme != Uri.UriSchemeHttps)
+    {
+        throw new InvalidOperationException(
+            $"Production CORS origin must use HTTPS: {origin}");
+    }
+}
 
 if (builder.Environment.IsProduction() &&
     allowedOrigins.Length == 0)
@@ -394,6 +440,11 @@ if (swaggerEnabled)
 
 app.UseForwardedHeaders();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
 var httpsRedirectionEnabled =
     builder.Configuration.GetValue<bool>(
         "HttpsRedirection:Enabled");
@@ -403,30 +454,7 @@ if (httpsRedirectionEnabled)
     app.UseHttpsRedirection();
 }
 
-app.Use(async (context, next) =>
-{
-    context.Response.OnStarting(() =>
-    {
-        var headers =
-            context.Response.Headers;
-
-        headers["X-Content-Type-Options"] =
-            "nosniff";
-
-        headers["X-Frame-Options"] =
-            "DENY";
-
-        headers["Referrer-Policy"] =
-            "no-referrer";
-
-        headers["Permissions-Policy"] =
-            "camera=(), microphone=(), geolocation=()";
-
-        return Task.CompletedTask;
-    });
-
-    await next();
-});
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseResponseCompression();
 
