@@ -18,8 +18,20 @@ namespace Invento.Persistence.Configurations
                 .IsRequired()
                 .HasMaxLength(500);
 
+            builder.Property(x => x.FamilyId)
+                .IsRequired();
+
             builder.Property(x => x.IsRevoked)
                 .HasDefaultValue(false);
+
+            builder.HasIndex(x => x.Token)
+                .IsUnique();
+
+            builder.HasIndex(x => new
+            {
+                x.UserId,
+                x.FamilyId
+            });
 
             builder.HasOne(x => x.User)
                 .WithMany(x => x.RefreshTokens)

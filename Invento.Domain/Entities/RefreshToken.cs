@@ -6,7 +6,12 @@ namespace Invento.Domain.Entities
     {
         public Guid UserId { get; set; }
 
-        public string Token { get; set; } = string.Empty;
+        public string Token { get; set; }
+            = string.Empty;
+
+        public Guid FamilyId { get; set; }
+
+        public Guid? ReplacedByTokenId { get; set; }
 
         public DateTime ExpiresAt { get; set; }
 
@@ -14,6 +19,7 @@ namespace Invento.Domain.Entities
 
         public DateTime? RevokedAt { get; set; }
 
-        public User User { get; set; } = default!;
+        public User User { get; set; }
+            = default!;
     }
 }

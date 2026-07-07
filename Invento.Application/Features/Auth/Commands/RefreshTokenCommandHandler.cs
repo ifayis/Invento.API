@@ -34,99 +34,170 @@ public class RefreshTokenCommandHandler
     }
 
     public async Task<ApiResponse<AuthResponseDto>> Handle(
-            RefreshTokenCommand request,
-            CancellationToken cancellationToken)
+        RefreshTokenCommand request,
+        CancellationToken cancellationToken)
     {
-        var refreshTokenHash =
-            RefreshTokenHasher.Hash(
-            request.RefreshToken);
+        using var transaction =
+            await _context.BeginTransactionAsync();
 
-        var storedToken =
-            await _context.RefreshTokens
-            .Include(x => x.User)
-            .FirstOrDefaultAsync(
-                x =>
-                    x.Token == refreshTokenHash
-                    && !x.IsRevoked,
-                cancellationToken);
-
-        if (storedToken is null)
+        try
         {
-            return ApiResponse<AuthResponseDto>
-                .FailureResponse(
-                    new List<string>
-                    {
-                        "Invalid refresh token"
-                    },
-                    "Unauthorized"
-                );
-        }
+            var refreshTokenHash =
+                RefreshTokenHasher.Hash(
+                    request.RefreshToken);
 
-        if (storedToken.ExpiresAt < DateTime.UtcNow)
-        {
-            return ApiResponse<AuthResponseDto>
-                .FailureResponse(
-                    new List<string>
-                    {
-                        "Refresh token expired"
-                    },
-                    "Unauthorized"
-                );
-        }
+            var storedToken =
+                await _context.RefreshTokens
+                    .Include(x => x.User)
+                    .FirstOrDefaultAsync(
+                        x => x.Token == refreshTokenHash,
+                        cancellationToken);
 
-        storedToken.IsRevoked = true;
-        storedToken.RevokedAt = DateTime.UtcNow;
-
-        var newRefreshToken =
-            _jwtTokenGenerator.GenerateRefreshToken();
-
-        var newRefreshTokenHash =
-            RefreshTokenHasher.Hash(
-                newRefreshToken);
-
-        var refreshTokenEntity =
-            new RefreshToken
+            if (storedToken is null)
             {
-                UserId = storedToken.UserId,
+                await transaction.RollbackAsync(
+                    cancellationToken);
 
-                Token = newRefreshTokenHash,
+                return ApiResponse<AuthResponseDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                        "Invalid refresh token"
+                        },
+                        "Unauthorized");
+            }
 
-                ExpiresAt =
-                    DateTime.UtcNow.AddDays(
-                        _jwtSettings
-                            .RefreshTokenExpirationDays),
-                                IsRevoked = false
-            };
-
-        await _context.RefreshTokens
-            .AddAsync(
-                refreshTokenEntity,
-                cancellationToken);
-
-        var accessToken = _jwtTokenGenerator.GenerateAccessToken(storedToken.User);
-
-        await _context.SaveChangesAsync(cancellationToken);
-
-        return ApiResponse<AuthResponseDto>
-            .SuccessResponse(
-                new AuthResponseDto
+            if (storedToken.IsRevoked)
+            {
+                if (storedToken.ReplacedByTokenId.HasValue)
                 {
-                    AccessToken =
-                        accessToken,
+                    var familyTokens =
+                        await _context.RefreshTokens
+                            .Where(x =>
+                                x.UserId == storedToken.UserId
+                                && x.FamilyId == storedToken.FamilyId
+                                && !x.IsRevoked)
+                            .ToListAsync(
+                                cancellationToken);
 
-                    RefreshToken =
-                        newRefreshToken,
+                    var revokedAt =
+                        DateTime.UtcNow;
+
+                    foreach (var familyToken in familyTokens)
+                    {
+                        familyToken.IsRevoked = true;
+                        familyToken.RevokedAt = revokedAt;
+                    }
+
+                    await _context.SaveChangesAsync(
+                        cancellationToken);
+
+                    await transaction.CommitAsync(
+                        cancellationToken);
+                }
+                else
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+                }
+
+                return ApiResponse<AuthResponseDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                        "Invalid refresh token"
+                        },
+                        "Unauthorized");
+            }
+
+            if (storedToken.ExpiresAt <= DateTime.UtcNow)
+            {
+                await transaction.RollbackAsync(
+                    cancellationToken);
+
+                return ApiResponse<AuthResponseDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                        "Refresh token expired"
+                        },
+                        "Unauthorized");
+            }
+
+            storedToken.IsRevoked = true;
+            storedToken.RevokedAt = DateTime.UtcNow;
+
+            var newRefreshToken =
+                _jwtTokenGenerator
+                    .GenerateRefreshToken();
+
+            var newRefreshTokenHash =
+                RefreshTokenHasher.Hash(
+                    newRefreshToken);
+
+            var refreshTokenEntity =
+                new RefreshToken
+                {
+                    UserId = storedToken.UserId,
+
+                    Token = newRefreshTokenHash,
+
+                    FamilyId = storedToken.FamilyId,
 
                     ExpiresAt =
-                        DateTime.UtcNow.AddMinutes(
+                        DateTime.UtcNow.AddDays(
                             _jwtSettings
-                                .AccessTokenExpirationMinutes),
+                                .RefreshTokenExpirationDays),
 
-                    MustChangePassword =
-                        storedToken.User
-                            .MustChangePassword
-                },
-                "Token refreshed successfully"
-            );
+                    IsRevoked = false
+                };
+
+            storedToken.ReplacedByTokenId =
+                refreshTokenEntity.Id;
+
+            await _context.RefreshTokens
+                .AddAsync(
+                    refreshTokenEntity,
+                    cancellationToken);
+
+            var accessToken =
+                _jwtTokenGenerator
+                    .GenerateAccessToken(
+                        storedToken.User);
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
+
+            await transaction.CommitAsync(
+                cancellationToken);
+
+            return ApiResponse<AuthResponseDto>
+                .SuccessResponse(
+                    new AuthResponseDto
+                    {
+                        AccessToken =
+                            accessToken,
+
+                        RefreshToken =
+                            newRefreshToken,
+
+                        ExpiresAt =
+                            DateTime.UtcNow.AddMinutes(
+                                _jwtSettings
+                                    .AccessTokenExpirationMinutes),
+
+                        MustChangePassword =
+                            storedToken.User
+                                .MustChangePassword
+                    },
+                    "Token refreshed successfully");
+        }
+        catch
+        {
+            await transaction.RollbackAsync(
+                cancellationToken);
+
+            throw;
+        }
     }
 }

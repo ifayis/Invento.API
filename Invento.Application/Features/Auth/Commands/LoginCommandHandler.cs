@@ -102,14 +102,17 @@ namespace Invento.Application.Features.Auth.Commands
 
                     Token = refreshTokenHash,
 
+                    FamilyId = Guid.NewGuid(),
+
                     ExpiresAt =
                         DateTime.UtcNow.AddDays(
                             _jwtSettings
                                 .RefreshTokenExpirationDays),
-                                        IsRevoked = false
+
+                    IsRevoked = false
                 };
 
-                await _context.RefreshTokens
+            await _context.RefreshTokens
                     .AddAsync(
                         refreshToken,
                         cancellationToken
