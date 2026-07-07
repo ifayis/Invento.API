@@ -354,7 +354,11 @@ if (string.IsNullOrWhiteSpace(
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+var swaggerEnabled =
+    builder.Configuration.GetValue<bool>(
+        "Swagger:Enabled");
+
+if (swaggerEnabled)
 {
     app.UseSwagger();
 
@@ -363,7 +367,7 @@ if (app.Environment.IsDevelopment())
         var provider =
             app.Services.GetRequiredService<
                 Asp.Versioning.ApiExplorer
-                .IApiVersionDescriptionProvider>();
+                    .IApiVersionDescriptionProvider>();
 
         foreach (var description in
             provider.ApiVersionDescriptions)
@@ -372,6 +376,19 @@ if (app.Environment.IsDevelopment())
                 $"/swagger/{description.GroupName}/swagger.json",
                 $"Invento API {description.GroupName.ToUpperInvariant()}");
         }
+
+        options.DocumentTitle =
+            "Invento API Documentation";
+
+        options.DisplayRequestDuration();
+
+        options.EnableDeepLinking();
+
+        options.EnableFilter();
+
+        options.ShowExtensions();
+
+        options.DefaultModelsExpandDepth(-1);
     });
 }
 

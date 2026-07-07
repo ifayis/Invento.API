@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Reflection;
 
 namespace Invento.API.Swagger
 {
@@ -19,26 +20,53 @@ namespace Invento.API.Swagger
         public void Configure(
             SwaggerGenOptions options)
         {
-            foreach (var description in _provider.ApiVersionDescriptions)
+            foreach (var description in
+                _provider.ApiVersionDescriptions)
             {
                 options.SwaggerDoc(
                     description.GroupName,
                     new OpenApiInfo
                     {
                         Title = "Invento API",
-                        Version = description.ApiVersion.ToString(),
+
+                        Version =
+                            description.ApiVersion
+                                .ToString(),
+
                         Description =
-                            "Invento ERP API"
+                            """
+                            Invento is a multi-tenant business management API
+                            for inventory, purchasing, sales, customers,
+                            suppliers, payments, stock tracking and analytics.
+
+                            Authentication uses JWT access tokens and rotating
+                            refresh tokens.
+
+                            Tenant isolation is enforced by the authenticated
+                            tenant context.
+
+                            Use the Authorize button for protected endpoints.
+                            Enter the JWT access token only; Swagger adds the
+                            Bearer scheme automatically.
+                            """,
+
+                        Contact =
+                            new OpenApiContact
+                            {
+                                Name = "Invento API Support"
+                            }
                     });
             }
 
-            var securityScheme =
+            options.AddSecurityDefinition(
+                "Bearer",
                 new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
 
                     Description =
-                        "Enter JWT Bearer Token",
+                        "JWT Bearer authentication. " +
+                        "Enter the access token only.",
 
                     In = ParameterLocation.Header,
 
@@ -46,29 +74,38 @@ namespace Invento.API.Swagger
 
                     Scheme = "bearer",
 
-                    BearerFormat = "JWT",
-
-                    Reference =
-                        new OpenApiReference
-                        {
-                            Id = "Bearer",
-                            Type =
-                                ReferenceType.SecurityScheme
-                        }
-                };
-
-            options.AddSecurityDefinition(
-                "Bearer",
-                securityScheme);
-
-            options.AddSecurityRequirement(
-                new OpenApiSecurityRequirement
-                {
-                    {
-                        securityScheme,
-                        Array.Empty<string>()
-                    }
+                    BearerFormat = "JWT"
                 });
+
+            options.OperationFilter<
+                AuthorizeOperationFilter>();
+
+            options.OperationFilter<
+                StandardResponseOperationFilter>();
+
+            options.SchemaFilter<
+                SwaggerExampleSchemaFilter>();
+
+            var xmlFileName =
+                $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+
+            var xmlFilePath =
+                Path.Combine(
+                    AppContext.BaseDirectory,
+                    xmlFileName);
+
+            if (File.Exists(xmlFilePath))
+            {
+                options.IncludeXmlComments(
+                    xmlFilePath,
+                    includeControllerXmlComments: true);
+            }
+
+            options.CustomSchemaIds(
+                type =>
+                    type.FullName?
+                        .Replace("+", ".")
+                    ?? type.Name);
         }
     }
 }
