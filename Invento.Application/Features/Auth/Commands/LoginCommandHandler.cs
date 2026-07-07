@@ -4,6 +4,7 @@ using Invento.Application.Features.Auth.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Invento.Application.Features.Auth.Commands
 {
@@ -11,14 +12,25 @@ namespace Invento.Application.Features.Auth.Commands
         : ICommandHandler<LoginCommand, ApiResponse<AuthResponseDto>>
     {
         private readonly IApplicationDbContext _context;
-        private readonly IJwtTokenGenerator _jwtTokenGenerator;
+
+        private readonly IJwtTokenGenerator
+            _jwtTokenGenerator;
+
+        private readonly JwtSettings
+            _jwtSettings;
 
         public LoginCommandHandler(
             IApplicationDbContext context,
-            IJwtTokenGenerator jwtTokenGenerator)
+            IJwtTokenGenerator jwtTokenGenerator,
+            IOptions<JwtSettings> jwtOptions)
         {
             _context = context;
-            _jwtTokenGenerator = jwtTokenGenerator;
+
+            _jwtTokenGenerator =
+                jwtTokenGenerator;
+
+            _jwtSettings =
+                jwtOptions.Value;
         }
 
         public async Task<ApiResponse<AuthResponseDto>> Handle(
@@ -103,14 +115,16 @@ namespace Invento.Application.Features.Auth.Commands
                     Token = refreshTokenHash,
 
                     ExpiresAt =
-                        DateTime.UtcNow.AddDays(7),
-
-                    IsRevoked = false
+                        DateTime.UtcNow.AddDays(
+                            _jwtSettings
+                                .RefreshTokenExpirationDays),
+                                        IsRevoked = false
                 };
-            await _context.RefreshTokens
-                .AddAsync(
-                    refreshToken,
-                    cancellationToken
+
+                await _context.RefreshTokens
+                    .AddAsync(
+                        refreshToken,
+                        cancellationToken
                 );
 
             await _context.SaveChangesAsync(cancellationToken);
@@ -121,7 +135,10 @@ namespace Invento.Application.Features.Auth.Commands
                     {
                         AccessToken = accessToken,
                         RefreshToken = refreshTokenValue,
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                        ExpiresAt =
+                            DateTime.UtcNow.AddMinutes(
+                                _jwtSettings
+                                    .AccessTokenExpirationMinutes),
                         MustChangePassword = user.MustChangePassword
                     },
                     "Login successful");

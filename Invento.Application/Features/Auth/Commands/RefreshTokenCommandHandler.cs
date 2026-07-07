@@ -4,6 +4,7 @@ using Invento.Application.Features.Auth.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Invento.Application.Features.Auth.Commands;
 
@@ -11,14 +12,25 @@ public class RefreshTokenCommandHandler
     : ICommandHandler<RefreshTokenCommand, ApiResponse<AuthResponseDto>>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IJwtTokenGenerator _jwtTokenGenerator;
+
+    private readonly IJwtTokenGenerator
+        _jwtTokenGenerator;
+
+    private readonly JwtSettings
+        _jwtSettings;
 
     public RefreshTokenCommandHandler(
         IApplicationDbContext context,
-        IJwtTokenGenerator jwtTokenGenerator)
+        IJwtTokenGenerator jwtTokenGenerator,
+        IOptions<JwtSettings> jwtOptions)
     {
         _context = context;
-        _jwtTokenGenerator = jwtTokenGenerator;
+
+        _jwtTokenGenerator =
+            jwtTokenGenerator;
+
+        _jwtSettings =
+            jwtOptions.Value;
     }
 
     public async Task<ApiResponse<AuthResponseDto>> Handle(
@@ -80,9 +92,10 @@ public class RefreshTokenCommandHandler
                 Token = newRefreshTokenHash,
 
                 ExpiresAt =
-                    DateTime.UtcNow.AddDays(7),
-
-                IsRevoked = false
+                    DateTime.UtcNow.AddDays(
+                        _jwtSettings
+                            .RefreshTokenExpirationDays),
+                                IsRevoked = false
             };
 
         await _context.RefreshTokens
@@ -98,8 +111,20 @@ public class RefreshTokenCommandHandler
             .SuccessResponse(
                 new AuthResponseDto
                 {
-                    AccessToken = accessToken,
-                    RefreshToken = newRefreshToken
+                    AccessToken =
+                        accessToken,
+
+                    RefreshToken =
+                        newRefreshToken,
+
+                    ExpiresAt =
+                        DateTime.UtcNow.AddMinutes(
+                            _jwtSettings
+                                .AccessTokenExpirationMinutes),
+
+                    MustChangePassword =
+                        storedToken.User
+                            .MustChangePassword
                 },
                 "Token refreshed successfully"
             );
