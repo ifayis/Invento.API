@@ -24,6 +24,9 @@ namespace Invento.Persistence.Configurations
             builder.Property(x => x.IsRevoked)
                 .HasDefaultValue(false);
 
+            builder.Property(x => x.RowVersion)
+                .IsRowVersion();
+
             builder.HasIndex(x => x.Token)
                 .IsUnique();
 

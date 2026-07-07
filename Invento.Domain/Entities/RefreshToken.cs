@@ -13,6 +13,9 @@ namespace Invento.Domain.Entities
 
         public Guid? ReplacedByTokenId { get; set; }
 
+        public byte[] RowVersion { get; set; }
+            = Array.Empty<byte>();
+
         public DateTime ExpiresAt { get; set; }
 
         public bool IsRevoked { get; set; }
