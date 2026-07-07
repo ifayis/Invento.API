@@ -86,18 +86,6 @@ namespace Invento.Application.Features.Auth.Commands
                     );
             }
 
-            var oldTokens = await _context.RefreshTokens
-                .Where(x =>
-                    x.UserId == user.Id
-                    && !x.IsRevoked)
-                .ToListAsync(cancellationToken);
-
-            foreach (var token in oldTokens)
-            {
-                token.IsRevoked = true;
-                token.RevokedAt = DateTime.UtcNow;
-            }
-
             var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
 
             var refreshTokenValue =
