@@ -192,6 +192,19 @@ public class RefreshTokenCommandHandler
                     },
                     "Token refreshed successfully");
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            await transaction.RollbackAsync(
+                cancellationToken);
+
+            return ApiResponse<AuthResponseDto>
+                .FailureResponse(
+                    new List<string>
+                    {
+                "Refresh token is no longer valid"
+                    },
+                    "Unauthorized");
+        }
         catch
         {
             await transaction.RollbackAsync(
