@@ -1,11 +1,11 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Features.Users.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Shared.Pagination;
-using System.Data;
 
 namespace Invento.Application.Features.Users.Queries
 {
@@ -25,7 +25,8 @@ namespace Invento.Application.Features.Users.Queries
             _currentTenant = currentTenant;
         }
 
-        public async Task<ApiResponse<PagedResponse<UserDto>>> Handle(
+        public async Task<
+            ApiResponse<PagedResponse<UserDto>>> Handle(
             GetUsersQuery request,
             CancellationToken cancellationToken)
         {
@@ -38,54 +39,60 @@ namespace Invento.Application.Features.Users.Queries
                     .OpenAsync(cancellationToken);
             }
 
-            var sql = @"
-            SELECT
-                Id,
-                TenantId,
-                FullName,
-                Email,
-                Role,
-                IsActive,
-                MustChangePassword,
-                CreatedAt,
-                CreatedBy,
-                CreatedByUserId
-            FROM Users
-            WHERE
-                TenantId = @TenantId
-                AND IsDeleted = 0
-                AND (
-                    @SearchTerm IS NULL
-                    OR FullName LIKE '%' + @SearchTerm + '%'
-                    OR Email LIKE '%' + @SearchTerm + '%'
-                )
-            ORDER BY FullName
-            OFFSET @Offset ROWS
-            FETCH NEXT @PageSize ROWS ONLY;
+            const string sql = """
+                SELECT
+                    Id,
+                    TenantId,
+                    FullName,
+                    Email,
+                    Role,
+                    IsActive,
+                    MustChangePassword,
+                    CreatedAt,
+                    CreatedBy,
+                    CreatedByUserId
+                FROM Users
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0
+                    AND
+                    (
+                        @SearchTerm IS NULL
+                        OR FullName LIKE '%' + @SearchTerm + '%'
+                        OR Email LIKE '%' + @SearchTerm + '%'
+                    )
+                ORDER BY
+                    FullName ASC,
+                    Id ASC
+                OFFSET @Offset ROWS
+                FETCH NEXT @PageSize ROWS ONLY;
 
-            SELECT COUNT(*)
-            FROM Users
-            WHERE
-                TenantId = @TenantId
-                AND IsDeleted = 0
-                AND (
-                    @SearchTerm IS NULL
-                    OR FullName LIKE '%' + @SearchTerm + '%'
-                    OR Email LIKE '%' + @SearchTerm + '%'
-                );
-            ";
+                SELECT COUNT_BIG(*)
+                FROM Users
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0
+                    AND
+                    (
+                        @SearchTerm IS NULL
+                        OR FullName LIKE '%' + @SearchTerm + '%'
+                        OR Email LIKE '%' + @SearchTerm + '%'
+                    );
+                """;
 
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
 
-                SearchTerm = string.IsNullOrWhiteSpace(request.SearchTerm)
-                    ? null
-                    : request.SearchTerm.Trim(),
+                SearchTerm =
+                    string.IsNullOrWhiteSpace(
+                        request.SearchTerm)
+                        ? null
+                        : request.SearchTerm.Trim(),
 
-                Offset =
-                    (request.PageNumber - 1) *
-                    request.PageSize,
+                Offset = checked(
+                    (request.PageNumber - 1)
+                    * request.PageSize),
 
                 request.PageSize
             };
@@ -104,20 +111,19 @@ namespace Invento.Application.Features.Users.Queries
                 (await multi.ReadAsync<UserDto>())
                 .ToList();
 
-            var totalCount =
-                await multi.ReadSingleAsync<int>();
-
-            var response =
-                new PagedResponse<UserDto>
-                {
-                    Items = users,
-                    PageNumber = request.PageNumber,
-                    PageSize = request.PageSize,
-                    TotalCount = totalCount
-                };
+            var totalRecords =
+                await multi.ReadSingleAsync<long>();
 
             return ApiResponse<PagedResponse<UserDto>>
-                .SuccessResponse(response);
+                .SuccessResponse(
+                    new PagedResponse<UserDto>
+                    {
+                        Items = users,
+                        PageNumber = request.PageNumber,
+                        PageSize = request.PageSize,
+                        TotalCount =
+                            checked((int)totalRecords)
+                    });
         }
     }
 }

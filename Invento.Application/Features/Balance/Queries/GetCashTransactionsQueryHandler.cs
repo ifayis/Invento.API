@@ -1,11 +1,11 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Features.Balance.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Shared.Pagination;
-using System.Data;
 
 namespace Invento.Application.Features.Balance.Queries
 {
@@ -15,7 +15,6 @@ namespace Invento.Application.Features.Balance.Queries
             ApiResponse<PagedResponse<CashTransactionDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
-
         private readonly ICurrentTenantService _currentTenant;
 
         public GetCashTransactionsQueryHandler(
@@ -26,7 +25,8 @@ namespace Invento.Application.Features.Balance.Queries
             _currentTenant = currentTenant;
         }
 
-        public async Task<ApiResponse<PagedResponse<CashTransactionDto>>> Handle(
+        public async Task<
+            ApiResponse<PagedResponse<CashTransactionDto>>> Handle(
             GetCashTransactionsQuery request,
             CancellationToken cancellationToken)
         {
@@ -39,38 +39,36 @@ namespace Invento.Application.Features.Balance.Queries
                     .OpenAsync(cancellationToken);
             }
 
-            var sql = @"
-            SELECT
-                Id,
-                TransactionType,
-                Amount,
-                Description,
-                TransactionDate
-            FROM CashTransactions
-            WHERE
-                TenantId = @TenantId
-                AND IsDeleted = 0
+            const string sql = """
+                SELECT
+                    Id,
+                    TransactionType,
+                    Amount,
+                    Description,
+                    TransactionDate
+                FROM CashTransactions
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0
+                ORDER BY
+                    TransactionDate DESC,
+                    Id DESC
+                OFFSET @Offset ROWS
+                FETCH NEXT @PageSize ROWS ONLY;
 
-            ORDER BY TransactionDate DESC
-
-            OFFSET @Offset ROWS
-            FETCH NEXT @PageSize ROWS ONLY;
-
-            SELECT COUNT(*)
-            FROM CashTransactions
-            WHERE
-                TenantId = @TenantId
-                AND IsDeleted = 0;
-            ";
+                SELECT COUNT_BIG(*)
+                FROM CashTransactions
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0;
+                """;
 
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
-
-                Offset =
+                Offset = checked(
                     (request.PageNumber - 1)
-                    * request.PageSize,
-
+                    * request.PageSize),
                 request.PageSize
             };
 
@@ -85,22 +83,23 @@ namespace Invento.Application.Features.Balance.Queries
                 await connection.QueryMultipleAsync(command);
 
             var items =
-                await multi.ReadAsync<CashTransactionDto>();
+                (await multi.ReadAsync<CashTransactionDto>())
+                .ToList();
 
             var totalRecords =
-                await multi.ReadFirstAsync<int>();
+                await multi.ReadSingleAsync<long>();
 
-            var response =
-                new PagedResponse<CashTransactionDto>
-                {
-                    Items = items.ToList(),
-                    PageNumber = request.PageNumber,
-                    PageSize = request.PageSize,
-                    TotalCount = totalRecords
-                };
-
-            return ApiResponse<PagedResponse<CashTransactionDto>>
-                .SuccessResponse(response);
+            return ApiResponse<
+                PagedResponse<CashTransactionDto>>
+                .SuccessResponse(
+                    new PagedResponse<CashTransactionDto>
+                    {
+                        Items = items,
+                        PageNumber = request.PageNumber,
+                        PageSize = request.PageSize,
+                        TotalCount =
+                            checked((int)totalRecords)
+                    });
         }
     }
 }

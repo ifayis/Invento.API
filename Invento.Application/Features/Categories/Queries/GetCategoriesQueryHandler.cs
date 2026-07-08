@@ -1,16 +1,18 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Features.Categories.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Shared.Pagination;
-using System.Data;
 
 namespace Invento.Application.Features.Categories.Queries
 {
     public class GetCategoriesQueryHandler
-        : IQueryHandler<GetCategoriesQuery, ApiResponse<PagedResponse<CategoryDto>>>
+        : IQueryHandler<
+            GetCategoriesQuery,
+            ApiResponse<PagedResponse<CategoryDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ICurrentTenantService _currentTenant;
@@ -37,41 +39,50 @@ namespace Invento.Application.Features.Categories.Queries
                     .OpenAsync(cancellationToken);
             }
 
-            var sql = @"
-            SELECT
-                Id,
-                Name,
-                CreatedAt
-            FROM Categories
-            WHERE IsDeleted = 0
-            AND TenantId = @TenantId
-            AND
-            (
-                @Search IS NULL
-                OR Name LIKE '%' + @Search + '%'
-            )
-            ORDER BY CreatedAt DESC
-            OFFSET @Offset ROWS
-            FETCH NEXT @PageSize ROWS ONLY;
+            const string sql = """
+                SELECT
+                    Id,
+                    Name,
+                    CreatedAt
+                FROM Categories
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0
+                    AND
+                    (
+                        @Search IS NULL
+                        OR Name LIKE '%' + @Search + '%'
+                    )
+                ORDER BY
+                    CreatedAt DESC,
+                    Id DESC
+                OFFSET @Offset ROWS
+                FETCH NEXT @PageSize ROWS ONLY;
 
-            SELECT COUNT(*)
-            FROM Categories
-            WHERE IsDeleted = 0
-            AND TenantId = @TenantId
-            AND
-            (
-                @Search IS NULL
-                OR Name LIKE '%' + @Search + '%'
-            )
-            ";
+                SELECT COUNT_BIG(*)
+                FROM Categories
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0
+                    AND
+                    (
+                        @Search IS NULL
+                        OR Name LIKE '%' + @Search + '%'
+                    );
+                """;
+
+            var search =
+                string.IsNullOrWhiteSpace(request.Search)
+                    ? null
+                    : request.Search.Trim();
 
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
-                request.Search,
-                Offset =
+                Search = search,
+                Offset = checked(
                     (request.PageNumber - 1)
-                    * request.PageSize,
+                    * request.PageSize),
                 request.PageSize
             };
 
@@ -85,22 +96,23 @@ namespace Invento.Application.Features.Categories.Queries
             using var multi =
                 await connection.QueryMultipleAsync(command);
 
-            var categories = await multi.ReadAsync<CategoryDto>();
+            var categories =
+                (await multi.ReadAsync<CategoryDto>())
+                .ToList();
 
-            var totalRecords = await multi.ReadFirstAsync<int>();
+            var totalRecords =
+                await multi.ReadSingleAsync<long>();
 
-            var response =
-                new PagedResponse<CategoryDto>
-                {
-                    Items = categories.ToList(),
-                    PageNumber = request.PageNumber,
-                    PageSize = request.PageSize,
-                    TotalCount = totalRecords
-                };
-
-            return ApiResponse<
-                PagedResponse<CategoryDto>>
-                .SuccessResponse(response);
+            return ApiResponse<PagedResponse<CategoryDto>>
+                .SuccessResponse(
+                    new PagedResponse<CategoryDto>
+                    {
+                        Items = categories,
+                        PageNumber = request.PageNumber,
+                        PageSize = request.PageSize,
+                        TotalCount =
+                            checked((int)totalRecords)
+                    });
         }
     }
 }

@@ -1,16 +1,18 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Features.Products.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Shared.Pagination;
-using System.Data;
 
 namespace Invento.Application.Features.Products.Queries
 {
     public class GetProductsQueryHandler
-        : IQueryHandler<GetProductsQuery, ApiResponse<PagedResponse<ProductDto>>>
+        : IQueryHandler<
+            GetProductsQuery,
+            ApiResponse<PagedResponse<ProductDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ICurrentTenantService _currentTenant;
@@ -23,7 +25,8 @@ namespace Invento.Application.Features.Products.Queries
             _currentTenant = currentTenant;
         }
 
-        public async Task<ApiResponse<PagedResponse<ProductDto>>> Handle(
+        public async Task<
+            ApiResponse<PagedResponse<ProductDto>>> Handle(
             GetProductsQuery request,
             CancellationToken cancellationToken)
         {
@@ -36,54 +39,65 @@ namespace Invento.Application.Features.Products.Queries
                     .OpenAsync(cancellationToken);
             }
 
-            var sql = @"
-            SELECT
-                p.Id,
-                p.Name,
-                p.SKU,
-                p.CostPrice,
-                p.SellingPrice,
-                p.CurrentStock,
-                p.IsDeleted,
-                c.Name AS CategoryName,
-                p.CreatedAt,
-                p.LowStockThreshold,
-                p.CriticalStockThreshold
-            FROM Products p
-            INNER JOIN Categories c
-                ON p.CategoryId = c.Id
-            WHERE
-                p.TenantId = @TenantId
-                AND c.TenantId = @TenantId
-                AND
-                (
-                    @Search IS NULL
-                    OR p.Name LIKE '%' + @Search + '%'
-                    OR p.SKU LIKE '%' + @Search + '%'
-                )
-            ORDER BY p.CreatedAt DESC
-            OFFSET @Offset ROWS
-            FETCH NEXT @PageSize ROWS ONLY;
+            const string sql = """
+                SELECT
+                    p.Id,
+                    p.Name,
+                    p.SKU,
+                    p.CostPrice,
+                    p.SellingPrice,
+                    p.CurrentStock,
+                    p.IsDeleted,
+                    c.Name AS CategoryName,
+                    p.CreatedAt,
+                    p.LowStockThreshold,
+                    p.CriticalStockThreshold
+                FROM Products p
+                INNER JOIN Categories c
+                    ON c.Id = p.CategoryId
+                    AND c.TenantId = p.TenantId
+                    AND c.IsDeleted = 0
+                WHERE
+                    p.TenantId = @TenantId
+                    AND p.IsDeleted = 0
+                    AND
+                    (
+                        @Search IS NULL
+                        OR p.Name LIKE '%' + @Search + '%'
+                        OR p.SKU LIKE '%' + @Search + '%'
+                    )
+                ORDER BY
+                    p.CreatedAt DESC,
+                    p.Id DESC
+                OFFSET @Offset ROWS
+                FETCH NEXT @PageSize ROWS ONLY;
 
-            SELECT COUNT(*)
-            FROM Products p
-            WHERE
-                p.TenantId = @TenantId
-                AND
-                (
-                    @Search IS NULL
-                    OR p.Name LIKE '%' + @Search + '%'
-                    OR p.SKU LIKE '%' + @Search + '%'
-                );
-            ";
+                SELECT COUNT_BIG(*)
+                FROM Products p
+                WHERE
+                    p.TenantId = @TenantId
+                    AND p.IsDeleted = 0
+                    AND
+                    (
+                        @Search IS NULL
+                        OR p.Name LIKE '%' + @Search + '%'
+                        OR p.SKU LIKE '%' + @Search + '%'
+                    );
+                """;
+
+            var search =
+                string.IsNullOrWhiteSpace(request.Search)
+                    ? null
+                    : request.Search.Trim();
 
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
-                Search = request.Search,
+                Search = search,
                 Offset =
-                    (request.PageNumber - 1)
-                    * request.PageSize,
+                    checked(
+                        (request.PageNumber - 1)
+                        * request.PageSize),
                 request.PageSize
             };
 
@@ -97,9 +111,12 @@ namespace Invento.Application.Features.Products.Queries
             using var multi =
                 await connection.QueryMultipleAsync(command);
 
-            var products = (await multi.ReadAsync<ProductDto>()).ToList();
+            var products =
+                (await multi.ReadAsync<ProductDto>())
+                .ToList();
 
-            var totalRecords = await multi.ReadFirstAsync<int>();
+            var totalRecords =
+                await multi.ReadSingleAsync<long>();
 
             var response =
                 new PagedResponse<ProductDto>
@@ -107,7 +124,7 @@ namespace Invento.Application.Features.Products.Queries
                     Items = products,
                     PageNumber = request.PageNumber,
                     PageSize = request.PageSize,
-                    TotalCount = totalRecords
+                    TotalCount = checked((int)totalRecords)
                 };
 
             return ApiResponse<

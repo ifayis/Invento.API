@@ -1,30 +1,31 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Interfaces;
 using Invento.Shared.Pagination;
-using System.Data;
 
 namespace Invento.Application.Features.Reports.Queries
 {
     public class GetStockMovementHistoryQueryHandler
-    : IQueryHandler<
-    GetStockMovementHistoryQuery,
-    ApiResponse<PagedResponse<StockMovementDto>>>
+        : IQueryHandler<
+            GetStockMovementHistoryQuery,
+            ApiResponse<PagedResponse<StockMovementDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ICurrentTenantService _currentTenant;
 
-    public GetStockMovementHistoryQueryHandler(
-        IDbConnectionFactory connectionFactory,
-        ICurrentTenantService currentTenant)
+        public GetStockMovementHistoryQueryHandler(
+            IDbConnectionFactory connectionFactory,
+            ICurrentTenantService currentTenant)
         {
             _connectionFactory = connectionFactory;
             _currentTenant = currentTenant;
         }
 
-        public async Task<ApiResponse<PagedResponse<StockMovementDto>>> Handle(
+        public async Task<
+            ApiResponse<PagedResponse<StockMovementDto>>> Handle(
             GetStockMovementHistoryQuery request,
             CancellationToken cancellationToken)
         {
@@ -37,52 +38,56 @@ namespace Invento.Application.Features.Reports.Queries
                     .OpenAsync(cancellationToken);
             }
 
-            var sql = @"
-            SELECT
-                sm.Id,
-                sm.ProductId,
-                p.Name AS ProductName,
-                sm.Quantity,
-                sm.MovementType,
-                sm.CurrentStockAfterMovement,
-                sm.Remarks,
-                sm.ReferenceNumber,
-                sm.CreatedByUserId,
-                sm.CreatedAt
-            FROM StockMovements sm
-            INNER JOIN Products p
-                ON sm.ProductId = p.Id
-            WHERE
-                sm.TenantId = @TenantId
-                AND
-                (
-                    @ProductId IS NULL
-                    OR sm.ProductId = @ProductId
-                )
+            const string sql = """
+                SELECT
+                    sm.Id,
+                    sm.ProductId,
+                    p.Name AS ProductName,
+                    sm.Quantity,
+                    sm.MovementType,
+                    sm.CurrentStockAfterMovement,
+                    sm.Remarks,
+                    sm.ReferenceNumber,
+                    sm.CreatedByUserId,
+                    sm.CreatedAt
+                FROM StockMovements sm
+                INNER JOIN Products p
+                    ON p.Id = sm.ProductId
+                    AND p.TenantId = sm.TenantId
+                    AND p.IsDeleted = 0
+                WHERE
+                    sm.TenantId = @TenantId
+                    AND sm.IsDeleted = 0
+                    AND
+                    (
+                        @ProductId IS NULL
+                        OR sm.ProductId = @ProductId
+                    )
+                ORDER BY
+                    sm.CreatedAt DESC,
+                    sm.Id DESC
+                OFFSET @Offset ROWS
+                FETCH NEXT @PageSize ROWS ONLY;
 
-            ORDER BY sm.CreatedAt DESC
-
-            OFFSET @Offset ROWS
-            FETCH NEXT @PageSize ROWS ONLY;
-
-            SELECT COUNT(*)
-            FROM StockMovements
-            WHERE
-                TenantId = @TenantId
-                AND
-                (
-                    @ProductId IS NULL
-                    OR ProductId = @ProductId
-                );
-            ";
+                SELECT COUNT_BIG(*)
+                FROM StockMovements sm
+                WHERE
+                    sm.TenantId = @TenantId
+                    AND sm.IsDeleted = 0
+                    AND
+                    (
+                        @ProductId IS NULL
+                        OR sm.ProductId = @ProductId
+                    );
+                """;
 
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
                 request.ProductId,
-                Offset =
+                Offset = checked(
                     (request.PageNumber - 1)
-                    * request.PageSize,
+                    * request.PageSize),
                 request.PageSize
             };
 
@@ -101,20 +106,19 @@ namespace Invento.Application.Features.Reports.Queries
                 .ToList();
 
             var totalRecords =
-                await multi.ReadFirstAsync<int>();
+                await multi.ReadSingleAsync<long>();
 
-            var response =
-                new PagedResponse<StockMovementDto>
-                {
-                    Items = movements,
-                    PageNumber = request.PageNumber,
-                    PageSize = request.PageSize,
-                    TotalCount = totalRecords
-                };
-
-            return ApiResponse<PagedResponse<StockMovementDto>>
-                .SuccessResponse(response);
+            return ApiResponse<
+                PagedResponse<StockMovementDto>>
+                .SuccessResponse(
+                    new PagedResponse<StockMovementDto>
+                    {
+                        Items = movements,
+                        PageNumber = request.PageNumber,
+                        PageSize = request.PageSize,
+                        TotalCount =
+                            checked((int)totalRecords)
+                    });
         }
     }
-
 }

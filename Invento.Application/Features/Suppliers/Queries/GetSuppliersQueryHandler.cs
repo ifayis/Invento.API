@@ -1,11 +1,11 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Features.Suppliers.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Shared.Pagination;
-using System.Data;
 
 namespace Invento.Application.Features.Suppliers.Queries
 {
@@ -15,7 +15,6 @@ namespace Invento.Application.Features.Suppliers.Queries
             ApiResponse<PagedResponse<SupplierDto>>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
-
         private readonly ICurrentTenantService _currentTenant;
 
         public GetSuppliersQueryHandler(
@@ -26,7 +25,8 @@ namespace Invento.Application.Features.Suppliers.Queries
             _currentTenant = currentTenant;
         }
 
-        public async Task<ApiResponse<PagedResponse<SupplierDto>>> Handle(
+        public async Task<
+            ApiResponse<PagedResponse<SupplierDto>>> Handle(
             GetSuppliersQuery request,
             CancellationToken cancellationToken)
         {
@@ -39,55 +39,63 @@ namespace Invento.Application.Features.Suppliers.Queries
                     .OpenAsync(cancellationToken);
             }
 
-            var sql = @"
-            SELECT
-                Id,
-                Name,
-                ContactPerson,
-                Email,
-                PhoneNumber,
-                Address,
-                TaxRegistrationNumber,
-                IsDeleted,
-                CreatedAt
-            FROM Suppliers
-            WHERE
-                TenantId = @TenantId
-                AND
-                (
-                    @Search IS NULL
-                    OR Name LIKE '%' + @Search + '%'
-                    OR ContactPerson LIKE '%' + @Search + '%'
-                    OR Email LIKE '%' + @Search + '%'
-                    OR PhoneNumber LIKE '%' + @Search + '%'
-                )
+            const string sql = """
+                SELECT
+                    Id,
+                    Name,
+                    ContactPerson,
+                    Email,
+                    PhoneNumber,
+                    Address,
+                    TaxRegistrationNumber,
+                    IsDeleted,
+                    CreatedAt
+                FROM Suppliers
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0
+                    AND
+                    (
+                        @Search IS NULL
+                        OR Name LIKE '%' + @Search + '%'
+                        OR ContactPerson LIKE '%' + @Search + '%'
+                        OR Email LIKE '%' + @Search + '%'
+                        OR PhoneNumber LIKE '%' + @Search + '%'
+                    )
+                ORDER BY
+                    CreatedAt DESC,
+                    Id DESC
+                OFFSET @Offset ROWS
+                FETCH NEXT @PageSize ROWS ONLY;
 
-            ORDER BY CreatedAt DESC
-
-            OFFSET @Offset ROWS
-            FETCH NEXT @PageSize ROWS ONLY;
-
-            SELECT COUNT(*)
-            FROM Suppliers
-            WHERE
-                TenantId = @TenantId
-                AND
-                (
-                    @Search IS NULL
-                    OR Name LIKE '%' + @Search + '%'
-                    OR ContactPerson LIKE '%' + @Search + '%'
-                    OR Email LIKE '%' + @Search + '%'
-                    OR PhoneNumber LIKE '%' + @Search + '%'
-                );
-            ";
+                SELECT COUNT_BIG(*)
+                FROM Suppliers
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0
+                    AND
+                    (
+                        @Search IS NULL
+                        OR Name LIKE '%' + @Search + '%'
+                        OR ContactPerson LIKE '%' + @Search + '%'
+                        OR Email LIKE '%' + @Search + '%'
+                        OR PhoneNumber LIKE '%' + @Search + '%'
+                    );
+                """;
 
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
-                request.Search,
-                Offset =
+
+                Search =
+                    string.IsNullOrWhiteSpace(request.Search)
+                        ? null
+                        : request.Search.Trim(),
+
+                Offset = checked(
                     (request.PageNumber - 1)
-                    * request.PageSize,
+                    * request.PageSize),
+
                 request.PageSize
             };
 
@@ -102,22 +110,23 @@ namespace Invento.Application.Features.Suppliers.Queries
                 await connection.QueryMultipleAsync(command);
 
             var suppliers =
-                await multi.ReadAsync<SupplierDto>();
+                (await multi.ReadAsync<SupplierDto>())
+                .ToList();
 
             var totalRecords =
-                await multi.ReadFirstAsync<int>();
+                await multi.ReadSingleAsync<long>();
 
-            var response =
-                new PagedResponse<SupplierDto>
-                {
-                    Items = suppliers.ToList(),
-                    PageNumber = request.PageNumber,
-                    PageSize = request.PageSize,
-                    TotalCount = totalRecords
-                };
-
-            return ApiResponse<PagedResponse<SupplierDto>>
-                .SuccessResponse(response);
+            return ApiResponse<
+                PagedResponse<SupplierDto>>
+                .SuccessResponse(
+                    new PagedResponse<SupplierDto>
+                    {
+                        Items = suppliers,
+                        PageNumber = request.PageNumber,
+                        PageSize = request.PageSize,
+                        TotalCount =
+                            checked((int)totalRecords)
+                    });
         }
     }
 }
