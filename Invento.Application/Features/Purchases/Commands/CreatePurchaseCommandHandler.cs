@@ -16,9 +16,7 @@ namespace Invento.Application.Features.Purchases.Commands
             ApiResponse<PurchaseDetailsDto>>
     {
         private readonly IApplicationDbContext _context;
-
         private readonly ICurrentTenantService _currentTenant;
-
         private readonly StockMovementService _stockMovementService;
 
         public CreatePurchaseCommandHandler(
@@ -35,128 +33,236 @@ namespace Invento.Application.Features.Purchases.Commands
             CreatePurchaseCommand request,
             CancellationToken cancellationToken)
         {
-            using var transaction =
+            var tenantId = _currentTenant.TenantId;
+
+            await using var transaction =
                 await _context.BeginTransactionAsync();
 
             try
             {
-                var supplier =
-                    await _context.Suppliers
-                    .FirstOrDefaultAsync(
-                        x =>
-                            x.Id == request.SupplierId
-                            && x.TenantId ==
-                                _currentTenant.TenantId
-                            && !x.IsDeleted,
+                if (request.Items is null
+                    || request.Items.Count == 0)
+                {
+                    await transaction.RollbackAsync(
                         cancellationToken);
 
-                if (supplier is null)
-                {
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
-                            new()
+                            new List<string>
+                            {
+                                "At least one purchase item is required"
+                            });
+                }
+
+                if (request.DiscountAmount < 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    return ApiResponse<PurchaseDetailsDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Discount amount cannot be negative"
+                            });
+                }
+
+                if (request.Items.Any(
+                    x => x.Quantity <= 0))
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    return ApiResponse<PurchaseDetailsDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "All item quantities must be greater than zero"
+                            });
+                }
+
+                if (request.Items.Any(
+                    x => x.UnitCost < 0))
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    return ApiResponse<PurchaseDetailsDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Unit cost cannot be negative"
+                            });
+                }
+
+                if (request.Items.Any(
+                    x => x.TaxRate < 0))
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    return ApiResponse<PurchaseDetailsDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Tax rate cannot be negative"
+                            });
+                }
+
+                var duplicateProductIds =
+                    request.Items
+                        .GroupBy(x => x.ProductId)
+                        .Where(x => x.Count() > 1)
+                        .Select(x => x.Key)
+                        .ToList();
+
+                if (duplicateProductIds.Count > 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    return ApiResponse<PurchaseDetailsDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Duplicate products are not allowed " +
+                                "in the same purchase request"
+                            });
+                }
+
+                var supplierExists =
+                    await _context.Suppliers
+                        .AnyAsync(
+                            x =>
+                                x.Id == request.SupplierId
+                                && x.TenantId == tenantId
+                                && !x.IsDeleted,
+                            cancellationToken);
+
+                if (!supplierExists)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    return ApiResponse<PurchaseDetailsDto>
+                        .FailureResponse(
+                            new List<string>
                             {
                                 "Supplier not found"
                             });
                 }
 
+                var productIds =
+                    request.Items
+                        .Select(x => x.ProductId)
+                        .Distinct()
+                        .ToList();
+
+                var products =
+                    await _context.Products
+                        .Where(
+                            x =>
+                                productIds.Contains(x.Id)
+                                && x.TenantId == tenantId
+                                && !x.IsDeleted)
+                        .ToListAsync(cancellationToken);
+
+                var productById =
+                    products.ToDictionary(
+                        x => x.Id);
+
+                var missingProductIds =
+                    productIds
+                        .Where(
+                            productId =>
+                                !productById.ContainsKey(productId))
+                        .ToList();
+
+                if (missingProductIds.Count > 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    return ApiResponse<PurchaseDetailsDto>
+                        .FailureResponse(
+                            missingProductIds
+                                .Select(
+                                    id =>
+                                        $"Product not found: {id}")
+                                .ToList());
+                }
+
+                var now = DateTime.UtcNow;
+
                 var currentMonth =
-                    DateTime.UtcNow.ToString("yyyyMM");
+                    now.ToString("yyyyMM");
 
                 var purchaseCount =
                     await _context.Purchases
-                    .IgnoreQueryFilters()
-                    .CountAsync(
-                        x =>
-                            x.TenantId ==
-                            _currentTenant.TenantId
-                            &&
-                            x.PurchaseDate.Year
-                                == DateTime.UtcNow.Year
-                            &&
-                            x.PurchaseDate.Month
-                                == DateTime.UtcNow.Month,
-                        cancellationToken);
+                        .IgnoreQueryFilters()
+                        .CountAsync(
+                            x =>
+                                x.TenantId == tenantId
+                                && x.PurchaseDate.Year == now.Year
+                                && x.PurchaseDate.Month == now.Month,
+                            cancellationToken);
 
                 var purchaseNumber =
-                    $"PUR-{currentMonth}-{(purchaseCount + 1):D4}";
+                    $"PUR-{currentMonth}-" +
+                    $"{purchaseCount + 1:D4}";
 
                 decimal subTotal = 0;
                 decimal totalTax = 0;
 
-                var purchase = new Purchase
-                {
-                    TenantId = _currentTenant.TenantId,
-                    SupplierId = request.SupplierId,
-                    PurchaseDate = request.PurchaseDate,
-                    PurchaseNumber = purchaseNumber,
-                    DiscountAmount = request.DiscountAmount
-                };
+                var purchase =
+                    new Purchase
+                    {
+                        TenantId = tenantId,
+                        SupplierId = request.SupplierId,
+                        PurchaseDate = request.PurchaseDate,
+                        PurchaseNumber = purchaseNumber,
+                        DiscountAmount =
+                            request.DiscountAmount
+                    };
 
                 foreach (var item in request.Items)
                 {
                     var product =
-                        await _context.Products
-                        .FirstOrDefaultAsync(
-                            x =>
-                                x.Id == item.ProductId
-                                &&
-                                x.TenantId ==
-                                    _currentTenant.TenantId
-                                &&
-                                !x.IsDeleted,
-                            cancellationToken);
+                        productById[item.ProductId];
 
-                    if (product is null)
-                    {
-                        return ApiResponse<PurchaseDetailsDto>
-                            .FailureResponse(
-                                new()
-                                {
-                                    $"Product not found : {item.ProductId}"
-                                });
-                    }
+                    product.CurrentStock +=
+                        item.Quantity;
 
-                    product.CurrentStock += item.Quantity;
-
-                    product.CostPrice = item.UnitCost;
+                    product.CostPrice =
+                        item.UnitCost;
 
                     var itemSubTotal =
-                        item.UnitCost * item.Quantity;
+                        item.UnitCost
+                        * item.Quantity;
 
                     var taxAmount =
-                        (itemSubTotal * item.TaxRate) / 100;
+                        (itemSubTotal
+                        * item.TaxRate)
+                        / 100;
 
                     var totalPrice =
-                        itemSubTotal + taxAmount;
+                        itemSubTotal
+                        + taxAmount;
 
                     var purchaseItem =
                         new PurchaseItem
                         {
-                            TenantId =
-                                _currentTenant.TenantId,
-
-                            ProductId =
-                                product.Id,
-
-                            Quantity =
-                                item.Quantity,
-
-                            UnitCost =
-                                item.UnitCost,
-
-                            TaxRate =
-                                item.TaxRate,
-
-                            TaxAmount =
-                                taxAmount,
-
-                            TotalPrice =
-                                totalPrice
+                            TenantId = tenantId,
+                            ProductId = product.Id,
+                            Quantity = item.Quantity,
+                            UnitCost = item.UnitCost,
+                            TaxRate = item.TaxRate,
+                            TaxAmount = taxAmount,
+                            TotalPrice = totalPrice
                         };
 
-                    purchase.PurchaseItems
-                        .Add(purchaseItem);
+                    purchase.PurchaseItems.Add(
+                        purchaseItem);
 
                     await _stockMovementService
                         .CreateMovement(
@@ -165,27 +271,37 @@ namespace Invento.Application.Features.Purchases.Commands
                             StockMovementType.Purchase.ToString(),
                             product.CurrentStock,
                             "Purchase completed",
-                            purchase.PurchaseNumber
-                        );
+                            purchase.PurchaseNumber,
+                            cancellationToken);
 
                     subTotal += itemSubTotal;
-
                     totalTax += taxAmount;
                 }
 
-                purchase.SubTotal = subTotal;
-
-                purchase.TaxAmount = totalTax;
-
-                purchase.TotalAmount =
+                var totalAmount =
                     subTotal
                     + totalTax
                     - request.DiscountAmount;
 
+                if (totalAmount < 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    return ApiResponse<PurchaseDetailsDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Discount amount cannot exceed " +
+                                "the purchase total"
+                            });
+                }
+
+                purchase.SubTotal = subTotal;
+                purchase.TaxAmount = totalTax;
+                purchase.TotalAmount = totalAmount;
                 purchase.PaidAmount = 0;
-
-                purchase.DueAmount = purchase.TotalAmount;
-
+                purchase.DueAmount = totalAmount;
                 purchase.PaymentStatus =
                     PaymentStatus.Unpaid;
 
@@ -207,7 +323,7 @@ namespace Invento.Application.Features.Purchases.Commands
             catch
             {
                 await transaction.RollbackAsync(
-                    cancellationToken);
+                    CancellationToken.None);
 
                 throw;
             }

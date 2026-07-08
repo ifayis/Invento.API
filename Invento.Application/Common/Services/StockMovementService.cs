@@ -22,21 +22,25 @@ namespace Invento.Application.Common.Services
             string movementType,
             int currentStockAfterMovement,
             string? remarks,
-            string? referenceNumber
-)
+            string? referenceNumber,
+            CancellationToken cancellationToken = default)
         {
-            var movement = new StockMovement
-            {
-                TenantId = _currentTenant.TenantId,
-                ProductId = productId,
-                Quantity = quantity,
-                MovementType = movementType,
-                CurrentStockAfterMovement = currentStockAfterMovement,
-                Remarks = remarks,
-                ReferenceNumber = referenceNumber
-            };
-            await _context.StockMovements.AddAsync(movement);
-        }
+            var movement =
+                new StockMovement
+                {
+                    TenantId = _currentTenant.TenantId,
+                    ProductId = productId,
+                    Quantity = quantity,
+                    MovementType = movementType,
+                    CurrentStockAfterMovement =
+                        currentStockAfterMovement,
+                    Remarks = remarks,
+                    ReferenceNumber = referenceNumber
+                };
 
+            await _context.StockMovements.AddAsync(
+                movement,
+                cancellationToken);
+        }
     }
 }
