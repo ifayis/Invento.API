@@ -1,29 +1,59 @@
 ﻿using Invento.Application.Common.Interface;
-using Invento.Persistence.Data;
-using Invento.Persistence.Connections;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
 using Invento.Application.Interfaces;
-using Invento.Infrastructure.Data;
+using Invento.Persistence.Connections;
+using Invento.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Invento.Persistence.Extensions
 {
     public static class PersistenceServiceRegistration
     {
         public static IServiceCollection AddPersistenceServices(
-                this IServiceCollection services,
-                IConfiguration configuration)
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
+            var connectionString =
+                configuration.GetConnectionString(
+                    "DefaultConnection");
+
+            if (string.IsNullOrWhiteSpace(
+                connectionString))
             {
-            services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
+                throw new InvalidOperationException(
+                    "ConnectionStrings:DefaultConnection " +
+                    "is not configured.");
+            }
 
-            services.AddScoped<IApplicationDbContext, AppDbContext>();
+            services.AddScoped<
+                IDbConnectionFactory,
+                SqlConnectionFactory>();
 
-            services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-            });
+            services.AddScoped<
+                IApplicationDbContext,
+                AppDbContext>();
 
+            services.AddDbContext<AppDbContext>(
+                options =>
+                {
+                    options.UseSqlServer(
+                        connectionString,
+                        sqlOptions =>
+                        {
+                            sqlOptions.EnableRetryOnFailure(
+                                maxRetryCount: 3,
+                                maxRetryDelay:
+                                    TimeSpan.FromSeconds(5),
+                                errorNumbersToAdd: null);
+
+                            sqlOptions.CommandTimeout(30);
+                        });
+
+                    options.EnableDetailedErrors(false);
+
+                    options.EnableSensitiveDataLogging(false);
+                });
 
             return services;
         }

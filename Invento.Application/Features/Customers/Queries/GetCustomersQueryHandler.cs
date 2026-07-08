@@ -5,6 +5,7 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Features.Customers.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Shared.Pagination;
+using System.Data;
 
 namespace Invento.Application.Features.Customers.Queries
 {
@@ -26,44 +27,51 @@ namespace Invento.Application.Features.Customers.Queries
                 GetCustomersQuery request,
                 CancellationToken cancellationToken)
         {
-            using var connection = _connectionFactory.CreateConnection();
+            using var connection =
+                _connectionFactory.CreateConnection();
+
+            if (connection.State != ConnectionState.Open)
+            {
+                await ((System.Data.Common.DbConnection)connection)
+                    .OpenAsync(cancellationToken);
+            }
 
             var sql = @"
-        SELECT
-            Id,
-            Name,
-            Email,
-            PhoneNumber,
-            Address,
-            IsDeleted
-        FROM Customers
-        WHERE
-            TenantId = @TenantId
-            AND
-            (
-                @Search IS NULL
-                OR Name LIKE '%' + @Search + '%'
-                OR Email LIKE '%' + @Search + '%'
-                OR PhoneNumber LIKE '%' + @Search + '%'
-            )
+            SELECT
+                Id,
+                Name,
+                Email,
+                PhoneNumber,
+                Address,
+                IsDeleted
+            FROM Customers
+            WHERE
+                TenantId = @TenantId
+                AND
+                (
+                    @Search IS NULL
+                    OR Name LIKE '%' + @Search + '%'
+                    OR Email LIKE '%' + @Search + '%'
+                    OR PhoneNumber LIKE '%' + @Search + '%'
+                )
 
-        ORDER BY Name
+            ORDER BY Name
 
-        OFFSET @Offset ROWS
-        FETCH NEXT @PageSize ROWS ONLY;
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
 
-        SELECT COUNT(*)
-        FROM Customers
-        WHERE
-            TenantId = @TenantId
-            AND
-            (
-                @Search IS NULL
-                OR Name LIKE '%' + @Search + '%'
-                OR Email LIKE '%' + @Search + '%'
-                OR PhoneNumber LIKE '%' + @Search + '%'
-            );
-        ";
+            SELECT COUNT(*)
+            FROM Customers
+            WHERE
+                TenantId = @TenantId
+                AND
+                (
+                    @Search IS NULL
+                    OR Name LIKE '%' + @Search + '%'
+                    OR Email LIKE '%' + @Search + '%'
+                    OR PhoneNumber LIKE '%' + @Search + '%'
+                );
+            ";
 
             var parameters = new
             {
@@ -75,9 +83,15 @@ namespace Invento.Application.Features.Customers.Queries
                 request.PageSize
             };
 
-            using var multi = await connection.QueryMultipleAsync(
-                    sql,
-                    parameters);
+            var command =
+                new CommandDefinition(
+                    commandText: sql,
+                    parameters: parameters,
+                    commandTimeout: 30,
+                    cancellationToken: cancellationToken);
+
+            using var multi =
+                await connection.QueryMultipleAsync(command);
 
             var customers = await multi.ReadAsync<CustomerDto>();
 

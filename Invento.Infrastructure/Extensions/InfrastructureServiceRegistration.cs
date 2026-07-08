@@ -30,10 +30,24 @@ namespace Invento.Infrastructure.Extensions
                 ICurrentTenantService, 
                 CurrentTenantService>();
 
+            var redisConnectionString =
+                configuration["Redis:ConnectionString"];
+
+            if (string.IsNullOrWhiteSpace(
+                redisConnectionString))
+            {
+                throw new InvalidOperationException(
+                    "Redis:ConnectionString is not configured.");
+            }
+
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration =
-                    configuration["Redis:ConnectionString"];
+                    redisConnectionString;
+
+                options.InstanceName =
+                    configuration["Redis:InstanceName"]
+                    ?? "Invento:";
             });
 
             services.AddScoped<

@@ -2,33 +2,58 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Invento.Persistence.Configurations;
-
-public class StockMovementConfiguration : IEntityTypeConfiguration<StockMovement>
+namespace Invento.Persistence.Configurations
 {
-    public void Configure(EntityTypeBuilder<StockMovement> builder)
+    public class StockMovementConfiguration
+        : IEntityTypeConfiguration<StockMovement>
     {
-        builder.ToTable("StockMovements");
+        public void Configure(
+            EntityTypeBuilder<StockMovement> builder)
+        {
+            builder.ToTable("StockMovements");
 
-        builder.HasKey(x => x.Id);
+            builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.MovementType)
-            .HasMaxLength(50)
-            .IsRequired();
+            builder.Property(x => x.MovementType)
+                .HasMaxLength(50)
+                .IsRequired();
 
-        builder.Property(x => x.ReferenceNumber)
-            .HasMaxLength(100);
+            builder.Property(x => x.ReferenceNumber)
+                .HasMaxLength(100);
 
-        builder.Property(x => x.Remarks)
-            .HasMaxLength(1000);
+            builder.Property(x => x.Remarks)
+                .HasMaxLength(1000);
 
-        builder.HasIndex(x => x.ProductId);
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.IsDeleted
+                });
 
-        builder.HasOne(x => x.Product)
-            .WithMany(x => x.StockMovements)
-            .HasForeignKey(x => x.ProductId)
-            .OnDelete(DeleteBehavior.Restrict);
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.ProductId,
+                    x.IsDeleted
+                });
 
-        builder.HasQueryFilter(x => !x.IsDeleted);
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.MovementType,
+                    x.IsDeleted
+                });
+
+            builder.HasOne(x => x.Product)
+                .WithMany(x => x.StockMovements)
+                .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasQueryFilter(
+                x => !x.IsDeleted);
+        }
     }
 }

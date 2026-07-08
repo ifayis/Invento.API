@@ -5,6 +5,7 @@ using Invento.Application.Common.Interface;
 using Invento.Application.Features.Categories.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Shared.Pagination;
+using System.Data;
 
 namespace Invento.Application.Features.Categories.Queries
 {
@@ -27,7 +28,14 @@ namespace Invento.Application.Features.Categories.Queries
             GetCategoriesQuery request,
             CancellationToken cancellationToken)
         {
-            using var connection = _connectionFactory.CreateConnection();
+            using var connection =
+                _connectionFactory.CreateConnection();
+
+            if (connection.State != ConnectionState.Open)
+            {
+                await ((System.Data.Common.DbConnection)connection)
+                    .OpenAsync(cancellationToken);
+            }
 
             var sql = @"
             SELECT
@@ -67,11 +75,15 @@ namespace Invento.Application.Features.Categories.Queries
                 request.PageSize
             };
 
+            var command =
+                new CommandDefinition(
+                    commandText: sql,
+                    parameters: parameters,
+                    commandTimeout: 30,
+                    cancellationToken: cancellationToken);
+
             using var multi =
-                await connection.QueryMultipleAsync(
-                    sql,
-                    parameters
-                );
+                await connection.QueryMultipleAsync(command);
 
             var categories = await multi.ReadAsync<CategoryDto>();
 

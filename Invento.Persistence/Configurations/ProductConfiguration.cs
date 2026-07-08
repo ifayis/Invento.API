@@ -1,12 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Invento.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Invento.Domain.Entities;
 
 namespace Invento.Persistence.Configurations
 {
-    public class ProductConfiguration : IEntityTypeConfiguration<Product>
+    public class ProductConfiguration
+        : IEntityTypeConfiguration<Product>
     {
-        public void Configure(EntityTypeBuilder<Product> builder)
+        public void Configure(
+            EntityTypeBuilder<Product> builder)
         {
             builder.ToTable("Products");
 
@@ -32,6 +34,12 @@ namespace Invento.Persistence.Configurations
             builder.Property(x => x.TaxRate)
                 .HasColumnType("decimal(5,2)");
 
+            builder.Property(x => x.LowStockThreshold)
+                .HasDefaultValue(10);
+
+            builder.Property(x => x.CriticalStockThreshold)
+                .HasDefaultValue(5);
+
             builder.HasIndex(x =>
                 new
                 {
@@ -47,18 +55,29 @@ namespace Invento.Persistence.Configurations
                     x.Name
                 });
 
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.IsDeleted,
+                    x.CreatedAt
+                });
+
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.CategoryId,
+                    x.IsDeleted
+                });
+
             builder.HasOne(x => x.Category)
                 .WithMany(x => x.Products)
                 .HasForeignKey(x => x.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasQueryFilter(x => !x.IsDeleted);
-
-            builder.Property(x => x.LowStockThreshold)
-                .HasDefaultValue(10);
-
-            builder.Property(x => x.CriticalStockThreshold)
-                .HasDefaultValue(5);
+            builder.HasQueryFilter(
+                x => !x.IsDeleted);
         }
     }
 }

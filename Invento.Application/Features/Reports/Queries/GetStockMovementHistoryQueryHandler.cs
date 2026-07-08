@@ -4,6 +4,7 @@ using Invento.Application.Common;
 using Invento.Application.Common.Interface;
 using Invento.Application.Interfaces;
 using Invento.Shared.Pagination;
+using System.Data;
 
 namespace Invento.Application.Features.Reports.Queries
 {
@@ -30,44 +31,50 @@ namespace Invento.Application.Features.Reports.Queries
             using var connection =
                 _connectionFactory.CreateConnection();
 
+            if (connection.State != ConnectionState.Open)
+            {
+                await ((System.Data.Common.DbConnection)connection)
+                    .OpenAsync(cancellationToken);
+            }
+
             var sql = @"
-        SELECT
-            sm.Id,
-            sm.ProductId,
-            p.Name AS ProductName,
-            sm.Quantity,
-            sm.MovementType,
-            sm.CurrentStockAfterMovement,
-            sm.Remarks,
-            sm.ReferenceNumber,
-            sm.CreatedByUserId,
-            sm.CreatedAt
-        FROM StockMovements sm
-        INNER JOIN Products p
-            ON sm.ProductId = p.Id
-        WHERE
-            sm.TenantId = @TenantId
-            AND
-            (
-                @ProductId IS NULL
-                OR sm.ProductId = @ProductId
-            )
+            SELECT
+                sm.Id,
+                sm.ProductId,
+                p.Name AS ProductName,
+                sm.Quantity,
+                sm.MovementType,
+                sm.CurrentStockAfterMovement,
+                sm.Remarks,
+                sm.ReferenceNumber,
+                sm.CreatedByUserId,
+                sm.CreatedAt
+            FROM StockMovements sm
+            INNER JOIN Products p
+                ON sm.ProductId = p.Id
+            WHERE
+                sm.TenantId = @TenantId
+                AND
+                (
+                    @ProductId IS NULL
+                    OR sm.ProductId = @ProductId
+                )
 
-        ORDER BY sm.CreatedAt DESC
+            ORDER BY sm.CreatedAt DESC
 
-        OFFSET @Offset ROWS
-        FETCH NEXT @PageSize ROWS ONLY;
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
 
-        SELECT COUNT(*)
-        FROM StockMovements
-        WHERE
-            TenantId = @TenantId
-            AND
-            (
-                @ProductId IS NULL
-                OR ProductId = @ProductId
-            );
-        ";
+            SELECT COUNT(*)
+            FROM StockMovements
+            WHERE
+                TenantId = @TenantId
+                AND
+                (
+                    @ProductId IS NULL
+                    OR ProductId = @ProductId
+                );
+            ";
 
             var parameters = new
             {
@@ -79,10 +86,15 @@ namespace Invento.Application.Features.Reports.Queries
                 request.PageSize
             };
 
+            var command =
+                new CommandDefinition(
+                    commandText: sql,
+                    parameters: parameters,
+                    commandTimeout: 30,
+                    cancellationToken: cancellationToken);
+
             using var multi =
-                await connection.QueryMultipleAsync(
-                    sql,
-                    parameters);
+                await connection.QueryMultipleAsync(command);
 
             var movements =
                 (await multi.ReadAsync<StockMovementDto>())

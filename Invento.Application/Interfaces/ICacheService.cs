@@ -3,14 +3,17 @@
     public interface ICacheService
     {
         Task<T?> GetAsync<T>(
-            string key);
+            string key,
+            CancellationToken cancellationToken = default);
 
         Task SetAsync<T>(
             string key,
             T value,
-            TimeSpan? expiry = null);
+            TimeSpan? expiry = null,
+            CancellationToken cancellationToken = default);
 
         Task RemoveAsync(
-            string key);
+            string key,
+            CancellationToken cancellationToken = default);
     }
 }
