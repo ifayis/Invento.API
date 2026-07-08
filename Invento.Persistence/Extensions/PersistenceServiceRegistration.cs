@@ -2,6 +2,7 @@
 using Invento.Application.Interfaces;
 using Invento.Persistence.Connections;
 using Invento.Persistence.Data;
+using Invento.Persistence.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,10 @@ namespace Invento.Persistence.Extensions
             services.AddScoped<
                 IApplicationDbContext,
                 AppDbContext>();
+
+            services.AddScoped<
+                IDocumentNumberService,
+                DocumentNumberService>();
 
             services.AddDbContext<AppDbContext>(
                 options =>

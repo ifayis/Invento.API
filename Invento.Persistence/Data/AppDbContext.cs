@@ -58,6 +58,8 @@ namespace Invento.Persistence.Data
 
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
+        public DbSet<DocumentNumberSequence> DocumentNumberSequences => Set<DocumentNumberSequence>();
+
         public override async Task<int> SaveChangesAsync(
             CancellationToken cancellationToken = default)
         {
