@@ -34,41 +34,23 @@ namespace Invento.Persistence.Configurations
             builder.Property(x => x.TaxRate)
                 .HasColumnType("decimal(5,2)");
 
-            builder.Property(x => x.LowStockThreshold)
-                .HasDefaultValue(10);
+            builder.Property(x => x.RowVersion)
+                .IsRowVersion()
+                .IsConcurrencyToken();
 
-            builder.Property(x => x.CriticalStockThreshold)
-                .HasDefaultValue(5);
-
-            builder.HasIndex(x =>
-                new
-                {
-                    x.TenantId,
-                    x.SKU
-                })
+            builder.HasIndex(
+                    x => new
+                    {
+                        x.TenantId,
+                        x.SKU
+                    })
                 .IsUnique();
 
-            builder.HasIndex(x =>
-                new
+            builder.HasIndex(
+                x => new
                 {
                     x.TenantId,
                     x.Name
-                });
-
-            builder.HasIndex(x =>
-                new
-                {
-                    x.TenantId,
-                    x.IsDeleted,
-                    x.CreatedAt
-                });
-
-            builder.HasIndex(x =>
-                new
-                {
-                    x.TenantId,
-                    x.CategoryId,
-                    x.IsDeleted
                 });
 
             builder.HasOne(x => x.Category)
@@ -78,6 +60,12 @@ namespace Invento.Persistence.Configurations
 
             builder.HasQueryFilter(
                 x => !x.IsDeleted);
+
+            builder.Property(x => x.LowStockThreshold)
+                .HasDefaultValue(10);
+
+            builder.Property(x => x.CriticalStockThreshold)
+                .HasDefaultValue(5);
         }
     }
 }

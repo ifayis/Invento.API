@@ -408,9 +408,11 @@ namespace Invento.Persistence.Data
                 .HasIndex(x => x.TenantId);
         }
 
-        public async Task<IDbContextTransaction>BeginTransactionAsync()
+        public async Task<IDbContextTransaction> BeginTransactionAsync(
+            CancellationToken cancellationToken = default)
         {
-            return await Database.BeginTransactionAsync();
+            return await Database.BeginTransactionAsync(
+                cancellationToken);
         }
     }
 }

@@ -37,8 +37,8 @@ namespace Invento.Application.Features.Sales.Commands
             var tenantId = _currentTenant.TenantId;
 
             await using var transaction =
-                await _context.BeginTransactionAsync();
-
+                await _context.BeginTransactionAsync(
+                    cancellationToken);
             try
             {
                 var sale = await _context.Sales

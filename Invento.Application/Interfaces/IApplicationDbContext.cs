@@ -42,8 +42,10 @@ namespace Invento.Application.Interfaces
 
         DbSet<AuditLog> AuditLogs { get; }
 
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+        Task<int> SaveChangesAsync(
+            CancellationToken cancellationToken);
 
-        Task<IDbContextTransaction> BeginTransactionAsync();
+        Task<IDbContextTransaction> BeginTransactionAsync(
+            CancellationToken cancellationToken = default);
     }
 }
