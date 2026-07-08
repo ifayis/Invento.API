@@ -32,53 +32,108 @@ namespace Invento.Application.Features.Purchases.Commands
             RestorePurchaseCommand request,
             CancellationToken cancellationToken)
         {
-            using var transaction =
-                await _context.BeginTransactionAsync();
+            var tenantId = _currentTenant.TenantId;
+
+            await using var transaction =
+                await _context.BeginTransactionAsync(
+                    cancellationToken);
 
             try
             {
                 var purchase =
                     await _context.Purchases
-                    .IgnoreQueryFilters()
-                    .Include(x => x.Supplier)
-                    .Include(x => x.PurchaseItems)
-                    .FirstOrDefaultAsync(
-                        x =>
-                            x.Id == request.Id
-                            && x.TenantId ==
-                                _currentTenant.TenantId
-                            && x.IsDeleted,
-                        cancellationToken);
+                        .IgnoreQueryFilters()
+                        .Include(x => x.Supplier)
+                        .Include(x => x.PurchaseItems)
+                        .FirstOrDefaultAsync(
+                            x =>
+                                x.Id == request.Id
+                                && x.TenantId == tenantId
+                                && x.IsDeleted,
+                            cancellationToken);
 
                 if (purchase is null)
                 {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<PurchaseDto>
                         .FailureResponse(
-                            ["Purchase not found"]);
+                            new List<string>
+                            {
+                                "Purchase not found"
+                            });
                 }
 
-                foreach (var item in purchase.PurchaseItems)
+                var purchaseItems =
+                    purchase.PurchaseItems.ToList();
+
+                var productIds =
+                    purchaseItems
+                        .Select(x => x.ProductId)
+                        .Distinct()
+                        .ToList();
+
+                var products =
+                    await _context.Products
+                        .Where(
+                            x =>
+                                productIds.Contains(x.Id)
+                                && x.TenantId == tenantId
+                                && !x.IsDeleted)
+                        .ToListAsync(cancellationToken);
+
+                var productById =
+                    products.ToDictionary(
+                        x => x.Id);
+
+                var missingProductIds =
+                    productIds
+                        .Where(
+                            productId =>
+                                !productById.ContainsKey(productId))
+                        .ToList();
+
+                if (missingProductIds.Count > 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
+                    return ApiResponse<PurchaseDto>
+                        .FailureResponse(
+                            missingProductIds
+                                .Select(
+                                    id =>
+                                        $"Product not found or inactive: {id}")
+                                .ToList());
+                }
+
+                foreach (var item in purchaseItems)
                 {
                     var product =
-                        await _context.Products
-                        .FirstAsync(
-                            x =>
-                                x.Id == item.ProductId
-                                && x.TenantId ==
-                                    _currentTenant.TenantId,
+                        productById[item.ProductId];
+
+                    product.CurrentStock +=
+                        item.Quantity;
+
+                    product.CostPrice =
+                        item.UnitCost;
+
+                    await _stockMovementService
+                        .CreateMovement(
+                            product.Id,
+                            item.Quantity,
+                            StockMovementType
+                                .Purchase
+                                .ToString(),
+                            product.CurrentStock,
+                            "Purchase restored",
+                            purchase.PurchaseNumber,
                             cancellationToken);
-
-                    product.CurrentStock += item.Quantity;
-
-                    product.CostPrice = item.UnitCost;
-
-                    await _stockMovementService.CreateMovement(
-                        product.Id,
-                        item.Quantity,
-                        StockMovementType.Purchase.ToString(),
-                        product.CurrentStock,
-                        "Purchase restored",
-                        purchase.PurchaseNumber);
                 }
 
                 purchase.IsDeleted = false;
@@ -94,10 +149,29 @@ namespace Invento.Application.Features.Purchases.Commands
                         purchase.ToPurchaseDto(),
                         "Purchase restored successfully");
             }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync(
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
+
+                return ApiResponse<PurchaseDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                            "Stock changed while the purchase " +
+                            "was being restored. Reload the latest " +
+                            "data and try again."
+                        },
+                        "Concurrency conflict");
+            }
             catch
             {
                 await transaction.RollbackAsync(
-                    cancellationToken);
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
 
                 throw;
             }

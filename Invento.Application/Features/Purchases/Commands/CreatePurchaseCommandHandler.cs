@@ -320,10 +320,28 @@ namespace Invento.Application.Features.Purchases.Commands
                         purchase.ToPurchaseDetailsDto(),
                         "Purchase created successfully");
             }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync(
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
+
+                return ApiResponse<PurchaseDetailsDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                "Stock changed while the purchase was being processed. " +
+                "Please reload the latest data and try again."
+                        },
+                        "Concurrency conflict");
+            }
             catch
             {
                 await transaction.RollbackAsync(
                     CancellationToken.None);
+
+                _context.ClearChangeTracker();
 
                 throw;
             }

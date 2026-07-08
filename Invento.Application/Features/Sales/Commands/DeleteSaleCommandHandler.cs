@@ -10,17 +10,18 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Sales.Commands
 {
     public class DeleteSaleCommandHandler
-        : ICommandHandler<DeleteSaleCommand, ApiResponse<DeleteSaleDto>>
+        : ICommandHandler<
+            DeleteSaleCommand,
+            ApiResponse<DeleteSaleDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
-        private readonly StockMovementService _stockMovementService; 
+        private readonly StockMovementService _stockMovementService;
 
         public DeleteSaleCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant,
-            StockMovementService stockMovementService
-            )
+            StockMovementService stockMovementService)
         {
             _context = context;
             _currentTenant = currentTenant;
@@ -31,69 +32,146 @@ namespace Invento.Application.Features.Sales.Commands
             DeleteSaleCommand request,
             CancellationToken cancellationToken)
         {
-            using var transaction = await _context.BeginTransactionAsync();
+            var tenantId = _currentTenant.TenantId;
+
+            await using var transaction =
+                await _context.BeginTransactionAsync(
+                    cancellationToken);
 
             try
             {
-                var sale = await _context.Sales
-                    .Include(x => x.SaleItems)
-                    .FirstOrDefaultAsync(x =>
-                        x.Id == request.Id
-                        && x.TenantId == _currentTenant.TenantId
-                        && !x.IsDeleted,
-                        cancellationToken);
+                var sale =
+                    await _context.Sales
+                        .Include(x => x.SaleItems)
+                        .FirstOrDefaultAsync(
+                            x =>
+                                x.Id == request.Id
+                                && x.TenantId == tenantId
+                                && !x.IsDeleted,
+                            cancellationToken);
 
                 if (sale is null)
                 {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<DeleteSaleDto>
                         .FailureResponse(
                             new List<string>
                             {
-                            "Sale not found"
-                            }
-                        );
+                                "Sale not found"
+                            });
                 }
 
-                foreach (var item in sale.SaleItems)
+                var saleItems =
+                    sale.SaleItems.ToList();
+
+                var productIds =
+                    saleItems
+                        .Select(x => x.ProductId)
+                        .Distinct()
+                        .ToList();
+
+                var products =
+                    await _context.Products
+                        .Where(
+                            x =>
+                                productIds.Contains(x.Id)
+                                && x.TenantId == tenantId)
+                        .ToListAsync(cancellationToken);
+
+                var productById =
+                    products.ToDictionary(
+                        x => x.Id);
+
+                var missingProductIds =
+                    productIds
+                        .Where(
+                            productId =>
+                                !productById.ContainsKey(productId))
+                        .ToList();
+
+                if (missingProductIds.Count > 0)
                 {
-                    var product = await _context.Products
-                        .FirstAsync(x =>
-                            x.Id == item.ProductId
-                            && x.TenantId == _currentTenant.TenantId,
-                            cancellationToken
-                        );
+                    await transaction.RollbackAsync(
+                        cancellationToken);
 
-                    product.CurrentStock += item.Quantity;
+                    _context.ClearChangeTracker();
 
-                    await _stockMovementService.CreateMovement(
-                        product.Id,
-                        item.Quantity,
-                        StockMovementType.SaleRestore.ToString(),
-                        product.CurrentStock,
-                        "Sale deleted",
-                        sale.InvoiceNumber
-                    );
+                    return ApiResponse<DeleteSaleDto>
+                        .FailureResponse(
+                            missingProductIds
+                                .Select(
+                                    id =>
+                                        $"Product not found: {id}")
+                                .ToList());
+                }
+
+                foreach (var item in saleItems)
+                {
+                    var product =
+                        productById[item.ProductId];
+
+                    product.CurrentStock +=
+                        item.Quantity;
+
+                    await _stockMovementService
+                        .CreateMovement(
+                            product.Id,
+                            item.Quantity,
+                            StockMovementType
+                                .SaleRestore
+                                .ToString(),
+                            product.CurrentStock,
+                            "Sale deleted",
+                            sale.InvoiceNumber,
+                            cancellationToken);
                 }
 
                 sale.IsDeleted = true;
 
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(
+                    cancellationToken);
 
-                await transaction.CommitAsync(cancellationToken);
+                await transaction.CommitAsync(
+                    cancellationToken);
 
                 return ApiResponse<DeleteSaleDto>
                     .SuccessResponse(
-                    new DeleteSaleDto
-                    {
-                        Id = sale.Id,
-                        InvoiceNumber = sale.InvoiceNumber,
-                        IsDeleted = true
-                    },
-                    "Sale deleted successfully");
+                        new DeleteSaleDto
+                        {
+                            Id = sale.Id,
+                            InvoiceNumber =
+                                sale.InvoiceNumber,
+                            IsDeleted = true
+                        },
+                        "Sale deleted successfully");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync(
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
+
+                return ApiResponse<DeleteSaleDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                            "Stock changed while the sale was " +
+                            "being deleted. Reload the latest " +
+                            "data and try again."
+                        },
+                        "Concurrency conflict");
             }
             catch
             {
-                await transaction.RollbackAsync(cancellationToken);
+                await transaction.RollbackAsync(
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
 
                 throw;
             }

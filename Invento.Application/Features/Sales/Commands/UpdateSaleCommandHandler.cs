@@ -404,10 +404,28 @@ namespace Invento.Application.Features.Sales.Commands
                         sale.ToSaleDto(),
                         "Sale updated successfully");
             }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync(
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
+
+                return ApiResponse<SaleDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                "Stock changed while the sale was being updated. " +
+                "Please reload the latest data and try again."
+                        },
+                        "Concurrency conflict");
+            }
             catch
             {
                 await transaction.RollbackAsync(
                     CancellationToken.None);
+
+                _context.ClearChangeTracker();
 
                 throw;
             }

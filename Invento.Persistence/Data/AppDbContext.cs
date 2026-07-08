@@ -367,6 +367,12 @@ namespace Invento.Persistence.Data
             return await base.SaveChangesAsync(
                 cancellationToken);
         }
+
+        public void ClearChangeTracker()
+        {
+            ChangeTracker.Clear();
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -45,6 +45,8 @@ namespace Invento.Application.Interfaces
         Task<int> SaveChangesAsync(
             CancellationToken cancellationToken);
 
+        void ClearChangeTracker();
+
         Task<IDbContextTransaction> BeginTransactionAsync(
             CancellationToken cancellationToken = default);
     }
