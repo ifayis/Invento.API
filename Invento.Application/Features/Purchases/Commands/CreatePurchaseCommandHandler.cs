@@ -18,15 +18,18 @@ namespace Invento.Application.Features.Purchases.Commands
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
         private readonly StockMovementService _stockMovementService;
+        private readonly IDocumentNumberService _documentNumberService;
 
         public CreatePurchaseCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant,
-            StockMovementService stockMovementService)
+            StockMovementService stockMovementService,
+            IDocumentNumberService documentNumberService)
         {
             _context = context;
             _currentTenant = currentTenant;
             _stockMovementService = stockMovementService;
+            _documentNumberService = documentNumberService;
         }
 
         public async Task<ApiResponse<PurchaseDetailsDto>> Handle(
@@ -38,6 +41,7 @@ namespace Invento.Application.Features.Purchases.Commands
             await using var transaction =
                 await _context.BeginTransactionAsync(
                     cancellationToken);
+
             try
             {
                 if (request.Items is null
@@ -45,6 +49,8 @@ namespace Invento.Application.Features.Purchases.Commands
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
+
+                    _context.ClearChangeTracker();
 
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
@@ -58,6 +64,8 @@ namespace Invento.Application.Features.Purchases.Commands
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
+
+                    _context.ClearChangeTracker();
 
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
@@ -73,6 +81,8 @@ namespace Invento.Application.Features.Purchases.Commands
                     await transaction.RollbackAsync(
                         cancellationToken);
 
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
                             new List<string>
@@ -87,6 +97,8 @@ namespace Invento.Application.Features.Purchases.Commands
                     await transaction.RollbackAsync(
                         cancellationToken);
 
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
                             new List<string>
@@ -100,6 +112,8 @@ namespace Invento.Application.Features.Purchases.Commands
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
+
+                    _context.ClearChangeTracker();
 
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
@@ -120,6 +134,8 @@ namespace Invento.Application.Features.Purchases.Commands
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
+
+                    _context.ClearChangeTracker();
 
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
@@ -143,6 +159,8 @@ namespace Invento.Application.Features.Purchases.Commands
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
+
+                    _context.ClearChangeTracker();
 
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
@@ -183,6 +201,8 @@ namespace Invento.Application.Features.Purchases.Commands
                     await transaction.RollbackAsync(
                         cancellationToken);
 
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
                             missingProductIds
@@ -192,24 +212,14 @@ namespace Invento.Application.Features.Purchases.Commands
                                 .ToList());
                 }
 
-                var now = DateTime.UtcNow;
-
-                var currentMonth =
-                    now.ToString("yyyyMM");
-
-                var purchaseCount =
-                    await _context.Purchases
-                        .IgnoreQueryFilters()
-                        .CountAsync(
-                            x =>
-                                x.TenantId == tenantId
-                                && x.PurchaseDate.Year == now.Year
-                                && x.PurchaseDate.Month == now.Month,
-                            cancellationToken);
-
                 var purchaseNumber =
-                    $"PUR-{currentMonth}-" +
-                    $"{purchaseCount + 1:D4}";
+                    await _documentNumberService
+                        .GenerateNextAsync(
+                            tenantId,
+                            "PURCHASE",
+                            "PUR",
+                            request.PurchaseDate,
+                            cancellationToken);
 
                 decimal subTotal = 0;
                 decimal totalTax = 0;
@@ -268,7 +278,9 @@ namespace Invento.Application.Features.Purchases.Commands
                         .CreateMovement(
                             product.Id,
                             item.Quantity,
-                            StockMovementType.Purchase.ToString(),
+                            StockMovementType
+                                .Purchase
+                                .ToString(),
                             product.CurrentStock,
                             "Purchase completed",
                             purchase.PurchaseNumber,
@@ -287,6 +299,8 @@ namespace Invento.Application.Features.Purchases.Commands
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
+
+                    _context.ClearChangeTracker();
 
                     return ApiResponse<PurchaseDetailsDto>
                         .FailureResponse(
@@ -331,8 +345,9 @@ namespace Invento.Application.Features.Purchases.Commands
                     .FailureResponse(
                         new List<string>
                         {
-                "Stock changed while the purchase was being processed. " +
-                "Please reload the latest data and try again."
+                            "Stock changed while the purchase was " +
+                            "being processed. Reload the latest " +
+                            "data and try again."
                         },
                         "Concurrency conflict");
             }

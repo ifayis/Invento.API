@@ -20,17 +20,20 @@ namespace Invento.Application.Features.Sales.Commands
         private readonly ICurrentTenantService _currentTenant;
         private readonly StockMovementService _stockMovementService;
         private readonly CashTransactionService _cashTransactionService;
+        private readonly IDocumentNumberService _documentNumberService;
 
         public CreateSaleCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant,
             StockMovementService stockMovementService,
-            CashTransactionService cashTransactionService)
+            CashTransactionService cashTransactionService,
+            IDocumentNumberService documentNumberService)
         {
             _context = context;
             _currentTenant = currentTenant;
             _stockMovementService = stockMovementService;
             _cashTransactionService = cashTransactionService;
+            _documentNumberService = documentNumberService;
         }
 
         public async Task<ApiResponse<SaleDetailsDto>> Handle(
@@ -227,7 +230,13 @@ namespace Invento.Application.Features.Sales.Commands
                 }
 
                 var invoiceNumber =
-                    $"INV-{DateTime.UtcNow.Ticks}";
+                    await _documentNumberService
+                        .GenerateNextAsync(
+                            tenantId,
+                            "SALE",
+                            "INV",
+                            request.SaleDate,
+                            cancellationToken);
 
                 decimal subTotal = 0;
                 decimal totalTax = 0;
