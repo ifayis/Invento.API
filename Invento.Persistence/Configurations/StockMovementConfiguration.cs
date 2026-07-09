@@ -28,7 +28,9 @@ namespace Invento.Persistence.Configurations
                 new
                 {
                     x.TenantId,
-                    x.IsDeleted
+                    x.IsDeleted,
+                    x.CreatedAt,
+                    x.Id
                 });
 
             builder.HasIndex(x =>
@@ -36,7 +38,9 @@ namespace Invento.Persistence.Configurations
                 {
                     x.TenantId,
                     x.ProductId,
-                    x.IsDeleted
+                    x.IsDeleted,
+                    x.CreatedAt,
+                    x.Id
                 });
 
             builder.HasIndex(x =>
@@ -44,7 +48,9 @@ namespace Invento.Persistence.Configurations
                 {
                     x.TenantId,
                     x.MovementType,
-                    x.IsDeleted
+                    x.IsDeleted,
+                    x.CreatedAt,
+                    x.Id
                 });
 
             builder.HasOne(x => x.Product)

@@ -52,7 +52,8 @@ namespace Invento.Persistence.Configurations
                 {
                     x.TenantId,
                     x.IsDeleted,
-                    x.SaleDate
+                    x.SaleDate,
+                    x.Id
                 });
 
             builder.HasIndex(x =>
@@ -61,7 +62,8 @@ namespace Invento.Persistence.Configurations
                     x.TenantId,
                     x.CustomerId,
                     x.IsDeleted,
-                    x.SaleDate
+                    x.SaleDate,
+                    x.Id
                 });
 
             builder.HasMany(x => x.SaleItems)

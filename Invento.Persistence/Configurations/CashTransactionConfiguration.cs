@@ -24,7 +24,9 @@ namespace Invento.Persistence.Configurations
                 new
                 {
                     x.TenantId,
-                    x.TransactionDate
+                    x.IsDeleted,
+                    x.TransactionDate,
+                    x.Id
                 });
 
             builder.HasQueryFilter(

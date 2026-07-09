@@ -20,6 +20,10 @@ namespace Invento.Domain.Entities
 
         public string? ReferenceNumber { get; set; }
 
+        public DateTime CreatedAt { get; set; }
+           = DateTime.UtcNow;
+
+
         public Guid? CreatedByUserId { get; set; }
 
         public bool IsDeleted { get; set; } = false;

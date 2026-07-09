@@ -38,19 +38,27 @@ namespace Invento.Persistence.Configurations
                 .IsRowVersion()
                 .IsConcurrencyToken();
 
-            builder.HasIndex(
-                    x => new
-                    {
-                        x.TenantId,
-                        x.SKU
-                    })
-                .IsUnique();
+            builder.Property(x => x.LowStockThreshold)
+                .HasDefaultValue(10);
 
-            builder.HasIndex(
-                x => new
+            builder.Property(x => x.CriticalStockThreshold)
+                .HasDefaultValue(5);
+
+            builder.HasIndex(x =>
+                new
                 {
                     x.TenantId,
-                    x.Name
+                    x.SKU
+                })
+                .IsUnique();
+
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.IsDeleted,
+                    x.CreatedAt,
+                    x.Id
                 });
 
             builder.HasOne(x => x.Category)
@@ -60,12 +68,6 @@ namespace Invento.Persistence.Configurations
 
             builder.HasQueryFilter(
                 x => !x.IsDeleted);
-
-            builder.Property(x => x.LowStockThreshold)
-                .HasDefaultValue(10);
-
-            builder.Property(x => x.CriticalStockThreshold)
-                .HasDefaultValue(5);
         }
     }
 }

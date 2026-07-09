@@ -37,10 +37,13 @@ namespace Invento.Persistence.Configurations
                 new
                 {
                     x.TenantId,
-                    x.Name
+                    x.IsDeleted,
+                    x.CreatedAt,
+                    x.Id
                 });
 
-            builder.HasQueryFilter(x => !x.IsDeleted);
+            builder.HasQueryFilter(
+                x => !x.IsDeleted);
         }
     }
 }

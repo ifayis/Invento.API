@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Dapper;
+﻿using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
@@ -25,19 +24,17 @@ namespace Invento.Application.Features.Users.Queries
             _currentTenant = currentTenant;
         }
 
-        public async Task<
-            ApiResponse<PagedResponse<UserDto>>> Handle(
+        public async Task<ApiResponse<PagedResponse<UserDto>>> Handle(
             GetUsersQuery request,
             CancellationToken cancellationToken)
         {
             using var connection =
                 _connectionFactory.CreateConnection();
 
-            if (connection.State != ConnectionState.Open)
-            {
-                await ((System.Data.Common.DbConnection)connection)
-                    .OpenAsync(cancellationToken);
-            }
+            var searchTerm =
+                string.IsNullOrWhiteSpace(request.SearchTerm)
+                    ? null
+                    : request.SearchTerm.Trim();
 
             const string sql = """
                 SELECT
@@ -58,8 +55,10 @@ namespace Invento.Application.Features.Users.Queries
                     AND
                     (
                         @SearchTerm IS NULL
-                        OR FullName LIKE '%' + @SearchTerm + '%'
-                        OR Email LIKE '%' + @SearchTerm + '%'
+                        OR FullName
+                            LIKE '%' + @SearchTerm + '%'
+                        OR Email
+                            LIKE '%' + @SearchTerm + '%'
                     )
                 ORDER BY
                     FullName ASC,
@@ -67,7 +66,7 @@ namespace Invento.Application.Features.Users.Queries
                 OFFSET @Offset ROWS
                 FETCH NEXT @PageSize ROWS ONLY;
 
-                SELECT COUNT_BIG(*)
+                SELECT COUNT(*)
                 FROM Users
                 WHERE
                     TenantId = @TenantId
@@ -75,55 +74,53 @@ namespace Invento.Application.Features.Users.Queries
                     AND
                     (
                         @SearchTerm IS NULL
-                        OR FullName LIKE '%' + @SearchTerm + '%'
-                        OR Email LIKE '%' + @SearchTerm + '%'
+                        OR FullName
+                            LIKE '%' + @SearchTerm + '%'
+                        OR Email
+                            LIKE '%' + @SearchTerm + '%'
                     );
                 """;
 
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
-
-                SearchTerm =
-                    string.IsNullOrWhiteSpace(
-                        request.SearchTerm)
-                        ? null
-                        : request.SearchTerm.Trim(),
-
-                Offset = checked(
+                SearchTerm = searchTerm,
+                Offset =
                     (request.PageNumber - 1)
-                    * request.PageSize),
-
+                    * request.PageSize,
                 request.PageSize
             };
 
             var command =
                 new CommandDefinition(
-                    commandText: sql,
-                    parameters: parameters,
-                    commandTimeout: 30,
-                    cancellationToken: cancellationToken);
+                    sql,
+                    parameters,
+                    cancellationToken:
+                        cancellationToken);
 
             using var multi =
-                await connection.QueryMultipleAsync(command);
+                await connection.QueryMultipleAsync(
+                    command);
 
             var users =
                 (await multi.ReadAsync<UserDto>())
                 .ToList();
 
-            var totalRecords =
-                await multi.ReadSingleAsync<long>();
+            var totalCount =
+                await multi.ReadSingleAsync<int>();
 
-            return ApiResponse<PagedResponse<UserDto>>
-                .SuccessResponse(
-                    new PagedResponse<UserDto>
-                    {
-                        Items = users,
-                        PageNumber = request.PageNumber,
-                        PageSize = request.PageSize,
-                        TotalCount =
-                            checked((int)totalRecords)
-                    });
+            var response =
+                new PagedResponse<UserDto>
+                {
+                    Items = users,
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize,
+                    TotalCount = totalCount
+                };
+
+            return ApiResponse<
+                PagedResponse<UserDto>>
+                .SuccessResponse(response);
         }
     }
 }

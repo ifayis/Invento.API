@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Dapper;
+﻿using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
@@ -25,19 +24,17 @@ namespace Invento.Application.Features.Purchases.Queries
             _currentTenant = currentTenant;
         }
 
-        public async Task<
-            ApiResponse<PagedResponse<PurchaseDto>>> Handle(
+        public async Task<ApiResponse<PagedResponse<PurchaseDto>>> Handle(
             GetPurchasesQuery request,
             CancellationToken cancellationToken)
         {
             using var connection =
                 _connectionFactory.CreateConnection();
 
-            if (connection.State != ConnectionState.Open)
-            {
-                await ((System.Data.Common.DbConnection)connection)
-                    .OpenAsync(cancellationToken);
-            }
+            var search =
+                string.IsNullOrWhiteSpace(request.Search)
+                    ? null
+                    : request.Search.Trim();
 
             const string sql = """
                 SELECT
@@ -51,7 +48,7 @@ namespace Invento.Application.Features.Purchases.Queries
                 FROM Purchases p
                 INNER JOIN Suppliers s
                     ON s.Id = p.SupplierId
-                    AND s.TenantId = p.TenantId
+                    AND s.TenantId = @TenantId
                     AND s.IsDeleted = 0
                 WHERE
                     p.TenantId = @TenantId
@@ -64,8 +61,10 @@ namespace Invento.Application.Features.Purchases.Queries
                     AND
                     (
                         @Search IS NULL
-                        OR p.PurchaseNumber LIKE '%' + @Search + '%'
-                        OR s.Name LIKE '%' + @Search + '%'
+                        OR p.PurchaseNumber
+                            LIKE '%' + @Search + '%'
+                        OR s.Name
+                            LIKE '%' + @Search + '%'
                     )
                     AND
                     (
@@ -83,11 +82,11 @@ namespace Invento.Application.Features.Purchases.Queries
                 OFFSET @Offset ROWS
                 FETCH NEXT @PageSize ROWS ONLY;
 
-                SELECT COUNT_BIG(*)
+                SELECT COUNT(*)
                 FROM Purchases p
                 INNER JOIN Suppliers s
                     ON s.Id = p.SupplierId
-                    AND s.TenantId = p.TenantId
+                    AND s.TenantId = @TenantId
                     AND s.IsDeleted = 0
                 WHERE
                     p.TenantId = @TenantId
@@ -100,8 +99,10 @@ namespace Invento.Application.Features.Purchases.Queries
                     AND
                     (
                         @Search IS NULL
-                        OR p.PurchaseNumber LIKE '%' + @Search + '%'
-                        OR s.Name LIKE '%' + @Search + '%'
+                        OR p.PurchaseNumber
+                            LIKE '%' + @Search + '%'
+                        OR s.Name
+                            LIKE '%' + @Search + '%'
                     )
                     AND
                     (
@@ -118,17 +119,13 @@ namespace Invento.Application.Features.Purchases.Queries
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
-                Search =
-                    string.IsNullOrWhiteSpace(request.Search)
-                        ? null
-                        : request.Search.Trim(),
+                Search = search,
                 request.SupplierId,
                 request.FromDate,
                 request.ToDate,
                 Offset =
-                    checked(
-                        (request.PageNumber - 1)
-                        * request.PageSize),
+                    (request.PageNumber - 1)
+                    * request.PageSize,
                 request.PageSize
             };
 
@@ -136,29 +133,32 @@ namespace Invento.Application.Features.Purchases.Queries
                 new CommandDefinition(
                     sql,
                     parameters,
-                    commandTimeout: 30,
-                    cancellationToken: cancellationToken);
+                    cancellationToken:
+                        cancellationToken);
 
             using var multi =
-                await connection.QueryMultipleAsync(command);
+                await connection.QueryMultipleAsync(
+                    command);
 
             var purchases =
                 (await multi.ReadAsync<PurchaseDto>())
                 .ToList();
 
             var totalRecords =
-                await multi.ReadSingleAsync<long>();
+                await multi.ReadSingleAsync<int>();
 
-            return ApiResponse<PagedResponse<PurchaseDto>>
-                .SuccessResponse(
-                    new PagedResponse<PurchaseDto>
-                    {
-                        Items = purchases,
-                        PageNumber = request.PageNumber,
-                        PageSize = request.PageSize,
-                        TotalCount =
-                            checked((int)totalRecords)
-                    });
+            var response =
+                new PagedResponse<PurchaseDto>
+                {
+                    Items = purchases,
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize,
+                    TotalCount = totalRecords
+                };
+
+            return ApiResponse<
+                PagedResponse<PurchaseDto>>
+                .SuccessResponse(response);
         }
     }
 }

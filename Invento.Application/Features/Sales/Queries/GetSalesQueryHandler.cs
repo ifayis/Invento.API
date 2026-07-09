@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Dapper;
+﻿using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
@@ -25,19 +24,17 @@ namespace Invento.Application.Features.Sales.Queries
             _currentTenant = currentTenant;
         }
 
-        public async Task<
-            ApiResponse<PagedResponse<SaleDto>>> Handle(
+        public async Task<ApiResponse<PagedResponse<SaleDto>>> Handle(
             GetSalesQuery request,
             CancellationToken cancellationToken)
         {
             using var connection =
                 _connectionFactory.CreateConnection();
 
-            if (connection.State != ConnectionState.Open)
-            {
-                await ((System.Data.Common.DbConnection)connection)
-                    .OpenAsync(cancellationToken);
-            }
+            var search =
+                string.IsNullOrWhiteSpace(request.Search)
+                    ? null
+                    : request.Search.Trim();
 
             const string sql = """
                 SELECT
@@ -55,7 +52,8 @@ namespace Invento.Application.Features.Sales.Queries
                     AND
                     (
                         @Search IS NULL
-                        OR InvoiceNumber LIKE '%' + @Search + '%'
+                        OR InvoiceNumber
+                            LIKE '%' + @Search + '%'
                     )
                     AND
                     (
@@ -73,7 +71,7 @@ namespace Invento.Application.Features.Sales.Queries
                 OFFSET @Offset ROWS
                 FETCH NEXT @PageSize ROWS ONLY;
 
-                SELECT COUNT_BIG(*)
+                SELECT COUNT(*)
                 FROM Sales
                 WHERE
                     TenantId = @TenantId
@@ -81,7 +79,8 @@ namespace Invento.Application.Features.Sales.Queries
                     AND
                     (
                         @Search IS NULL
-                        OR InvoiceNumber LIKE '%' + @Search + '%'
+                        OR InvoiceNumber
+                            LIKE '%' + @Search + '%'
                     )
                     AND
                     (
@@ -98,16 +97,12 @@ namespace Invento.Application.Features.Sales.Queries
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
-                Search =
-                    string.IsNullOrWhiteSpace(request.Search)
-                        ? null
-                        : request.Search.Trim(),
+                Search = search,
                 request.FromDate,
                 request.ToDate,
                 Offset =
-                    checked(
-                        (request.PageNumber - 1)
-                        * request.PageSize),
+                    (request.PageNumber - 1)
+                    * request.PageSize,
                 request.PageSize
             };
 
@@ -115,29 +110,32 @@ namespace Invento.Application.Features.Sales.Queries
                 new CommandDefinition(
                     sql,
                     parameters,
-                    commandTimeout: 30,
-                    cancellationToken: cancellationToken);
+                    cancellationToken:
+                        cancellationToken);
 
             using var multi =
-                await connection.QueryMultipleAsync(command);
+                await connection.QueryMultipleAsync(
+                    command);
 
             var sales =
                 (await multi.ReadAsync<SaleDto>())
                 .ToList();
 
             var totalRecords =
-                await multi.ReadSingleAsync<long>();
+                await multi.ReadSingleAsync<int>();
 
-            return ApiResponse<PagedResponse<SaleDto>>
-                .SuccessResponse(
-                    new PagedResponse<SaleDto>
-                    {
-                        Items = sales,
-                        PageNumber = request.PageNumber,
-                        PageSize = request.PageSize,
-                        TotalCount =
-                            checked((int)totalRecords)
-                    });
+            var response =
+                new PagedResponse<SaleDto>
+                {
+                    Items = sales,
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize,
+                    TotalCount = totalRecords
+                };
+
+            return ApiResponse<
+                PagedResponse<SaleDto>>
+                .SuccessResponse(response);
         }
     }
 }

@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Invento.Persistence.Configurations
 {
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public class UserConfiguration
+        : IEntityTypeConfiguration<User>
     {
-        public void Configure(EntityTypeBuilder<User> builder)
+        public void Configure(
+            EntityTypeBuilder<User> builder)
         {
             builder.ToTable("Users");
 
@@ -26,10 +28,17 @@ namespace Invento.Persistence.Configurations
             builder.Property(x => x.Role)
                 .HasConversion<int>();
 
-            builder.HasIndex(x => new
-            {
-                x.Email
-            }).IsUnique();
+            builder.HasIndex(x => x.Email)
+                .IsUnique();
+
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.IsDeleted,
+                    x.FullName,
+                    x.Id
+                });
 
             builder.HasOne(x => x.Tenant)
                 .WithMany(x => x.Users)

@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Dapper;
+﻿using Dapper;
 using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Common.Interface;
@@ -24,19 +23,12 @@ namespace Invento.Application.Features.Reports.Queries
             _currentTenant = currentTenant;
         }
 
-        public async Task<
-            ApiResponse<PagedResponse<StockMovementDto>>> Handle(
+        public async Task<ApiResponse<PagedResponse<StockMovementDto>>> Handle(
             GetStockMovementHistoryQuery request,
             CancellationToken cancellationToken)
         {
             using var connection =
                 _connectionFactory.CreateConnection();
-
-            if (connection.State != ConnectionState.Open)
-            {
-                await ((System.Data.Common.DbConnection)connection)
-                    .OpenAsync(cancellationToken);
-            }
 
             const string sql = """
                 SELECT
@@ -53,8 +45,7 @@ namespace Invento.Application.Features.Reports.Queries
                 FROM StockMovements sm
                 INNER JOIN Products p
                     ON p.Id = sm.ProductId
-                    AND p.TenantId = sm.TenantId
-                    AND p.IsDeleted = 0
+                    AND p.TenantId = @TenantId
                 WHERE
                     sm.TenantId = @TenantId
                     AND sm.IsDeleted = 0
@@ -69,7 +60,7 @@ namespace Invento.Application.Features.Reports.Queries
                 OFFSET @Offset ROWS
                 FETCH NEXT @PageSize ROWS ONLY;
 
-                SELECT COUNT_BIG(*)
+                SELECT COUNT(*)
                 FROM StockMovements sm
                 WHERE
                     sm.TenantId = @TenantId
@@ -85,40 +76,42 @@ namespace Invento.Application.Features.Reports.Queries
             {
                 TenantId = _currentTenant.TenantId,
                 request.ProductId,
-                Offset = checked(
+                Offset =
                     (request.PageNumber - 1)
-                    * request.PageSize),
+                    * request.PageSize,
                 request.PageSize
             };
 
             var command =
                 new CommandDefinition(
-                    commandText: sql,
-                    parameters: parameters,
-                    commandTimeout: 30,
-                    cancellationToken: cancellationToken);
+                    sql,
+                    parameters,
+                    cancellationToken:
+                        cancellationToken);
 
             using var multi =
-                await connection.QueryMultipleAsync(command);
+                await connection.QueryMultipleAsync(
+                    command);
 
             var movements =
                 (await multi.ReadAsync<StockMovementDto>())
                 .ToList();
 
             var totalRecords =
-                await multi.ReadSingleAsync<long>();
+                await multi.ReadSingleAsync<int>();
+
+            var response =
+                new PagedResponse<StockMovementDto>
+                {
+                    Items = movements,
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize,
+                    TotalCount = totalRecords
+                };
 
             return ApiResponse<
                 PagedResponse<StockMovementDto>>
-                .SuccessResponse(
-                    new PagedResponse<StockMovementDto>
-                    {
-                        Items = movements,
-                        PageNumber = request.PageNumber,
-                        PageSize = request.PageSize,
-                        TotalCount =
-                            checked((int)totalRecords)
-                    });
+                .SuccessResponse(response);
         }
     }
 }

@@ -290,7 +290,8 @@ namespace Invento.Application.Features.Purchases.Commands
                         StockMovementType.PurchaseReturn.ToString(),
                         product.CurrentStock,
                         "Purchase update reversal",
-                        purchase.PurchaseNumber);
+                        purchase.PurchaseNumber,
+                        cancellationToken);
                 }
 
                 _context.PurchaseItems.RemoveRange(

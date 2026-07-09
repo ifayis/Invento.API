@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Invento.Persistence.Configurations
 {
-    public class CategoryConfiguration : IEntityTypeConfiguration<Category>
+    public class CategoryConfiguration
+        : IEntityTypeConfiguration<Category>
     {
-        public void Configure(EntityTypeBuilder<Category> builder)
+        public void Configure(
+            EntityTypeBuilder<Category> builder)
         {
             builder.ToTable("Categories");
 
@@ -16,13 +18,25 @@ namespace Invento.Persistence.Configurations
                 .HasMaxLength(150)
                 .IsRequired();
 
-            builder.HasIndex(x => new
-            {
-                x.TenantId,
-                x.Name
-            }).IsUnique();
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.Name
+                })
+                .IsUnique();
 
-            builder.HasQueryFilter(x => !x.IsDeleted);
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.IsDeleted,
+                    x.CreatedAt,
+                    x.Id
+                });
+
+            builder.HasQueryFilter(
+                x => !x.IsDeleted);
         }
     }
 }

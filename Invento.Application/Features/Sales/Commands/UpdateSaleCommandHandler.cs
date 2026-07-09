@@ -277,7 +277,8 @@ namespace Invento.Application.Features.Sales.Commands
                         StockMovementType.SaleRestore.ToString(),
                         oldProduct.CurrentStock,
                         "Sale updated - old sale reversed",
-                        sale.InvoiceNumber);
+                        sale.InvoiceNumber,
+                        cancellationToken);
                 }
 
                 _context.SaleItems.RemoveRange(oldItems);
