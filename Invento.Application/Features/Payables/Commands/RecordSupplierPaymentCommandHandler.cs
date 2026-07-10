@@ -18,7 +18,8 @@ namespace Invento.Application.Features.Payables.Commands
 
         private readonly ICurrentTenantService _currentTenant;
 
-        private readonly CashTransactionService _cashTransactionService;
+        private readonly CashTransactionService
+            _cashTransactionService;
 
         public RecordSupplierPaymentCommandHandler(
             IApplicationDbContext context,
@@ -27,101 +28,182 @@ namespace Invento.Application.Features.Payables.Commands
         {
             _context = context;
             _currentTenant = currentTenant;
-            _cashTransactionService = cashTransactionService;
+            _cashTransactionService =
+                cashTransactionService;
         }
 
         public async Task<ApiResponse<SupplierPaymentDto>> Handle(
             RecordSupplierPaymentCommand request,
             CancellationToken cancellationToken)
         {
-            var purchase = await _context.Purchases
-                .Include(x => x.Supplier)
-                .FirstOrDefaultAsync(
-                    x =>
-                        x.Id == request.PurchaseId
-                        && x.TenantId == _currentTenant.TenantId
-                        && !x.IsDeleted,
+            var tenantId =
+                _currentTenant.TenantId;
+
+            await using var transaction =
+                await _context.BeginTransactionAsync(
                     cancellationToken);
 
-            if (purchase is null)
+            try
             {
-                return ApiResponse<SupplierPaymentDto>
-                    .FailureResponse(
-                        ["Purchase not found"]);
-            }
+                var purchase =
+                    await _context.Purchases
+                        .FirstOrDefaultAsync(
+                            x =>
+                                x.Id == request.PurchaseId
+                                && x.TenantId == tenantId
+                                && !x.IsDeleted,
+                            cancellationToken);
 
-            if (request.Amount <= 0)
-            {
-                return ApiResponse<SupplierPaymentDto>
-                    .FailureResponse(
-                        ["Invalid payment amount"]);
-            }
+                if (purchase is null)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
 
-            if (request.Amount > purchase.DueAmount)
-            {
-                return ApiResponse<SupplierPaymentDto>
-                    .FailureResponse(
-                        ["Payment exceeds outstanding amount"]);
-            }
+                    _context.ClearChangeTracker();
 
-            var payment = new SupplierPayment
-            {
-                TenantId = _currentTenant.TenantId,
+                    return ApiResponse<SupplierPaymentDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Purchase not found"
+                            });
+                }
 
-                PurchaseId = purchase.Id,
+                if (request.Amount <= 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
 
-                SupplierId = purchase.SupplierId,
+                    _context.ClearChangeTracker();
 
-                Amount = request.Amount,
+                    return ApiResponse<SupplierPaymentDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Payment amount must be " +
+                                "greater than zero"
+                            });
+                }
 
-                PaymentDate = request.PaymentDate,
+                if (purchase.DueAmount <= 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
 
-                Remarks = request.Remarks
-            };
+                    _context.ClearChangeTracker();
 
-            purchase.PaidAmount += request.Amount;
+                    return ApiResponse<SupplierPaymentDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Purchase has no outstanding amount"
+                            });
+                }
 
-            purchase.DueAmount =
-                purchase.TotalAmount - purchase.PaidAmount;
+                if (request.Amount >
+                    purchase.DueAmount)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
 
-            purchase.PaymentStatus =
-                purchase.DueAmount <= 0
-                    ? PaymentStatus.Paid
-                    : PaymentStatus.PartiallyPaid;
+                    _context.ClearChangeTracker();
 
-            await _context.SupplierPayments
-                .AddAsync(
-                    payment,
-                    cancellationToken);
+                    return ApiResponse<SupplierPaymentDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Payment exceeds outstanding amount"
+                            });
+                }
 
-            await _cashTransactionService
-                .CreateTransaction(
-                    CashTransactionType.Purchase,
-                    request.Amount,
-                    $"Supplier Payment - {purchase.PurchaseNumber}",
-                    request.PaymentDate,
-                    cancellationToken);
-
-            await _context.SaveChangesAsync(
-                cancellationToken);
-
-            return ApiResponse<SupplierPaymentDto>
-                .SuccessResponse(
-                    new SupplierPaymentDto
+                var payment =
+                    new SupplierPayment
                     {
-                        Id = payment.Id,
+                        TenantId = tenantId,
+                        PurchaseId = purchase.Id,
+                        SupplierId =
+                            purchase.SupplierId,
+                        Amount = request.Amount,
+                        PaymentDate =
+                            request.PaymentDate,
+                        Remarks =
+                            request.Remarks ?? string.Empty
+                    };
 
-                        PurchaseId = payment.PurchaseId,
+                await _context.SupplierPayments
+                    .AddAsync(
+                        payment,
+                        cancellationToken);
 
-                        SupplierId = payment.SupplierId,
+                purchase.PaidAmount +=
+                    request.Amount;
 
-                        Amount = payment.Amount,
+                purchase.DueAmount =
+                    purchase.TotalAmount
+                    - purchase.PaidAmount;
 
-                        PaymentDate = payment.PaymentDate,
+                purchase.PaymentStatus =
+                    purchase.DueAmount <= 0
+                        ? PaymentStatus.Paid
+                        : PaymentStatus.PartiallyPaid;
 
-                        Remarks = payment.Remarks
-                    },
-                    "Supplier payment recorded successfully");
+                await _cashTransactionService
+                    .CreateTransaction(
+                        CashTransactionType.Purchase,
+                        request.Amount,
+                        $"Supplier Payment - " +
+                        $"{purchase.PurchaseNumber}",
+                        request.PaymentDate,
+                        cancellationToken);
+
+                await _context.SaveChangesAsync(
+                    cancellationToken);
+
+                await transaction.CommitAsync(
+                    cancellationToken);
+
+                return ApiResponse<SupplierPaymentDto>
+                    .SuccessResponse(
+                        new SupplierPaymentDto
+                        {
+                            Id = payment.Id,
+                            PurchaseId =
+                                payment.PurchaseId,
+                            SupplierId =
+                                payment.SupplierId,
+                            Amount = payment.Amount,
+                            PaymentDate =
+                                payment.PaymentDate,
+                            Remarks = payment.Remarks
+                        },
+                        "Supplier payment recorded successfully");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync(
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
+
+                return ApiResponse<SupplierPaymentDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                            "Purchase payment state changed while " +
+                            "the payment was being recorded. " +
+                            "Reload the latest data and try again."
+                        },
+                        "Concurrency conflict");
+            }
+            catch
+            {
+                await transaction.RollbackAsync(
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
+
+                throw;
+            }
         }
     }
 }

@@ -18,7 +18,8 @@ namespace Invento.Application.Features.Receivables.Commands
 
         private readonly ICurrentTenantService _currentTenant;
 
-        private readonly CashTransactionService _cashTransactionService;
+        private readonly CashTransactionService
+            _cashTransactionService;
 
         public RecordCustomerPaymentCommandHandler(
             IApplicationDbContext context,
@@ -27,32 +28,42 @@ namespace Invento.Application.Features.Receivables.Commands
         {
             _context = context;
             _currentTenant = currentTenant;
-            _cashTransactionService = cashTransactionService;
+            _cashTransactionService =
+                cashTransactionService;
         }
 
         public async Task<ApiResponse<CustomerPaymentDto>> Handle(
             RecordCustomerPaymentCommand request,
             CancellationToken cancellationToken)
         {
-            using var transaction =
-                await _context.BeginTransactionAsync();
+            var tenantId =
+                _currentTenant.TenantId;
+
+            await using var transaction =
+                await _context.BeginTransactionAsync(
+                    cancellationToken);
 
             try
             {
-                var sale = await _context.Sales
-                    .FirstOrDefaultAsync(
-                        x =>
-                            x.Id == request.SaleId
-                            && x.TenantId ==
-                                _currentTenant.TenantId
-                            && !x.IsDeleted,
-                        cancellationToken);
+                var sale =
+                    await _context.Sales
+                        .FirstOrDefaultAsync(
+                            x =>
+                                x.Id == request.SaleId
+                                && x.TenantId == tenantId
+                                && !x.IsDeleted,
+                            cancellationToken);
 
                 if (sale is null)
                 {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<CustomerPaymentDto>
                         .FailureResponse(
-                            new()
+                            new List<string>
                             {
                                 "Sale not found"
                             });
@@ -60,9 +71,14 @@ namespace Invento.Application.Features.Receivables.Commands
 
                 if (!sale.CustomerId.HasValue)
                 {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<CustomerPaymentDto>
                         .FailureResponse(
-                            new()
+                            new List<string>
                             {
                                 "Sale has no customer"
                             });
@@ -70,50 +86,78 @@ namespace Invento.Application.Features.Receivables.Commands
 
                 if (request.Amount <= 0)
                 {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<CustomerPaymentDto>
                         .FailureResponse(
-                            new()
+                            new List<string>
                             {
-                                "Payment amount must be greater than zero"
+                                "Payment amount must be " +
+                                "greater than zero"
+                            });
+                }
+
+                if (sale.DueAmount <= 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
+                    return ApiResponse<CustomerPaymentDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Sale has no outstanding amount"
                             });
                 }
 
                 if (request.Amount > sale.DueAmount)
                 {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<CustomerPaymentDto>
                         .FailureResponse(
-                            new()
+                            new List<string>
                             {
                                 "Payment amount exceeds due amount"
                             });
                 }
 
-                var payment = new CustomerPayment
-                {
-                    TenantId = _currentTenant.TenantId,
-
-                    SaleId = sale.Id,
-
-                    CustomerId = sale.CustomerId.Value,
-
-                    Amount = request.Amount,
-
-                    PaymentDate = request.PaymentDate,
-
-                    Remarks = request.Remarks
-                };
+                var payment =
+                    new CustomerPayment
+                    {
+                        TenantId = tenantId,
+                        SaleId = sale.Id,
+                        CustomerId =
+                            sale.CustomerId.Value,
+                        Amount = request.Amount,
+                        PaymentDate =
+                            request.PaymentDate,
+                        Remarks =
+                            request.Remarks ?? string.Empty
+                    };
 
                 await _context.CustomerPayments
                     .AddAsync(
                         payment,
                         cancellationToken);
 
-                sale.PaidAmount += request.Amount;
+                sale.PaidAmount +=
+                    request.Amount;
 
-                sale.DueAmount -= request.Amount;
+                sale.DueAmount =
+                    sale.TotalAmount
+                    - sale.PaidAmount;
 
                 sale.PaymentStatus =
-                    sale.DueAmount == 0
+                    sale.DueAmount <= 0
                         ? PaymentStatus.Paid
                         : PaymentStatus.PartiallyPaid;
 
@@ -121,7 +165,8 @@ namespace Invento.Application.Features.Receivables.Commands
                     .CreateTransaction(
                         CashTransactionType.Sale,
                         request.Amount,
-                        $"Customer Payment - {sale.InvoiceNumber}",
+                        $"Customer Payment - " +
+                        $"{sale.InvoiceNumber}",
                         request.PaymentDate,
                         cancellationToken);
 
@@ -137,17 +182,38 @@ namespace Invento.Application.Features.Receivables.Commands
                         {
                             Id = payment.Id,
                             SaleId = payment.SaleId,
-                            CustomerId = payment.CustomerId,
+                            CustomerId =
+                                payment.CustomerId,
                             Amount = payment.Amount,
-                            PaymentDate = payment.PaymentDate,
+                            PaymentDate =
+                                payment.PaymentDate,
                             Remarks = payment.Remarks
                         },
                         "Payment recorded successfully");
             }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync(
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
+
+                return ApiResponse<CustomerPaymentDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                            "Sale payment state changed while " +
+                            "the payment was being recorded. " +
+                            "Reload the latest data and try again."
+                        },
+                        "Concurrency conflict");
+            }
             catch
             {
                 await transaction.RollbackAsync(
-                    cancellationToken);
+                    CancellationToken.None);
+
+                _context.ClearChangeTracker();
 
                 throw;
             }

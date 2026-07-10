@@ -15,8 +15,11 @@ namespace Invento.Application.Features.Purchases.Commands
             ApiResponse<PurchaseDto>>
     {
         private readonly IApplicationDbContext _context;
+
         private readonly ICurrentTenantService _currentTenant;
-        private readonly StockMovementService _stockMovementService;
+
+        private readonly StockMovementService
+            _stockMovementService;
 
         public DeletePurchaseCommandHandler(
             IApplicationDbContext context,
@@ -25,14 +28,16 @@ namespace Invento.Application.Features.Purchases.Commands
         {
             _context = context;
             _currentTenant = currentTenant;
-            _stockMovementService = stockMovementService;
+            _stockMovementService =
+                stockMovementService;
         }
 
         public async Task<ApiResponse<PurchaseDto>> Handle(
             DeletePurchaseCommand request,
             CancellationToken cancellationToken)
         {
-            var tenantId = _currentTenant.TenantId;
+            var tenantId =
+                _currentTenant.TenantId;
 
             await using var transaction =
                 await _context.BeginTransactionAsync(
@@ -66,6 +71,23 @@ namespace Invento.Application.Features.Purchases.Commands
                             });
                 }
 
+                if (purchase.PaidAmount > 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
+                    return ApiResponse<PurchaseDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Cannot delete a purchase that has " +
+                                "supplier payments. Payment reversal " +
+                                "must be completed first."
+                            });
+                }
+
                 var purchaseItems =
                     purchase.PurchaseItems.ToList();
 
@@ -81,7 +103,8 @@ namespace Invento.Application.Features.Purchases.Commands
                             x =>
                                 productIds.Contains(x.Id)
                                 && x.TenantId == tenantId)
-                        .ToListAsync(cancellationToken);
+                        .ToListAsync(
+                            cancellationToken);
 
                 var productById =
                     products.ToDictionary(
@@ -90,8 +113,8 @@ namespace Invento.Application.Features.Purchases.Commands
                 var missingProductIds =
                     productIds
                         .Where(
-                            productId =>
-                                !productById.ContainsKey(productId))
+                            id =>
+                                !productById.ContainsKey(id))
                         .ToList();
 
                 if (missingProductIds.Count > 0)
