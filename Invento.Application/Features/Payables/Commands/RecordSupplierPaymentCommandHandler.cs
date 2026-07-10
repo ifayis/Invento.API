@@ -99,7 +99,8 @@ namespace Invento.Application.Features.Payables.Commands
                     CashTransactionType.Purchase,
                     request.Amount,
                     $"Supplier Payment - {purchase.PurchaseNumber}",
-                    request.PaymentDate);
+                    request.PaymentDate,
+                    cancellationToken);
 
             await _context.SaveChangesAsync(
                 cancellationToken);

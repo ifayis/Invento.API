@@ -366,8 +366,21 @@ namespace Invento.Persistence.Data
                     cancellationToken);
             }
 
-            return await base.SaveChangesAsync(
-                cancellationToken);
+            var autoDetectChangesEnabled =
+                ChangeTracker.AutoDetectChangesEnabled;
+
+            try
+            {
+                ChangeTracker.AutoDetectChangesEnabled = false;
+
+                return await base.SaveChangesAsync(
+                    cancellationToken);
+            }
+            finally
+            {
+                ChangeTracker.AutoDetectChangesEnabled =
+                    autoDetectChangesEnabled;
+            }
         }
 
         public void ClearChangeTracker()

@@ -122,7 +122,8 @@ namespace Invento.Application.Features.Receivables.Commands
                         CashTransactionType.Sale,
                         request.Amount,
                         $"Customer Payment - {sale.InvoiceNumber}",
-                        request.PaymentDate);
+                        request.PaymentDate,
+                        cancellationToken);
 
                 await _context.SaveChangesAsync(
                     cancellationToken);

@@ -39,21 +39,25 @@ namespace Invento.Application.Features.Sales.Commands
             await using var transaction =
                 await _context.BeginTransactionAsync(
                     cancellationToken);
+
             try
             {
-                var sale = await _context.Sales
-                    .Include(x => x.SaleItems)
-                    .FirstOrDefaultAsync(
-                        x =>
-                            x.Id == request.Id
-                            && x.TenantId == tenantId
-                            && !x.IsDeleted,
-                        cancellationToken);
+                var sale =
+                    await _context.Sales
+                        .Include(x => x.SaleItems)
+                        .FirstOrDefaultAsync(
+                            x =>
+                                x.Id == request.Id
+                                && x.TenantId == tenantId
+                                && !x.IsDeleted,
+                            cancellationToken);
 
                 if (sale is null)
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
+
+                    _context.ClearChangeTracker();
 
                     return ApiResponse<SaleDto>
                         .FailureResponse(
@@ -69,6 +73,8 @@ namespace Invento.Application.Features.Sales.Commands
                     await transaction.RollbackAsync(
                         cancellationToken);
 
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<SaleDto>
                         .FailureResponse(
                             new List<string>
@@ -81,6 +87,8 @@ namespace Invento.Application.Features.Sales.Commands
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
+
+                    _context.ClearChangeTracker();
 
                     return ApiResponse<SaleDto>
                         .FailureResponse(
@@ -96,11 +104,37 @@ namespace Invento.Application.Features.Sales.Commands
                     await transaction.RollbackAsync(
                         cancellationToken);
 
+                    _context.ClearChangeTracker();
+
                     return ApiResponse<SaleDto>
                         .FailureResponse(
                             new List<string>
                             {
-                                "All item quantities must be greater than zero"
+                                "All item quantities must be " +
+                                "greater than zero"
+                            });
+                }
+
+                var duplicateProductIds =
+                    request.Items
+                        .GroupBy(x => x.ProductId)
+                        .Where(x => x.Count() > 1)
+                        .Select(x => x.Key)
+                        .ToList();
+
+                if (duplicateProductIds.Count > 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
+                    return ApiResponse<SaleDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Duplicate products are not allowed " +
+                                "in the same sale request"
                             });
                 }
 
@@ -120,6 +154,8 @@ namespace Invento.Application.Features.Sales.Commands
                         await transaction.RollbackAsync(
                             cancellationToken);
 
+                        _context.ClearChangeTracker();
+
                         return ApiResponse<SaleDto>
                             .FailureResponse(
                                 new List<string>
@@ -129,41 +165,15 @@ namespace Invento.Application.Features.Sales.Commands
                     }
                 }
 
-                var duplicateProductIds =
-                    request.Items
-                        .GroupBy(x => x.ProductId)
-                        .Where(x => x.Count() > 1)
-                        .Select(x => x.Key)
-                        .ToList();
-
-                if (duplicateProductIds.Count > 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                "Duplicate products are not allowed " +
-                                "in the same sale request"
-                            });
-                }
-
                 var oldItems =
                     sale.SaleItems.ToList();
 
-                var oldProductIds =
-                    oldItems
-                        .Select(x => x.ProductId);
-
-                var newProductIds =
-                    request.Items
-                        .Select(x => x.ProductId);
-
                 var requiredProductIds =
-                    oldProductIds
-                        .Concat(newProductIds)
+                    oldItems
+                        .Select(x => x.ProductId)
+                        .Concat(
+                            request.Items.Select(
+                                x => x.ProductId))
                         .Distinct()
                         .ToList();
 
@@ -176,8 +186,7 @@ namespace Invento.Application.Features.Sales.Commands
                         .ToListAsync(cancellationToken);
 
                 var productById =
-                    products.ToDictionary(
-                        x => x.Id);
+                    products.ToDictionary(x => x.Id);
 
                 var missingNewProductIds =
                     request.Items
@@ -195,6 +204,8 @@ namespace Invento.Application.Features.Sales.Commands
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
+
+                    _context.ClearChangeTracker();
 
                     return ApiResponse<SaleDto>
                         .FailureResponse(
@@ -247,6 +258,8 @@ namespace Invento.Application.Features.Sales.Commands
                         await transaction.RollbackAsync(
                             cancellationToken);
 
+                        _context.ClearChangeTracker();
+
                         return ApiResponse<SaleDto>
                             .FailureResponse(
                                 new List<string>
@@ -254,13 +267,74 @@ namespace Invento.Application.Features.Sales.Commands
                                     $"Insufficient stock for " +
                                     $"'{product.Name}'. " +
                                     $"Available: {availableStock}, " +
-                                    $"Requested: {item.Quantity}"
+                                    $"requested: {item.Quantity}"
                                 });
                     }
 
                     effectiveStockByProductId[
                         item.ProductId] -=
                         item.Quantity;
+                }
+
+                decimal subTotal = 0;
+                decimal totalTax = 0;
+                decimal totalCost = 0;
+
+                foreach (var item in request.Items)
+                {
+                    var product =
+                        productById[item.ProductId];
+
+                    var itemSubTotal =
+                        product.SellingPrice
+                        * item.Quantity;
+
+                    var taxAmount =
+                        (itemSubTotal * product.TaxRate)
+                        / 100;
+
+                    subTotal += itemSubTotal;
+                    totalTax += taxAmount;
+                    totalCost +=
+                        product.CostPrice
+                        * item.Quantity;
+                }
+
+                var totalAmount =
+                    subTotal
+                    + totalTax
+                    - request.DiscountAmount;
+
+                if (totalAmount < 0)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
+                    return ApiResponse<SaleDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Discount amount cannot exceed " +
+                                "the sale total"
+                            });
+                }
+
+                if (sale.PaidAmount > totalAmount)
+                {
+                    await transaction.RollbackAsync(
+                        cancellationToken);
+
+                    _context.ClearChangeTracker();
+
+                    return ApiResponse<SaleDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
+                                "Updated sale total cannot be less " +
+                                "than the amount already paid"
+                            });
                 }
 
                 foreach (var oldItem in oldItems)
@@ -271,26 +345,26 @@ namespace Invento.Application.Features.Sales.Commands
                     oldProduct.CurrentStock +=
                         oldItem.Quantity;
 
-                    await _stockMovementService.CreateMovement(
-                        oldProduct.Id,
-                        oldItem.Quantity,
-                        StockMovementType.SaleRestore.ToString(),
-                        oldProduct.CurrentStock,
-                        "Sale updated - old sale reversed",
-                        sale.InvoiceNumber,
-                        cancellationToken);
+                    await _stockMovementService
+                        .CreateMovement(
+                            oldProduct.Id,
+                            oldItem.Quantity,
+                            StockMovementType
+                                .SaleRestore
+                                .ToString(),
+                            oldProduct.CurrentStock,
+                            "Sale updated - old sale reversed",
+                            sale.InvoiceNumber,
+                            cancellationToken);
                 }
 
-                _context.SaleItems.RemoveRange(oldItems);
+                _context.SaleItems.RemoveRange(
+                    oldItems);
 
                 await _context.SaveChangesAsync(
                     cancellationToken);
 
                 sale.SaleItems.Clear();
-
-                decimal subTotal = 0;
-                decimal totalTax = 0;
-                decimal totalCost = 0;
 
                 sale.CustomerId = request.CustomerId;
                 sale.SaleDate = request.SaleDate;
@@ -305,93 +379,72 @@ namespace Invento.Application.Features.Sales.Commands
                     product.CurrentStock -=
                         item.Quantity;
 
-                    await _stockMovementService.CreateMovement(
-                        product.Id,
-                        item.Quantity,
-                        StockMovementType.Sale.ToString(),
-                        product.CurrentStock,
-                        "Sale updated - new sale applied",
-                        sale.InvoiceNumber,
-                        cancellationToken);
+                    await _stockMovementService
+                        .CreateMovement(
+                            product.Id,
+                            item.Quantity,
+                            StockMovementType
+                                .Sale
+                                .ToString(),
+                            product.CurrentStock,
+                            "Sale updated - new sale applied",
+                            sale.InvoiceNumber,
+                            cancellationToken);
 
                     var itemSubTotal =
                         product.SellingPrice
                         * item.Quantity;
 
                     var taxAmount =
-                        (itemSubTotal
-                        * product.TaxRate)
+                        (itemSubTotal * product.TaxRate)
                         / 100;
 
                     var totalPrice =
-                        itemSubTotal
-                        + taxAmount;
+                        itemSubTotal + taxAmount;
 
                     var itemCost =
                         product.CostPrice
                         * item.Quantity;
 
                     var profit =
-                        itemSubTotal
-                        - itemCost;
+                        itemSubTotal - itemCost;
 
-                    var saleItem =
-                        new SaleItem
-                        {
-                            TenantId = tenantId,
-                            SaleId = sale.Id,
-                            ProductId = product.Id,
-                            Quantity = item.Quantity,
-                            UnitPrice =
-                                product.SellingPrice,
-                            CostPrice =
-                                product.CostPrice,
-                            TaxRate =
-                                product.TaxRate,
-                            TaxAmount =
-                                taxAmount,
-                            TotalPrice =
-                                totalPrice,
-                            ProfitAmount =
-                                profit
-                        };
+                    var saleItem = new SaleItem
+                    {
+                        TenantId = tenantId,
+                        SaleId = sale.Id,
+                        ProductId = product.Id,
+                        Quantity = item.Quantity,
+                        UnitPrice = product.SellingPrice,
+                        CostPrice = product.CostPrice,
+                        TaxRate = product.TaxRate,
+                        TaxAmount = taxAmount,
+                        TotalPrice = totalPrice,
+                        ProfitAmount = profit
+                    };
 
-                    await _context.SaleItems
-                        .AddAsync(
-                            saleItem,
-                            cancellationToken);
-
-                    subTotal += itemSubTotal;
-                    totalTax += taxAmount;
-                    totalCost += itemCost;
-                }
-
-                var totalAmount =
-                    subTotal
-                    + totalTax
-                    - request.DiscountAmount;
-
-                if (totalAmount < 0)
-                {
-                    await transaction.RollbackAsync(
+                    await _context.SaleItems.AddAsync(
+                        saleItem,
                         cancellationToken);
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                "Discount amount cannot exceed " +
-                                "the sale total"
-                            });
                 }
 
                 sale.SubTotal = subTotal;
                 sale.TaxAmount = totalTax;
                 sale.TotalAmount = totalAmount;
 
+                sale.DueAmount =
+                    sale.TotalAmount
+                    - sale.PaidAmount;
+
+                sale.PaymentStatus =
+                    sale.DueAmount == 0
+                        ? PaymentStatus.Paid
+                        : sale.PaidAmount == 0
+                            ? PaymentStatus.Unpaid
+                            : PaymentStatus.PartiallyPaid;
+
                 sale.ProfitAmount =
-                    (sale.TotalAmount
-                    - sale.TaxAmount)
+                    (sale.TotalAmount - sale.TaxAmount)
                     - totalCost;
 
                 await _context.SaveChangesAsync(
@@ -416,8 +469,9 @@ namespace Invento.Application.Features.Sales.Commands
                     .FailureResponse(
                         new List<string>
                         {
-                "Stock changed while the sale was being updated. " +
-                "Please reload the latest data and try again."
+                            "Stock changed while the sale was " +
+                            "being updated. Reload the latest " +
+                            "data and try again."
                         },
                         "Concurrency conflict");
             }

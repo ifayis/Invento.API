@@ -177,8 +177,7 @@ namespace Invento.Application.Features.Sales.Commands
                         .ToListAsync(cancellationToken);
 
                 var productById =
-                    products.ToDictionary(
-                        x => x.Id);
+                    products.ToDictionary(x => x.Id);
 
                 var missingProductIds =
                     productIds
@@ -242,16 +241,14 @@ namespace Invento.Application.Features.Sales.Commands
                 decimal totalTax = 0;
                 decimal totalCost = 0;
 
-                var sale =
-                    new Sale
-                    {
-                        TenantId = tenantId,
-                        CustomerId = request.CustomerId,
-                        InvoiceNumber = invoiceNumber,
-                        SaleDate = request.SaleDate,
-                        DiscountAmount =
-                            request.DiscountAmount
-                    };
+                var sale = new Sale
+                {
+                    TenantId = tenantId,
+                    CustomerId = request.CustomerId,
+                    InvoiceNumber = invoiceNumber,
+                    SaleDate = request.SaleDate,
+                    DiscountAmount = request.DiscountAmount
+                };
 
                 foreach (var item in request.Items)
                 {
@@ -266,52 +263,39 @@ namespace Invento.Application.Features.Sales.Commands
                         * item.Quantity;
 
                     var taxAmount =
-                        (itemSubTotal
-                        * product.TaxRate)
+                        (itemSubTotal * product.TaxRate)
                         / 100;
 
                     var totalPrice =
-                        itemSubTotal
-                        + taxAmount;
+                        itemSubTotal + taxAmount;
 
                     var itemCost =
                         product.CostPrice
                         * item.Quantity;
 
                     var profitAmount =
-                        itemSubTotal
-                        - itemCost;
+                        itemSubTotal - itemCost;
 
-                    var saleItem =
-                        new SaleItem
-                        {
-                            TenantId = tenantId,
-                            ProductId = product.Id,
-                            Quantity = item.Quantity,
-                            UnitPrice =
-                                product.SellingPrice,
-                            CostPrice =
-                                product.CostPrice,
-                            TaxRate =
-                                product.TaxRate,
-                            TaxAmount =
-                                taxAmount,
-                            TotalPrice =
-                                totalPrice,
-                            ProfitAmount =
-                                profitAmount
-                        };
+                    var saleItem = new SaleItem
+                    {
+                        TenantId = tenantId,
+                        ProductId = product.Id,
+                        Quantity = item.Quantity,
+                        UnitPrice = product.SellingPrice,
+                        CostPrice = product.CostPrice,
+                        TaxRate = product.TaxRate,
+                        TaxAmount = taxAmount,
+                        TotalPrice = totalPrice,
+                        ProfitAmount = profitAmount
+                    };
 
-                    sale.SaleItems.Add(
-                        saleItem);
+                    sale.SaleItems.Add(saleItem);
 
                     await _stockMovementService
                         .CreateMovement(
                             product.Id,
                             item.Quantity,
-                            StockMovementType
-                                .Sale
-                                .ToString(),
+                            StockMovementType.Sale.ToString(),
                             product.CurrentStock,
                             "Sale completed",
                             sale.InvoiceNumber,
@@ -364,8 +348,7 @@ namespace Invento.Application.Features.Sales.Commands
                 sale.TotalAmount = totalAmount;
                 sale.PaidAmount = request.PaidAmount;
                 sale.DueAmount =
-                    totalAmount
-                    - request.PaidAmount;
+                    totalAmount - request.PaidAmount;
 
                 sale.PaymentStatus =
                     sale.DueAmount == 0
@@ -388,9 +371,9 @@ namespace Invento.Application.Features.Sales.Commands
                         .CreateTransaction(
                             CashTransactionType.Sale,
                             request.PaidAmount,
-                            $"Sale Payment - " +
-                            $"{sale.InvoiceNumber}",
-                            request.SaleDate);
+                            $"Sale Payment - {sale.InvoiceNumber}",
+                            request.SaleDate,
+                            cancellationToken);
                 }
 
                 if (request.CustomerId.HasValue
@@ -402,12 +385,9 @@ namespace Invento.Application.Features.Sales.Commands
                             TenantId = tenantId,
                             CustomerId =
                                 request.CustomerId.Value,
-                            Amount =
-                                request.PaidAmount,
-                            PaymentDate =
-                                request.SaleDate,
-                            Remarks =
-                                "Initial payment"
+                            Amount = request.PaidAmount,
+                            PaymentDate = request.SaleDate,
+                            Remarks = "Initial payment"
                         });
                 }
 

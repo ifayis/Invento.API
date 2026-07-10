@@ -488,41 +488,40 @@ var registerRecurringJobs =
 
 if (registerRecurringJobs)
 {
-    using var scope =
-        app.Services.CreateScope();
-
-    var recurringJobs =
-        scope.ServiceProvider
-            .GetRequiredService<IRecurringJobService>();
-
-    RecurringJob.AddOrUpdate(
+    RecurringJob.AddOrUpdate<IRecurringJobService>(
         "low-stock-check",
-        () => recurringJobs.ExecuteLowStockCheck(),
+        service =>
+            service.ExecuteLowStockCheck(),
         Cron.Hourly);
 
-    RecurringJob.AddOrUpdate(
+    RecurringJob.AddOrUpdate<IRecurringJobService>(
         "sales-target-check",
-        () => recurringJobs.ExecuteSalesTargetCheck(),
+        service =>
+            service.ExecuteSalesTargetCheck(),
         Cron.Daily);
 
-    RecurringJob.AddOrUpdate(
+    RecurringJob.AddOrUpdate<IRecurringJobService>(
         "profit-target-check",
-        () => recurringJobs.ExecuteProfitTargetCheck(),
+        service =>
+            service.ExecuteProfitTargetCheck(),
         Cron.Daily);
 
-    RecurringJob.AddOrUpdate(
+    RecurringJob.AddOrUpdate<IRecurringJobService>(
         "receivable-check",
-        () => recurringJobs.ExecuteReceivableCheck(),
+        service =>
+            service.ExecuteReceivableCheck(),
         Cron.Daily);
 
-    RecurringJob.AddOrUpdate(
+    RecurringJob.AddOrUpdate<IRecurringJobService>(
         "payable-check",
-        () => recurringJobs.ExecutePayableCheck(),
+        service =>
+            service.ExecutePayableCheck(),
         Cron.Daily);
 
-    RecurringJob.AddOrUpdate(
+    RecurringJob.AddOrUpdate<IRecurringJobService>(
         "refresh-token-cleanup",
-        () => recurringJobs.ExecuteRefreshTokenCleanup(),
+        service =>
+            service.ExecuteRefreshTokenCleanup(),
         Cron.Daily);
 }
 

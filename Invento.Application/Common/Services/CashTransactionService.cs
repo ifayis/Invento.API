@@ -21,23 +21,21 @@ namespace Invento.Application.Common.Services
             CashTransactionType type,
             decimal amount,
             string description,
-            DateTime transactionDate)
+            DateTime transactionDate,
+            CancellationToken cancellationToken)
         {
             var transaction = new CashTransaction
             {
                 TenantId = _currentTenant.TenantId,
-
                 TransactionType = type,
-
                 Amount = amount,
-
                 Description = description,
-
                 TransactionDate = transactionDate
             };
 
-            await _context.CashTransactions
-                .AddAsync(transaction);
+            await _context.CashTransactions.AddAsync(
+                transaction,
+                cancellationToken);
 
             return transaction;
         }

@@ -24,18 +24,28 @@ namespace Invento.Infrastructure.Jobs
         {
             var lowStockProducts =
                 await _context.Products
-                .Where(x =>
-                    !x.IsDeleted
-                    &&
-                    x.CurrentStock <= x.LowStockThreshold)
-                .Select(x => new
-                {
-                    x.Name,
-                    x.CurrentStock,
-                    x.LowStockThreshold,
-                    x.CriticalStockThreshold
-                })
-                .ToListAsync();
+                    .AsNoTracking()
+                    .Where(x =>
+                        !x.IsDeleted
+                        &&
+                        x.CurrentStock <= x.LowStockThreshold)
+                    .Select(x => new
+                    {
+                        x.TenantId,
+                        x.Name,
+                        x.CurrentStock,
+                        x.LowStockThreshold,
+                        x.CriticalStockThreshold
+                    })
+                    .ToListAsync();
+
+            if (lowStockProducts.Count == 0)
+            {
+                _logger.LogInformation(
+                    "Stock Alert Check | No low-stock products found.");
+
+                return;
+            }
 
             foreach (var product in lowStockProducts)
             {
@@ -46,7 +56,8 @@ namespace Invento.Infrastructure.Jobs
                         : "LOW";
 
                 _logger.LogWarning(
-                    "Stock Alert | Product: {Product} | Current Stock: {CurrentStock} | Level: {Level}",
+                    "Stock Alert | Tenant: {TenantId} | Product: {Product} | Current Stock: {CurrentStock} | Level: {Level}",
+                    product.TenantId,
                     product.Name,
                     product.CurrentStock,
                     level);
@@ -55,40 +66,85 @@ namespace Invento.Infrastructure.Jobs
 
         public async Task ExecuteSalesTargetCheck()
         {
-            var currentMonth = DateTime.UtcNow.Month;
+            var utcNow = DateTime.UtcNow;
 
-            var currentYear = DateTime.UtcNow.Year;
+            var monthStart =
+                new DateTime(
+                    utcNow.Year,
+                    utcNow.Month,
+                    1,
+                    0,
+                    0,
+                    0,
+                    DateTimeKind.Utc);
+
+            var nextMonthStart =
+                monthStart.AddMonths(1);
 
             var settings =
                 await _context.TenantSettings
-                .Where(x => !x.IsDeleted)
-                .ToListAsync();
+                    .AsNoTracking()
+                    .Where(x =>
+                        !x.IsDeleted
+                        &&
+                        x.MonthlySalesTarget > 0)
+                    .Select(x => new
+                    {
+                        x.TenantId,
+                        x.MonthlySalesTarget
+                    })
+                    .ToListAsync();
+
+            if (settings.Count == 0)
+            {
+                _logger.LogInformation(
+                    "Sales Target Check | No active sales targets found.");
+
+                return;
+            }
+
+            var tenantIds =
+                settings
+                    .Select(x => x.TenantId)
+                    .Distinct()
+                    .ToList();
+
+            var salesByTenant =
+                await _context.Sales
+                    .AsNoTracking()
+                    .Where(x =>
+                        tenantIds.Contains(x.TenantId)
+                        &&
+                        !x.IsDeleted
+                        &&
+                        x.SaleDate >= monthStart
+                        &&
+                        x.SaleDate < nextMonthStart)
+                    .GroupBy(x => x.TenantId)
+                    .Select(group => new
+                    {
+                        TenantId = group.Key,
+
+                        TotalSales =
+                            group.Sum(x => x.TotalAmount)
+                    })
+                    .ToDictionaryAsync(
+                        x => x.TenantId,
+                        x => x.TotalSales);
 
             foreach (var setting in settings)
             {
                 var monthlySales =
-                    await _context.Sales
-                    .Where(x =>
-                        x.TenantId == setting.TenantId
-                        &&
-                        !x.IsDeleted
-                        &&
-                        x.SaleDate.Month == currentMonth
-                        &&
-                        x.SaleDate.Year == currentYear)
-                    .SumAsync(x =>
-                        (decimal?)x.TotalAmount)
-                    ?? 0;
-
-                if (setting.MonthlySalesTarget <= 0)
-                {
-                    continue;
-                }
+                    salesByTenant.TryGetValue(
+                        setting.TenantId,
+                        out var totalSales)
+                            ? totalSales
+                            : 0m;
 
                 var achievement =
-                    (monthlySales
-                    / setting.MonthlySalesTarget)
-                    * 100;
+                    monthlySales
+                    / setting.MonthlySalesTarget
+                    * 100m;
 
                 _logger.LogInformation(
                     "Sales Target Check | Tenant: {TenantId} | Sales: {Sales} | Target: {Target} | Achievement: {Achievement}%",
@@ -98,42 +154,88 @@ namespace Invento.Infrastructure.Jobs
                     Math.Round(achievement, 2));
             }
         }
+
         public async Task ExecuteProfitTargetCheck()
         {
-            var currentMonth = DateTime.UtcNow.Month;
+            var utcNow = DateTime.UtcNow;
 
-            var currentYear = DateTime.UtcNow.Year;
+            var monthStart =
+                new DateTime(
+                    utcNow.Year,
+                    utcNow.Month,
+                    1,
+                    0,
+                    0,
+                    0,
+                    DateTimeKind.Utc);
+
+            var nextMonthStart =
+                monthStart.AddMonths(1);
 
             var settings =
                 await _context.TenantSettings
-                .Where(x => !x.IsDeleted)
-                .ToListAsync();
+                    .AsNoTracking()
+                    .Where(x =>
+                        !x.IsDeleted
+                        &&
+                        x.MonthlyProfitTarget > 0)
+                    .Select(x => new
+                    {
+                        x.TenantId,
+                        x.MonthlyProfitTarget
+                    })
+                    .ToListAsync();
+
+            if (settings.Count == 0)
+            {
+                _logger.LogInformation(
+                    "Profit Target Check | No active profit targets found.");
+
+                return;
+            }
+
+            var tenantIds =
+                settings
+                    .Select(x => x.TenantId)
+                    .Distinct()
+                    .ToList();
+
+            var profitByTenant =
+                await _context.Sales
+                    .AsNoTracking()
+                    .Where(x =>
+                        tenantIds.Contains(x.TenantId)
+                        &&
+                        !x.IsDeleted
+                        &&
+                        x.SaleDate >= monthStart
+                        &&
+                        x.SaleDate < nextMonthStart)
+                    .GroupBy(x => x.TenantId)
+                    .Select(group => new
+                    {
+                        TenantId = group.Key,
+
+                        TotalProfit =
+                            group.Sum(x => x.ProfitAmount)
+                    })
+                    .ToDictionaryAsync(
+                        x => x.TenantId,
+                        x => x.TotalProfit);
 
             foreach (var setting in settings)
             {
                 var monthlyProfit =
-                    await _context.Sales
-                    .Where(x =>
-                        x.TenantId == setting.TenantId
-                        &&
-                        !x.IsDeleted
-                        &&
-                        x.SaleDate.Month == currentMonth
-                        &&
-                        x.SaleDate.Year == currentYear)
-                    .SumAsync(x =>
-                        (decimal?)x.ProfitAmount)
-                    ?? 0;
-
-                if (setting.MonthlyProfitTarget <= 0)
-                {
-                    continue;
-                }
+                    profitByTenant.TryGetValue(
+                        setting.TenantId,
+                        out var totalProfit)
+                            ? totalProfit
+                            : 0m;
 
                 var achievement =
-                    (monthlyProfit
-                    / setting.MonthlyProfitTarget)
-                    * 100;
+                    monthlyProfit
+                    / setting.MonthlyProfitTarget
+                    * 100m;
 
                 _logger.LogInformation(
                     "Profit Target Check | Tenant: {TenantId} | Profit: {Profit} | Target: {Target} | Achievement: {Achievement}%",
@@ -143,26 +245,27 @@ namespace Invento.Infrastructure.Jobs
                     Math.Round(achievement, 2));
             }
         }
+
         public async Task ExecuteReceivableCheck()
         {
             var receivables =
                 await _context.Sales
-                .Where(x =>
-                    !x.IsDeleted
-                    &&
-                    x.DueAmount > 0)
-                .Select(x => new
-                {
-                    x.InvoiceNumber,
-                    x.CustomerId,
-                    x.TotalAmount,
-                    x.PaidAmount,
-                    x.DueAmount,
-                    x.PaymentStatus
-                })
-                .ToListAsync();
+                    .AsNoTracking()
+                    .Where(x =>
+                        !x.IsDeleted
+                        &&
+                        x.DueAmount > 0)
+                    .Select(x => new
+                    {
+                        x.TenantId,
+                        x.InvoiceNumber,
+                        x.CustomerId,
+                        x.DueAmount,
+                        x.PaymentStatus
+                    })
+                    .ToListAsync();
 
-            if (!receivables.Any())
+            if (receivables.Count == 0)
             {
                 _logger.LogInformation(
                     "Receivable Check | No outstanding receivables found.");
@@ -170,18 +273,31 @@ namespace Invento.Infrastructure.Jobs
                 return;
             }
 
-            var totalOutstanding =
-                receivables.Sum(x => x.DueAmount);
+            var summaries =
+                receivables
+                    .GroupBy(x => x.TenantId)
+                    .Select(group => new
+                    {
+                        TenantId = group.Key,
+                        Count = group.Count(),
+                        TotalOutstanding =
+                            group.Sum(x => x.DueAmount)
+                    });
 
-            _logger.LogWarning(
-                "Receivable Check | Outstanding Invoices: {Count} | Outstanding Amount: {Amount}",
-                receivables.Count,
-                totalOutstanding);
+            foreach (var summary in summaries)
+            {
+                _logger.LogWarning(
+                    "Receivable Check | Tenant: {TenantId} | Outstanding Invoices: {Count} | Outstanding Amount: {Amount}",
+                    summary.TenantId,
+                    summary.Count,
+                    summary.TotalOutstanding);
+            }
 
             foreach (var item in receivables)
             {
                 _logger.LogWarning(
-                    "Invoice: {InvoiceNumber} | Due Amount: {DueAmount} | Status: {Status}",
+                    "Receivable | Tenant: {TenantId} | Invoice: {InvoiceNumber} | Due Amount: {DueAmount} | Status: {Status}",
+                    item.TenantId,
                     item.InvoiceNumber,
                     item.DueAmount,
                     item.PaymentStatus);
@@ -192,22 +308,22 @@ namespace Invento.Infrastructure.Jobs
         {
             var payables =
                 await _context.Purchases
-                .Where(x =>
-                    !x.IsDeleted
-                    &&
-                    x.DueAmount > 0)
-                .Select(x => new
-                {
-                    x.PurchaseNumber,
-                    x.SupplierId,
-                    x.TotalAmount,
-                    x.PaidAmount,
-                    x.DueAmount,
-                    x.PaymentStatus
-                })
-                .ToListAsync();
+                    .AsNoTracking()
+                    .Where(x =>
+                        !x.IsDeleted
+                        &&
+                        x.DueAmount > 0)
+                    .Select(x => new
+                    {
+                        x.TenantId,
+                        x.PurchaseNumber,
+                        x.SupplierId,
+                        x.DueAmount,
+                        x.PaymentStatus
+                    })
+                    .ToListAsync();
 
-            if (!payables.Any())
+            if (payables.Count == 0)
             {
                 _logger.LogInformation(
                     "Payable Check | No outstanding payables found.");
@@ -215,18 +331,31 @@ namespace Invento.Infrastructure.Jobs
                 return;
             }
 
-            var totalOutstanding =
-                payables.Sum(x => x.DueAmount);
+            var summaries =
+                payables
+                    .GroupBy(x => x.TenantId)
+                    .Select(group => new
+                    {
+                        TenantId = group.Key,
+                        Count = group.Count(),
+                        TotalOutstanding =
+                            group.Sum(x => x.DueAmount)
+                    });
 
-            _logger.LogWarning(
-                "Payable Check | Outstanding Purchases: {Count} | Outstanding Amount: {Amount}",
-                payables.Count,
-                totalOutstanding);
+            foreach (var summary in summaries)
+            {
+                _logger.LogWarning(
+                    "Payable Check | Tenant: {TenantId} | Outstanding Purchases: {Count} | Outstanding Amount: {Amount}",
+                    summary.TenantId,
+                    summary.Count,
+                    summary.TotalOutstanding);
+            }
 
             foreach (var item in payables)
             {
                 _logger.LogWarning(
-                    "Purchase: {PurchaseNumber} | Due Amount: {DueAmount} | Status: {Status}",
+                    "Payable | Tenant: {TenantId} | Purchase: {PurchaseNumber} | Due Amount: {DueAmount} | Status: {Status}",
+                    item.TenantId,
                     item.PurchaseNumber,
                     item.DueAmount,
                     item.PaymentStatus);
@@ -253,7 +382,7 @@ namespace Invento.Infrastructure.Jobs
                         ))
                     .ToListAsync();
 
-            if (!tokensToDelete.Any())
+            if (tokensToDelete.Count == 0)
             {
                 _logger.LogInformation(
                     "Refresh Token Cleanup | No old tokens found.");
