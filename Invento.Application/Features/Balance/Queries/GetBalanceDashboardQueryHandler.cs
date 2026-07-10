@@ -14,7 +14,6 @@ namespace Invento.Application.Features.Balance.Queries
             ApiResponse<BalanceDashboardDto>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
-
         private readonly ICurrentTenantService _currentTenant;
 
         public GetBalanceDashboardQueryHandler(
@@ -32,62 +31,83 @@ namespace Invento.Application.Features.Balance.Queries
             using var connection =
                 _connectionFactory.CreateConnection();
 
-            var sql = @"
-            SELECT
+            const string sql = """
+                SELECT
+                    ISNULL(
+                        SUM(
+                            CASE
+                                WHEN TransactionType = @Sale
+                                THEN Amount
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS SalesIncome,
 
-            ISNULL(
-            (
-                SELECT SUM(TotalAmount)
-                FROM Sales
-                WHERE
-                    TenantId = @TenantId
-                    AND IsDeleted = 0
-            ),0) AS SalesIncome,
+                    ISNULL(
+                        SUM(
+                            CASE
+                                WHEN TransactionType = @Purchase
+                                THEN Amount
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS PurchaseExpense,
 
-            ISNULL(
-            (
-                SELECT SUM(TotalAmount)
-                FROM Purchases
-                WHERE
-                    TenantId = @TenantId
-                    AND IsDeleted = 0
-            ),0) AS PurchaseExpense,
+                    ISNULL(
+                        SUM(
+                            CASE
+                                WHEN TransactionType = @ManualIncome
+                                THEN Amount
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS ManualIncome,
 
-            ISNULL(
-            (
-                SELECT SUM(Amount)
+                    ISNULL(
+                        SUM(
+                            CASE
+                                WHEN TransactionType = @ManualExpense
+                                THEN Amount
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS ManualExpense
                 FROM CashTransactions
                 WHERE
                     TenantId = @TenantId
-                    AND IsDeleted = 0
-                    AND TransactionType = @ManualIncome
-            ),0) AS ManualIncome,
+                    AND IsDeleted = 0;
+                """;
 
-            ISNULL(
-            (
-                SELECT SUM(Amount)
-                FROM CashTransactions
-                WHERE
-                    TenantId = @TenantId
-                    AND IsDeleted = 0
-                    AND TransactionType = @ManualExpense
-            ),0) AS ManualExpense
-            ";
-
-            var dashboard =
-                await connection.QueryFirstAsync
-                <BalanceDashboardDto>(
+            var command =
+                new CommandDefinition(
                     sql,
                     new
                     {
                         TenantId = _currentTenant.TenantId,
+
+                        Sale =
+                            (int)CashTransactionType.Sale,
+
+                        Purchase =
+                            (int)CashTransactionType.Purchase,
 
                         ManualIncome =
                             (int)CashTransactionType.ManualIncome,
 
                         ManualExpense =
                             (int)CashTransactionType.ManualExpense
-                    });
+                    },
+                    cancellationToken:
+                        cancellationToken);
+
+            var dashboard =
+                await connection
+                    .QueryFirstAsync<BalanceDashboardDto>(
+                        command);
 
             dashboard.TotalIncome =
                 dashboard.SalesIncome

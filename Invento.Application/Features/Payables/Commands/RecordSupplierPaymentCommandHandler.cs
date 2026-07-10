@@ -15,11 +15,8 @@ namespace Invento.Application.Features.Payables.Commands
             ApiResponse<SupplierPaymentDto>>
     {
         private readonly IApplicationDbContext _context;
-
         private readonly ICurrentTenantService _currentTenant;
-
-        private readonly CashTransactionService
-            _cashTransactionService;
+        private readonly CashTransactionService _cashTransactionService;
 
         public RecordSupplierPaymentCommandHandler(
             IApplicationDbContext context,
@@ -28,8 +25,7 @@ namespace Invento.Application.Features.Payables.Commands
         {
             _context = context;
             _currentTenant = currentTenant;
-            _cashTransactionService =
-                cashTransactionService;
+            _cashTransactionService = cashTransactionService;
         }
 
         public async Task<ApiResponse<SupplierPaymentDto>> Handle(
@@ -80,8 +76,7 @@ namespace Invento.Application.Features.Payables.Commands
                         .FailureResponse(
                             new List<string>
                             {
-                                "Payment amount must be " +
-                                "greater than zero"
+                                "Payment amount must be greater than zero"
                             });
                 }
 
@@ -100,8 +95,7 @@ namespace Invento.Application.Features.Payables.Commands
                             });
                 }
 
-                if (request.Amount >
-                    purchase.DueAmount)
+                if (request.Amount > purchase.DueAmount)
                 {
                     await transaction.RollbackAsync(
                         cancellationToken);
@@ -112,7 +106,7 @@ namespace Invento.Application.Features.Payables.Commands
                         .FailureResponse(
                             new List<string>
                             {
-                                "Payment exceeds outstanding amount"
+                                "Payment amount exceeds due amount"
                             });
                 }
 
@@ -121,13 +115,11 @@ namespace Invento.Application.Features.Payables.Commands
                     {
                         TenantId = tenantId,
                         PurchaseId = purchase.Id,
-                        SupplierId =
-                            purchase.SupplierId,
+                        SupplierId = purchase.SupplierId,
                         Amount = request.Amount,
-                        PaymentDate =
-                            request.PaymentDate,
-                        Remarks =
-                            request.Remarks ?? string.Empty
+                        PaymentDate = request.PaymentDate,
+                        Remarks = request.Remarks
+                            ?? string.Empty
                     };
 
                 await _context.SupplierPayments
@@ -142,17 +134,23 @@ namespace Invento.Application.Features.Payables.Commands
                     purchase.TotalAmount
                     - purchase.PaidAmount;
 
+                if (purchase.DueAmount < 0)
+                {
+                    purchase.DueAmount = 0;
+                }
+
                 purchase.PaymentStatus =
-                    purchase.DueAmount <= 0
+                    purchase.DueAmount == 0
                         ? PaymentStatus.Paid
-                        : PaymentStatus.PartiallyPaid;
+                        : purchase.PaidAmount == 0
+                            ? PaymentStatus.Unpaid
+                            : PaymentStatus.PartiallyPaid;
 
                 await _cashTransactionService
                     .CreateTransaction(
                         CashTransactionType.Purchase,
                         request.Amount,
-                        $"Supplier Payment - " +
-                        $"{purchase.PurchaseNumber}",
+                        $"Supplier Payment - {purchase.PurchaseNumber}",
                         request.PaymentDate,
                         cancellationToken);
 
@@ -167,33 +165,13 @@ namespace Invento.Application.Features.Payables.Commands
                         new SupplierPaymentDto
                         {
                             Id = payment.Id,
-                            PurchaseId =
-                                payment.PurchaseId,
-                            SupplierId =
-                                payment.SupplierId,
+                            PurchaseId = payment.PurchaseId,
+                            SupplierId = payment.SupplierId,
                             Amount = payment.Amount,
-                            PaymentDate =
-                                payment.PaymentDate,
+                            PaymentDate = payment.PaymentDate,
                             Remarks = payment.Remarks
                         },
                         "Supplier payment recorded successfully");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                await transaction.RollbackAsync(
-                    CancellationToken.None);
-
-                _context.ClearChangeTracker();
-
-                return ApiResponse<SupplierPaymentDto>
-                    .FailureResponse(
-                        new List<string>
-                        {
-                            "Purchase payment state changed while " +
-                            "the payment was being recorded. " +
-                            "Reload the latest data and try again."
-                        },
-                        "Concurrency conflict");
             }
             catch
             {

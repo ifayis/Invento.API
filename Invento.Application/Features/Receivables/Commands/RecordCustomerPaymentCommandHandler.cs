@@ -15,11 +15,8 @@ namespace Invento.Application.Features.Receivables.Commands
             ApiResponse<CustomerPaymentDto>>
     {
         private readonly IApplicationDbContext _context;
-
         private readonly ICurrentTenantService _currentTenant;
-
-        private readonly CashTransactionService
-            _cashTransactionService;
+        private readonly CashTransactionService _cashTransactionService;
 
         public RecordCustomerPaymentCommandHandler(
             IApplicationDbContext context,
@@ -28,8 +25,7 @@ namespace Invento.Application.Features.Receivables.Commands
         {
             _context = context;
             _currentTenant = currentTenant;
-            _cashTransactionService =
-                cashTransactionService;
+            _cashTransactionService = cashTransactionService;
         }
 
         public async Task<ApiResponse<CustomerPaymentDto>> Handle(
@@ -95,8 +91,7 @@ namespace Invento.Application.Features.Receivables.Commands
                         .FailureResponse(
                             new List<string>
                             {
-                                "Payment amount must be " +
-                                "greater than zero"
+                                "Payment amount must be greater than zero"
                             });
                 }
 
@@ -135,13 +130,11 @@ namespace Invento.Application.Features.Receivables.Commands
                     {
                         TenantId = tenantId,
                         SaleId = sale.Id,
-                        CustomerId =
-                            sale.CustomerId.Value,
+                        CustomerId = sale.CustomerId.Value,
                         Amount = request.Amount,
-                        PaymentDate =
-                            request.PaymentDate,
-                        Remarks =
-                            request.Remarks ?? string.Empty
+                        PaymentDate = request.PaymentDate,
+                        Remarks = request.Remarks
+                            ?? string.Empty
                     };
 
                 await _context.CustomerPayments
@@ -156,17 +149,23 @@ namespace Invento.Application.Features.Receivables.Commands
                     sale.TotalAmount
                     - sale.PaidAmount;
 
+                if (sale.DueAmount < 0)
+                {
+                    sale.DueAmount = 0;
+                }
+
                 sale.PaymentStatus =
-                    sale.DueAmount <= 0
+                    sale.DueAmount == 0
                         ? PaymentStatus.Paid
-                        : PaymentStatus.PartiallyPaid;
+                        : sale.PaidAmount == 0
+                            ? PaymentStatus.Unpaid
+                            : PaymentStatus.PartiallyPaid;
 
                 await _cashTransactionService
                     .CreateTransaction(
                         CashTransactionType.Sale,
                         request.Amount,
-                        $"Customer Payment - " +
-                        $"{sale.InvoiceNumber}",
+                        $"Customer Payment - {sale.InvoiceNumber}",
                         request.PaymentDate,
                         cancellationToken);
 
@@ -182,31 +181,12 @@ namespace Invento.Application.Features.Receivables.Commands
                         {
                             Id = payment.Id,
                             SaleId = payment.SaleId,
-                            CustomerId =
-                                payment.CustomerId,
+                            CustomerId = payment.CustomerId,
                             Amount = payment.Amount,
-                            PaymentDate =
-                                payment.PaymentDate,
+                            PaymentDate = payment.PaymentDate,
                             Remarks = payment.Remarks
                         },
                         "Payment recorded successfully");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                await transaction.RollbackAsync(
-                    CancellationToken.None);
-
-                _context.ClearChangeTracker();
-
-                return ApiResponse<CustomerPaymentDto>
-                    .FailureResponse(
-                        new List<string>
-                        {
-                            "Sale payment state changed while " +
-                            "the payment was being recorded. " +
-                            "Reload the latest data and try again."
-                        },
-                        "Concurrency conflict");
             }
             catch
             {
