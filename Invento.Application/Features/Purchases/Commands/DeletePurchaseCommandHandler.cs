@@ -39,127 +39,134 @@ namespace Invento.Application.Features.Purchases.Commands
             var tenantId =
                 _currentTenant.TenantId;
 
-            await using var transaction =
+            var strategy =
+                _context.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync(
+                async () =>
+                {
+
+                    await using var transaction =
                 await _context.BeginTransactionAsync(
                     cancellationToken);
 
-            try
-            {
-                var purchase =
-                    await _context.Purchases
-                        .Include(x => x.Supplier)
-                        .Include(x => x.PurchaseItems)
-                        .FirstOrDefaultAsync(
-                            x =>
-                                x.Id == request.Id
-                                && x.TenantId == tenantId
-                                && !x.IsDeleted,
-                            cancellationToken);
+                    try
+                    {
+                        var purchase =
+                            await _context.Purchases
+                                .Include(x => x.Supplier)
+                                .Include(x => x.PurchaseItems)
+                                .FirstOrDefaultAsync(
+                                    x =>
+                                        x.Id == request.Id
+                                        && x.TenantId == tenantId
+                                        && !x.IsDeleted,
+                                    cancellationToken);
 
-                if (purchase is null)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                        if (purchase is null)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                    _context.ClearChangeTracker();
+                            _context.ClearChangeTracker();
 
-                    return ApiResponse<PurchaseDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
+                            return ApiResponse<PurchaseDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                 "Purchase not found"
-                            });
-                }
+                                    });
+                        }
 
-                if (purchase.PaidAmount > 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                        if (purchase.PaidAmount > 0)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                    _context.ClearChangeTracker();
+                            _context.ClearChangeTracker();
 
-                    return ApiResponse<PurchaseDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
+                            return ApiResponse<PurchaseDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                 "Cannot delete a purchase that has " +
                                 "supplier payments. Payment reversal " +
                                 "must be completed first."
-                            });
-                }
+                                    });
+                        }
 
-                var purchaseItems =
-                    purchase.PurchaseItems.ToList();
+                        var purchaseItems =
+                            purchase.PurchaseItems.ToList();
 
-                var productIds =
-                    purchaseItems
-                        .Select(x => x.ProductId)
-                        .Distinct()
-                        .ToList();
+                        var productIds =
+                            purchaseItems
+                                .Select(x => x.ProductId)
+                                .Distinct()
+                                .ToList();
 
-                var products =
-                    await _context.Products
-                        .Where(
-                            x =>
-                                productIds.Contains(x.Id)
-                                && x.TenantId == tenantId)
-                        .ToListAsync(
-                            cancellationToken);
+                        var products =
+                            await _context.Products
+                                .Where(
+                                    x =>
+                                        productIds.Contains(x.Id)
+                                        && x.TenantId == tenantId)
+                                .ToListAsync(
+                                    cancellationToken);
 
-                var productById =
-                    products.ToDictionary(
-                        x => x.Id);
+                        var productById =
+                            products.ToDictionary(
+                                x => x.Id);
 
-                var missingProductIds =
-                    productIds
-                        .Where(
-                            id =>
-                                !productById.ContainsKey(id))
-                        .ToList();
-
-                if (missingProductIds.Count > 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<PurchaseDto>
-                        .FailureResponse(
-                            missingProductIds
-                                .Select(
+                        var missingProductIds =
+                            productIds
+                                .Where(
                                     id =>
-                                        $"Product not found: {id}")
-                                .ToList());
-                }
+                                        !productById.ContainsKey(id))
+                                .ToList();
 
-                var requiredQuantityByProductId =
-                    purchaseItems
-                        .GroupBy(x => x.ProductId)
-                        .ToDictionary(
-                            group => group.Key,
-                            group => group.Sum(
-                                item => item.Quantity));
+                        if (missingProductIds.Count > 0)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                foreach (var requiredStock in
-                    requiredQuantityByProductId)
-                {
-                    var product =
-                        productById[
-                            requiredStock.Key];
+                            _context.ClearChangeTracker();
 
-                    if (product.CurrentStock <
-                        requiredStock.Value)
-                    {
-                        await transaction.RollbackAsync(
-                            cancellationToken);
+                            return ApiResponse<PurchaseDto>
+                                .FailureResponse(
+                                    missingProductIds
+                                        .Select(
+                                            id =>
+                                                $"Product not found: {id}")
+                                        .ToList());
+                        }
 
-                        _context.ClearChangeTracker();
+                        var requiredQuantityByProductId =
+                            purchaseItems
+                                .GroupBy(x => x.ProductId)
+                                .ToDictionary(
+                                    group => group.Key,
+                                    group => group.Sum(
+                                        item => item.Quantity));
 
-                        return ApiResponse<PurchaseDto>
-                            .FailureResponse(
-                                new List<string>
-                                {
+                        foreach (var requiredStock in
+                            requiredQuantityByProductId)
+                        {
+                            var product =
+                                productById[
+                                    requiredStock.Key];
+
+                            if (product.CurrentStock <
+                                requiredStock.Value)
+                            {
+                                await transaction.RollbackAsync(
+                                    cancellationToken);
+
+                                _context.ClearChangeTracker();
+
+                                return ApiResponse<PurchaseDto>
+                                    .FailureResponse(
+                                        new List<string>
+                                        {
                                     $"Cannot delete purchase. " +
                                     $"Product '{product.Name}' stock " +
                                     $"has already been consumed. " +
@@ -167,70 +174,72 @@ namespace Invento.Application.Features.Purchases.Commands
                                     $"{product.CurrentStock}, " +
                                     $"required for reversal: " +
                                     $"{requiredStock.Value}."
-                                });
-                    }
-                }
+                                        });
+                            }
+                        }
 
-                foreach (var item in purchaseItems)
-                {
-                    var product =
-                        productById[item.ProductId];
-
-                    product.CurrentStock -=
-                        item.Quantity;
-
-                    await _stockMovementService
-                        .CreateMovement(
-                            product.Id,
-                            item.Quantity,
-                            StockMovementType
-                                .PurchaseReturn
-                                .ToString(),
-                            product.CurrentStock,
-                            "Purchase deleted",
-                            purchase.PurchaseNumber,
-                            cancellationToken);
-                }
-
-                purchase.IsDeleted = true;
-
-                await _context.SaveChangesAsync(
-                    cancellationToken);
-
-                await transaction.CommitAsync(
-                    cancellationToken);
-
-                return ApiResponse<PurchaseDto>
-                    .SuccessResponse(
-                        purchase.ToPurchaseDto(),
-                        "Purchase deleted successfully");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                await transaction.RollbackAsync(
-                    CancellationToken.None);
-
-                _context.ClearChangeTracker();
-
-                return ApiResponse<PurchaseDto>
-                    .FailureResponse(
-                        new List<string>
+                        foreach (var item in purchaseItems)
                         {
+                            var product =
+                                productById[item.ProductId];
+
+                            product.CurrentStock -=
+                                item.Quantity;
+
+                            await _stockMovementService
+                                .CreateMovement(
+                                    product.Id,
+                                    item.Quantity,
+                                    StockMovementType
+                                        .PurchaseReturn
+                                        .ToString(),
+                                    product.CurrentStock,
+                                    "Purchase deleted",
+                                    purchase.PurchaseNumber,
+                                    cancellationToken);
+                        }
+
+                        purchase.IsDeleted = true;
+
+                        await _context.SaveChangesAsync(
+                            cancellationToken);
+
+                        await transaction.CommitAsync(
+                            cancellationToken);
+
+                        return ApiResponse<PurchaseDto>
+                            .SuccessResponse(
+                                purchase.ToPurchaseDto(),
+                                "Purchase deleted successfully");
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        await transaction.RollbackAsync(
+                            CancellationToken.None);
+
+                        _context.ClearChangeTracker();
+
+                        return ApiResponse<PurchaseDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
                             "Stock changed while the purchase " +
                             "was being deleted. Reload the latest " +
                             "data and try again."
-                        },
-                        "Concurrency conflict");
-            }
-            catch
-            {
-                await transaction.RollbackAsync(
-                    CancellationToken.None);
+                                },
+                                "Concurrency conflict");
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync(
+                            CancellationToken.None);
 
-                _context.ClearChangeTracker();
+                        _context.ClearChangeTracker();
 
-                throw;
-            }
+                        throw;
+                    }
+                }
+            );
         }
     }
 }

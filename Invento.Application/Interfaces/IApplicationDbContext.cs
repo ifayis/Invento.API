@@ -51,5 +51,7 @@ namespace Invento.Application.Interfaces
 
         Task<IDbContextTransaction> BeginTransactionAsync(
             CancellationToken cancellationToken = default);
+
+        IExecutionStrategy CreateExecutionStrategy();
     }
 }

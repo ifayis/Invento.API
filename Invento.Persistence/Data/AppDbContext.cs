@@ -432,8 +432,15 @@ namespace Invento.Persistence.Data
         public async Task<IDbContextTransaction> BeginTransactionAsync(
             CancellationToken cancellationToken = default)
         {
+            Console.WriteLine("BEGIN TRANSACTION");
+
             return await Database.BeginTransactionAsync(
                 cancellationToken);
+        }
+
+        public IExecutionStrategy CreateExecutionStrategy()
+        {
+            return Database.CreateExecutionStrategy();
         }
     }
 }

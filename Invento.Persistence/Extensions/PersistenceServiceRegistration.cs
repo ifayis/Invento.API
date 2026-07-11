@@ -48,17 +48,19 @@ namespace Invento.Persistence.Extensions
                         {
                             sqlOptions.EnableRetryOnFailure(
                                 maxRetryCount: 3,
-                                maxRetryDelay:
-                                    TimeSpan.FromSeconds(5),
+                                maxRetryDelay: TimeSpan.FromSeconds(5),
                                 errorNumbersToAdd: null);
 
                             sqlOptions.CommandTimeout(30);
                         });
 
                     options.EnableDetailedErrors(false);
-
                     options.EnableSensitiveDataLogging(false);
                 });
+
+            services.AddScoped<IApplicationDbContext>(
+                provider =>
+                    provider.GetRequiredService<AppDbContext>());
 
             return services;
         }

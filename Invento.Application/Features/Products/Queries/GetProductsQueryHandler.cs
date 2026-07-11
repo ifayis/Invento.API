@@ -39,6 +39,7 @@ namespace Invento.Application.Features.Products.Queries
             const string sql = """
                 SELECT
                     p.Id,
+                    p.CategoryId,
                     p.Name,
                     p.SKU,
                     p.CostPrice,
@@ -86,15 +87,16 @@ namespace Invento.Application.Features.Products.Queries
                     );
                 """;
 
-            var parameters = new
-            {
-                TenantId = _currentTenant.TenantId,
-                Search = search,
-                Offset =
-                    (request.PageNumber - 1)
-                    * request.PageSize,
-                request.PageSize
-            };
+            var parameters =
+                new
+                {
+                    TenantId = _currentTenant.TenantId,
+                    Search = search,
+                    Offset =
+                        (request.PageNumber - 1)
+                        * request.PageSize,
+                    request.PageSize
+                };
 
             var command =
                 new CommandDefinition(
@@ -109,7 +111,7 @@ namespace Invento.Application.Features.Products.Queries
 
             var products =
                 (await multi.ReadAsync<ProductDto>())
-                .ToList();
+                    .ToList();
 
             var totalRecords =
                 await multi.ReadSingleAsync<int>();

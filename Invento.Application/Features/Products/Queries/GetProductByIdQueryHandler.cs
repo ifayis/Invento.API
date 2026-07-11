@@ -8,7 +8,9 @@ using Invento.Application.Interfaces;
 namespace Invento.Application.Features.Products.Queries
 {
     public class GetProductByIdQueryHandler
-        : IQueryHandler<GetProductByIdQuery, ApiResponse<ProductDto>>
+        : IQueryHandler<
+            GetProductByIdQuery,
+            ApiResponse<ProductDto>>
     {
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ICurrentTenantService _currentTenant;
@@ -25,33 +27,49 @@ namespace Invento.Application.Features.Products.Queries
             GetProductByIdQuery request,
             CancellationToken cancellationToken)
         {
-            using var connection = _connectionFactory.CreateConnection();
+            using var connection =
+                _connectionFactory.CreateConnection();
 
-            var sql = @"
-            SELECT
-                p.Id,
-                p.Name,
-                p.SKU,
-                p.CostPrice,
-                p.SellingPrice,
-                p.CurrentStock,
-                c.Name AS CategoryName,
-                p.CreatedAt,
-                p.LowStockThreshold,
-                p.CriticalStockThreshold
-            FROM Products p
-            INNER JOIN Categories c
-                ON p.CategoryId = c.Id
-            WHERE p.Id = @Id
-            AND p.TenantId = @TenantId
-            ";
+            const string sql = """
+                SELECT
+                    p.Id,
+                    p.CategoryId,
+                    p.Name,
+                    p.SKU,
+                    p.CostPrice,
+                    p.SellingPrice,
+                    p.CurrentStock,
+                    p.IsDeleted,
+                    c.Name AS CategoryName,
+                    p.CreatedAt,
+                    p.LowStockThreshold,
+                    p.CriticalStockThreshold
+                FROM Products p
+                INNER JOIN Categories c
+                    ON c.Id = p.CategoryId
+                    AND c.TenantId = @TenantId
+                    AND c.IsDeleted = 0
+                WHERE
+                    p.Id = @Id
+                    AND p.TenantId = @TenantId
+                    AND p.IsDeleted = 0;
+                """;
 
-            var product = await connection
-                .QueryFirstOrDefaultAsync<ProductDto>(
+            var command =
+                new CommandDefinition(
                     sql,
-                    new { request.Id,
-                    TenantId = _currentTenant.TenantId}
-                );
+                    new
+                    {
+                        request.Id,
+                        TenantId = _currentTenant.TenantId
+                    },
+                    cancellationToken:
+                        cancellationToken);
+
+            var product =
+                await connection
+                    .QueryFirstOrDefaultAsync<ProductDto>(
+                        command);
 
             if (product is null)
             {
@@ -59,9 +77,8 @@ namespace Invento.Application.Features.Products.Queries
                     .FailureResponse(
                         new List<string>
                         {
-                        "Product not found"
-                        }
-                    );
+                            "Product not found"
+                        });
             }
 
             return ApiResponse<ProductDto>

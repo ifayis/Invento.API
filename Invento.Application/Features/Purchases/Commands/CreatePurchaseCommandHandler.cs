@@ -38,328 +38,336 @@ namespace Invento.Application.Features.Purchases.Commands
         {
             var tenantId = _currentTenant.TenantId;
 
-            await using var transaction =
-                await _context.BeginTransactionAsync(
-                    cancellationToken);
+            var strategy =
+            _context.CreateExecutionStrategy();
 
-            try
-            {
-                if (request.Items is null
-                    || request.Items.Count == 0)
+            return await strategy.ExecuteAsync(
+                async () =>
                 {
-                    await transaction.RollbackAsync(
+                    await using var transaction =
+                    await _context.BeginTransactionAsync(
                         cancellationToken);
 
-                    _context.ClearChangeTracker();
+                    try
+                    {
+                        if (request.Items is null
+                            || request.Items.Count == 0)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                    return ApiResponse<PurchaseDetailsDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
+                            _context.ClearChangeTracker();
+
+                            return ApiResponse<PurchaseDetailsDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                 "At least one purchase item is required"
-                            });
-                }
+                                    });
+                        }
 
-                if (request.DiscountAmount < 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                        if (request.DiscountAmount < 0)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                    _context.ClearChangeTracker();
+                            _context.ClearChangeTracker();
 
-                    return ApiResponse<PurchaseDetailsDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
+                            return ApiResponse<PurchaseDetailsDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                 "Discount amount cannot be negative"
-                            });
-                }
+                                    });
+                        }
 
-                if (request.Items.Any(
-                    x => x.Quantity <= 0))
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                        if (request.Items.Any(
+                            x => x.Quantity <= 0))
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                    _context.ClearChangeTracker();
+                            _context.ClearChangeTracker();
 
-                    return ApiResponse<PurchaseDetailsDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
+                            return ApiResponse<PurchaseDetailsDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                 "All item quantities must be greater than zero"
-                            });
-                }
+                                    });
+                        }
 
-                if (request.Items.Any(
-                    x => x.UnitCost < 0))
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                        if (request.Items.Any(
+                            x => x.UnitCost < 0))
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                    _context.ClearChangeTracker();
+                            _context.ClearChangeTracker();
 
-                    return ApiResponse<PurchaseDetailsDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
+                            return ApiResponse<PurchaseDetailsDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                 "Unit cost cannot be negative"
-                            });
-                }
+                                    });
+                        }
 
-                if (request.Items.Any(
-                    x => x.TaxRate < 0))
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                        if (request.Items.Any(
+                            x => x.TaxRate < 0))
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                    _context.ClearChangeTracker();
+                            _context.ClearChangeTracker();
 
-                    return ApiResponse<PurchaseDetailsDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
+                            return ApiResponse<PurchaseDetailsDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                 "Tax rate cannot be negative"
-                            });
-                }
+                                    });
+                        }
 
-                var duplicateProductIds =
-                    request.Items
-                        .GroupBy(x => x.ProductId)
-                        .Where(x => x.Count() > 1)
-                        .Select(x => x.Key)
-                        .ToList();
+                        var duplicateProductIds =
+                            request.Items
+                                .GroupBy(x => x.ProductId)
+                                .Where(x => x.Count() > 1)
+                                .Select(x => x.Key)
+                                .ToList();
 
-                if (duplicateProductIds.Count > 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                        if (duplicateProductIds.Count > 0)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                    _context.ClearChangeTracker();
+                            _context.ClearChangeTracker();
 
-                    return ApiResponse<PurchaseDetailsDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
+                            return ApiResponse<PurchaseDetailsDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                 "Duplicate products are not allowed " +
                                 "in the same purchase request"
-                            });
-                }
+                                    });
+                        }
 
-                var supplierExists =
-                    await _context.Suppliers
-                        .AnyAsync(
-                            x =>
-                                x.Id == request.SupplierId
-                                && x.TenantId == tenantId
-                                && !x.IsDeleted,
-                            cancellationToken);
+                        var supplierExists =
+                            await _context.Suppliers
+                                .AnyAsync(
+                                    x =>
+                                        x.Id == request.SupplierId
+                                        && x.TenantId == tenantId
+                                        && !x.IsDeleted,
+                                    cancellationToken);
 
-                if (!supplierExists)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<PurchaseDetailsDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                "Supplier not found"
-                            });
-                }
-
-                var productIds =
-                    request.Items
-                        .Select(x => x.ProductId)
-                        .Distinct()
-                        .ToList();
-
-                var products =
-                    await _context.Products
-                        .Where(
-                            x =>
-                                productIds.Contains(x.Id)
-                                && x.TenantId == tenantId
-                                && !x.IsDeleted)
-                        .ToListAsync(cancellationToken);
-
-                var productById =
-                    products.ToDictionary(
-                        x => x.Id);
-
-                var missingProductIds =
-                    productIds
-                        .Where(
-                            productId =>
-                                !productById.ContainsKey(productId))
-                        .ToList();
-
-                if (missingProductIds.Count > 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<PurchaseDetailsDto>
-                        .FailureResponse(
-                            missingProductIds
-                                .Select(
-                                    id =>
-                                        $"Product not found: {id}")
-                                .ToList());
-                }
-
-                var purchaseNumber =
-                    await _documentNumberService
-                        .GenerateNextAsync(
-                            tenantId,
-                            "PURCHASE",
-                            "PUR",
-                            request.PurchaseDate,
-                            cancellationToken);
-
-                decimal subTotal = 0;
-                decimal totalTax = 0;
-
-                var purchase =
-                    new Purchase
-                    {
-                        TenantId = tenantId,
-                        SupplierId = request.SupplierId,
-                        PurchaseDate = request.PurchaseDate,
-                        PurchaseNumber = purchaseNumber,
-                        DiscountAmount =
-                            request.DiscountAmount
-                    };
-
-                foreach (var item in request.Items)
-                {
-                    var product =
-                        productById[item.ProductId];
-
-                    product.CurrentStock +=
-                        item.Quantity;
-
-                    product.CostPrice =
-                        item.UnitCost;
-
-                    var itemSubTotal =
-                        item.UnitCost
-                        * item.Quantity;
-
-                    var taxAmount =
-                        (itemSubTotal
-                        * item.TaxRate)
-                        / 100;
-
-                    var totalPrice =
-                        itemSubTotal
-                        + taxAmount;
-
-                    var purchaseItem =
-                        new PurchaseItem
+                        if (!supplierExists)
                         {
-                            TenantId = tenantId,
-                            ProductId = product.Id,
-                            Quantity = item.Quantity,
-                            UnitCost = item.UnitCost,
-                            TaxRate = item.TaxRate,
-                            TaxAmount = taxAmount,
-                            TotalPrice = totalPrice
-                        };
+                            await transaction.RollbackAsync(
+                                cancellationToken);
 
-                    purchase.PurchaseItems.Add(
-                        purchaseItem);
+                            _context.ClearChangeTracker();
 
-                    await _stockMovementService
-                        .CreateMovement(
-                            product.Id,
-                            item.Quantity,
-                            StockMovementType
-                                .Purchase
-                                .ToString(),
-                            product.CurrentStock,
-                            "Purchase completed",
-                            purchase.PurchaseNumber,
-                            cancellationToken);
+                            return ApiResponse<PurchaseDetailsDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
+                                "Supplier not found"
+                                    });
+                        }
 
-                    subTotal += itemSubTotal;
-                    totalTax += taxAmount;
-                }
+                        var productIds =
+                            request.Items
+                                .Select(x => x.ProductId)
+                                .Distinct()
+                                .ToList();
 
-                var totalAmount =
-                    subTotal
-                    + totalTax
-                    - request.DiscountAmount;
+                        var products =
+                            await _context.Products
+                                .Where(
+                                    x =>
+                                        productIds.Contains(x.Id)
+                                        && x.TenantId == tenantId
+                                        && !x.IsDeleted)
+                                .ToListAsync(cancellationToken);
 
-                if (totalAmount < 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                        var productById =
+                            products.ToDictionary(
+                                x => x.Id);
 
-                    _context.ClearChangeTracker();
+                        var missingProductIds =
+                            productIds
+                                .Where(
+                                    productId =>
+                                        !productById.ContainsKey(productId))
+                                .ToList();
 
-                    return ApiResponse<PurchaseDetailsDto>
-                        .FailureResponse(
-                            new List<string>
+                        if (missingProductIds.Count > 0)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
+
+                            _context.ClearChangeTracker();
+
+                            return ApiResponse<PurchaseDetailsDto>
+                                .FailureResponse(
+                                    missingProductIds
+                                        .Select(
+                                            id =>
+                                                $"Product not found: {id}")
+                                        .ToList());
+                        }
+
+                        var purchaseNumber =
+                            await _documentNumberService
+                                .GenerateNextAsync(
+                                    tenantId,
+                                    "PURCHASE",
+                                    "PUR",
+                                    request.PurchaseDate,
+                                    cancellationToken);
+
+                        decimal subTotal = 0;
+                        decimal totalTax = 0;
+
+                        var purchase =
+                            new Purchase
                             {
+                                TenantId = tenantId,
+                                SupplierId = request.SupplierId,
+                                PurchaseDate = request.PurchaseDate,
+                                PurchaseNumber = purchaseNumber,
+                                DiscountAmount =
+                                    request.DiscountAmount
+                            };
+
+                        foreach (var item in request.Items)
+                        {
+                            var product =
+                                productById[item.ProductId];
+
+                            product.CurrentStock +=
+                                item.Quantity;
+
+                            product.CostPrice =
+                                item.UnitCost;
+
+                            var itemSubTotal =
+                                item.UnitCost
+                                * item.Quantity;
+
+                            var taxAmount =
+                                (itemSubTotal
+                                * item.TaxRate)
+                                / 100;
+
+                            var totalPrice =
+                                itemSubTotal
+                                + taxAmount;
+
+                            var purchaseItem =
+                                new PurchaseItem
+                                {
+                                    TenantId = tenantId,
+                                    ProductId = product.Id,
+                                    Quantity = item.Quantity,
+                                    UnitCost = item.UnitCost,
+                                    TaxRate = item.TaxRate,
+                                    TaxAmount = taxAmount,
+                                    TotalPrice = totalPrice
+                                };
+
+                            purchase.PurchaseItems.Add(
+                                purchaseItem);
+
+                            await _stockMovementService
+                                .CreateMovement(
+                                    product.Id,
+                                    item.Quantity,
+                                    StockMovementType
+                                        .Purchase
+                                        .ToString(),
+                                    product.CurrentStock,
+                                    "Purchase completed",
+                                    purchase.PurchaseNumber,
+                                    cancellationToken);
+
+                            subTotal += itemSubTotal;
+                            totalTax += taxAmount;
+                        }
+
+                        var totalAmount =
+                            subTotal
+                            + totalTax
+                            - request.DiscountAmount;
+
+                        if (totalAmount < 0)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
+
+                            _context.ClearChangeTracker();
+
+                            return ApiResponse<PurchaseDetailsDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                 "Discount amount cannot exceed " +
                                 "the purchase total"
-                            });
-                }
+                                    });
+                        }
 
-                purchase.SubTotal = subTotal;
-                purchase.TaxAmount = totalTax;
-                purchase.TotalAmount = totalAmount;
-                purchase.PaidAmount = 0;
-                purchase.DueAmount = totalAmount;
-                purchase.PaymentStatus =
-                    PaymentStatus.Unpaid;
+                        purchase.SubTotal = subTotal;
+                        purchase.TaxAmount = totalTax;
+                        purchase.TotalAmount = totalAmount;
+                        purchase.PaidAmount = 0;
+                        purchase.DueAmount = totalAmount;
+                        purchase.PaymentStatus =
+                            PaymentStatus.Unpaid;
 
-                await _context.Purchases.AddAsync(
-                    purchase,
-                    cancellationToken);
+                        await _context.Purchases.AddAsync(
+                            purchase,
+                            cancellationToken);
 
-                await _context.SaveChangesAsync(
-                    cancellationToken);
+                        await _context.SaveChangesAsync(
+                            cancellationToken);
 
-                await transaction.CommitAsync(
-                    cancellationToken);
+                        await transaction.CommitAsync(
+                            cancellationToken);
 
-                return ApiResponse<PurchaseDetailsDto>
-                    .SuccessResponse(
-                        purchase.ToPurchaseDetailsDto(),
-                        "Purchase created successfully");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                await transaction.RollbackAsync(
-                    CancellationToken.None);
+                        return ApiResponse<PurchaseDetailsDto>
+                            .SuccessResponse(
+                                purchase.ToPurchaseDetailsDto(),
+                                "Purchase created successfully");
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        await transaction.RollbackAsync(
+                            CancellationToken.None);
 
-                _context.ClearChangeTracker();
+                        _context.ClearChangeTracker();
 
-                return ApiResponse<PurchaseDetailsDto>
-                    .FailureResponse(
-                        new List<string>
-                        {
+                        return ApiResponse<PurchaseDetailsDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
                             "Stock changed while the purchase was " +
                             "being processed. Reload the latest " +
                             "data and try again."
-                        },
-                        "Concurrency conflict");
-            }
-            catch
-            {
-                await transaction.RollbackAsync(
-                    CancellationToken.None);
+                                },
+                                "Concurrency conflict");
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync(
+                            CancellationToken.None);
 
-                _context.ClearChangeTracker();
+                        _context.ClearChangeTracker();
 
-                throw;
-            }
+                        throw;
+                    }
+                }
+            );
         }
     }
 }
