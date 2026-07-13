@@ -10,13 +10,16 @@ namespace Invento.Application.Behaviours
     {
         private readonly ICacheService _cacheService;
         private readonly ICurrentTenantService _currentTenant;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public CachingBehavior(
             ICacheService cacheService,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            ICacheVersionService cacheVersionService)
         {
             _cacheService = cacheService;
             _currentTenant = currentTenant;
+            _cacheVersionService =  cacheVersionService;
         }
 
         public async Task<TResponse> Handle(
@@ -32,8 +35,18 @@ namespace Invento.Application.Behaviours
             var tenantId =
                 _currentTenant.TenantId;
 
+            var version =
+                await _cacheVersionService
+                    .GetVersionAsync(
+                        tenantId,
+                        cacheableQuery.CacheGroup,
+                        cancellationToken);
+
             var cacheKey =
-                $"{tenantId}:{cacheableQuery.GetCacheKey()}";
+                $"{tenantId:N}:"
+                + $"{cacheableQuery.CacheGroup}:"
+                + $"v{version}:"
+                + cacheableQuery.GetCacheKey();
 
             var cachedResponse =
                 await _cacheService.GetAsync<TResponse>(

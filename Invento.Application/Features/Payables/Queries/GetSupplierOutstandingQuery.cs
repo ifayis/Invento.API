@@ -12,6 +12,9 @@ namespace Invento.Application.Features.Payables.Queries
         public TimeSpan Expiration =>
             CacheDurations.Short;
 
+        public string CacheGroup =>
+            CacheGroups.Payables;
+
         public string GetCacheKey()
         {
             return CacheKeys.Payables(

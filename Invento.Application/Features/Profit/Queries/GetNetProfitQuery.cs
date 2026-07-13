@@ -12,6 +12,9 @@ namespace Invento.Application.Features.Profit.Queries
         public TimeSpan Expiration =>
             CacheDurations.Short;
 
+        public string CacheGroup =>
+            CacheGroups.Profit;
+
         public string GetCacheKey()
         {
             return CacheKeys.Profit(

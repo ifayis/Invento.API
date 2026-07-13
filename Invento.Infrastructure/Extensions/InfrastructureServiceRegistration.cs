@@ -11,6 +11,7 @@ using Invento.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace Invento.Infrastructure.Extensions
 {
@@ -40,6 +41,13 @@ namespace Invento.Infrastructure.Extensions
                     "Redis:ConnectionString is not configured.");
             }
 
+            services.AddSingleton<IConnectionMultiplexer>(_ =>
+            {
+                return ConnectionMultiplexer.Connect(
+                    redisConnectionString);
+            });
+
+
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration =
@@ -53,6 +61,10 @@ namespace Invento.Infrastructure.Extensions
             services.AddScoped<
                 ICacheService, 
                 RedisCacheService>();
+
+            services.AddSingleton<
+                ICacheVersionService,
+                RedisCacheVersionService>();
 
             services.AddScoped<
                 IRecurringJobService,

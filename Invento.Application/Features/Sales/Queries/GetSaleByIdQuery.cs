@@ -14,6 +14,9 @@ namespace Invento.Application.Features.Sales.Queries
         public TimeSpan Expiration =>
             CacheDurations.Short;
 
+        public string CacheGroup =>
+            CacheGroups.Sales;
+
         public string GetCacheKey()
         {
             return CacheKeys.Sale(Id);

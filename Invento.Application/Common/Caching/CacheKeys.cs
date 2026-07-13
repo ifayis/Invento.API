@@ -9,9 +9,6 @@
         public static string Company()
             => "company";
 
-        public static string TenantSettings()
-            => "tenant-settings";
-
         public static string Users(
             string identifier)
             => $"users:{identifier}";

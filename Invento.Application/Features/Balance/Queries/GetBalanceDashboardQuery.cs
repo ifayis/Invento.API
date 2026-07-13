@@ -12,6 +12,9 @@ namespace Invento.Application.Features.Balance.Queries
         public TimeSpan Expiration =>
             CacheDurations.Short;
 
+        public string CacheGroup =>
+            CacheGroups.Balance;
+
         public string GetCacheKey()
         {
             return CacheKeys.Balance(

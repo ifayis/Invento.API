@@ -4,29 +4,33 @@ using Invento.Application.Common.Caching;
 using Invento.Application.Features.Sales.DTOs;
 using Invento.Shared.Pagination;
 
-namespace Invento.Application.Features.Sales.Queries;
-
-public class GetSalesQuery
-    : IQuery<ApiResponse<PagedResponse<SaleDto>>>,
-    ICacheableQuery
+namespace Invento.Application.Features.Sales.Queries
 {
-    public string? Search { get; set; }
-
-    public DateTime? FromDate { get; set; }
-
-    public DateTime? ToDate { get; set; }
-
-    public int PageNumber { get; set; } = 1;
-
-    public int PageSize { get; set; } = 10;
-
-    public TimeSpan Expiration =>
-        CacheDurations.Short;
-
-    public string GetCacheKey()
+    public class GetSalesQuery
+        : IQuery<ApiResponse<PagedResponse<SaleDto>>>,
+        ICacheableQuery
     {
-        return CacheKeys.Sales(
-            CacheKeyBuilder.Build(this));
-    }
+        public string? Search { get; set; }
 
+        public DateTime? FromDate { get; set; }
+
+        public DateTime? ToDate { get; set; }
+
+        public int PageNumber { get; set; } = 1;
+
+        public int PageSize { get; set; } = 10;
+
+        public TimeSpan Expiration =>
+            CacheDurations.Short;
+
+        public string CacheGroup =>
+            CacheGroups.Sales;
+
+        public string GetCacheKey()
+        {
+            return CacheKeys.Sales(
+                CacheKeyBuilder.Build(this));
+        }
+
+    }
 }

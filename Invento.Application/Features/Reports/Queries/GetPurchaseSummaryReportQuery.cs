@@ -11,5 +11,16 @@ namespace Invento.Application.Features.Reports.Queries
         public DateTime? FromDate { get; set; }
 
         public DateTime? ToDate { get; set; }
+
+        public TimeSpan Expiration =>
+            CacheDurations.Reports;
+
+        public string CacheGroup =>
+            CacheGroups.Reports;
+
+        public string GetCacheKey()
+        {
+            return CacheKeyBuilder.Build(this);
+        }
     }
 }

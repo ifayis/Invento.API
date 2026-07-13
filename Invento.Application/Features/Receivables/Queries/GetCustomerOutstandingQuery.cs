@@ -12,6 +12,9 @@ namespace Invento.Application.Features.Receivables.Queries
         public TimeSpan Expiration =>
             CacheDurations.Short;
 
+        public string CacheGroup =>
+            CacheGroups.Receivables;
+
         public string GetCacheKey()
         {
             return CacheKeys.Receivables(

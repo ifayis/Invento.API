@@ -1,6 +1,11 @@
-﻿public interface ICacheableQuery
+﻿namespace Invento.Application.Common.Caching
 {
-    string GetCacheKey();
+    public interface ICacheableQuery
+    {
+        TimeSpan Expiration { get; }
 
-    TimeSpan Expiration { get; }
+        string CacheGroup { get; }
+
+        string GetCacheKey();
+    }
 }
