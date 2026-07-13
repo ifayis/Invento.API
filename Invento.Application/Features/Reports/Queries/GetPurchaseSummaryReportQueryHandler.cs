@@ -51,6 +51,16 @@ namespace Invento.Application.Features.Reports.Queries
                 );
             ";
 
+            Console.WriteLine("purchase Summary Handler Executed");
+
+            Console.WriteLine(
+                $"FromDate = {request.FromDate}");
+            Console.WriteLine(
+                $"ToDate = {request.ToDate}");
+            Console.WriteLine(
+                $"Tenant = {_currentTenant.TenantId}");
+
+
             var result =
                 await connection.QueryFirstAsync<PurchaseSummaryReportDto>(
                     sql,

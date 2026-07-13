@@ -31,21 +31,23 @@ namespace Invento.Application.Features.Reports.Queries
                 _connectionFactory.CreateConnection();
 
             var sql = @"
-        SELECT
-            COUNT(*) AS TotalProducts,
-            ISNULL(SUM(CurrentStock),0) AS TotalStockQuantity,
-            ISNULL(SUM(CurrentStock * CostPrice),0) AS InventoryValue,
-            COUNT(
-                CASE
-                    WHEN CurrentStock <= LowStockThreshold
-                    THEN 1
-                END
-            ) AS LowStockProducts
-        FROM Products
-        WHERE
-            TenantId = @TenantId
-            AND IsDeleted = 0;
-        ";
+            SELECT
+                COUNT(*) AS TotalProducts,
+                ISNULL(SUM(CurrentStock),0) AS TotalStockQuantity,
+                ISNULL(SUM(CurrentStock * CostPrice),0) AS InventoryValue,
+                COUNT(
+                    CASE
+                        WHEN CurrentStock <= LowStockThreshold
+                        THEN 1
+                    END
+                ) AS LowStockProducts
+            FROM Products
+            WHERE
+                TenantId = @TenantId
+                AND IsDeleted = 0;
+            ";
+
+            Console.WriteLine("Inventory Summary Handler Executed");
 
             var result =
                 await connection.QueryFirstAsync<InventorySummaryReportDto>(

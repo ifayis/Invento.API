@@ -82,6 +82,8 @@ namespace Invento.Application.Features.Balance.Queries
                     AND IsDeleted = 0;
                 """;
 
+            Console.WriteLine("balance dashboard Handler Executed");
+
             var command =
                 new CommandDefinition(
                     sql,

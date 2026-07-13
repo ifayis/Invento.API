@@ -69,6 +69,27 @@ namespace Invento.API.Controllers
                 await _mediator.Send(
                     new GetFinancialDashboardQuery()));
         }
+
+        [HttpGet("customer-sales-report")]
+        public async Task<IActionResult> CustomerSalesReport(
+            [FromQuery] GetCustomerSalesReportQuery query)
+        {
+            return Ok(await _mediator.Send(query));
+        }
+
+        [HttpGet("supplier-purchase-report")]
+        public async Task<IActionResult> SupplierPurchaseReport(
+            [FromQuery] GetSupplierPurchaseReportQuery query)
+        {
+            return Ok(await _mediator.Send(query));
+        }
+
+        [HttpGet("top-selling-products")]
+        public async Task<IActionResult> TopSellingProducts(
+            [FromQuery] GetTopSellingProductsReportQuery query)
+        {
+            return Ok(await _mediator.Send(query));
+        }
     }
 
 }

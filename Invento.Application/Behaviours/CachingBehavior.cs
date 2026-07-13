@@ -41,8 +41,11 @@ namespace Invento.Application.Behaviours
 
             if (cachedResponse is not null)
             {
+                Console.WriteLine($"CACHE HIT : {cacheKey}");
                 return cachedResponse;
             }
+
+            Console.WriteLine($"CACHE MISS : {cacheKey}");
 
             var response =
                 await next();
