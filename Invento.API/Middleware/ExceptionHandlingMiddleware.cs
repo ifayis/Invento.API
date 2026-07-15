@@ -37,23 +37,19 @@ namespace Invento.API.Middleware
                     ex,
                     "Validation error occurred");
 
-                context.Response.ContentType =
-                    "application/json";
+                var response =
+                    new ErrorResponse
+                    {
+                        Message = "Validation failed",
+                        Errors = ex.Errors
+                            .Select(x => x.ErrorMessage)
+                            .ToList()
+                    };
 
-                context.Response.StatusCode =
-                    (int)HttpStatusCode.BadRequest;
-
-                var response = new ErrorResponse
-                {
-                    Message = "Validation failed",
-
-                    Errors = ex.Errors
-                        .Select(x => x.ErrorMessage)
-                        .ToList()
-                };
-
-                await context.Response.WriteAsync(
-                    JsonSerializer.Serialize(response));
+                await WriteResponse(
+                    context,
+                    HttpStatusCode.BadRequest,
+                    response);
             }
             catch (Exception ex)
             {
@@ -61,33 +57,44 @@ namespace Invento.API.Middleware
                     ex,
                     "Unhandled exception occurred");
 
-                context.Response.ContentType =
-                    "application/json";
-
-                context.Response.StatusCode =
-                    (int)HttpStatusCode.InternalServerError;
-
                 var errors =
                     _environment.IsDevelopment()
                         ? new List<string>
                         {
-                            ex.Message
+                        ex.Message
                         }
                         : new List<string>
                         {
-                            "An unexpected error occurred"
+                        "An unexpected error occurred"
                         };
 
-                var response = new ErrorResponse
-                {
-                    Message = "Internal server error",
+                var response =
+                    new ErrorResponse
+                    {
+                        Message = "Internal server error",
+                        Errors = errors
+                    };
 
-                    Errors = errors
-                };
-
-                await context.Response.WriteAsync(
-                    JsonSerializer.Serialize(response));
+                await WriteResponse(
+                    context,
+                    HttpStatusCode.InternalServerError,
+                    response);
             }
+        }
+
+        private static async Task WriteResponse(
+            HttpContext context,
+            HttpStatusCode statusCode,
+            ErrorResponse response)
+        {
+            context.Response.StatusCode =
+                (int)statusCode;
+
+            context.Response.ContentType =
+                "application/json";
+
+            await context.Response.WriteAsync(
+                JsonSerializer.Serialize(response));
         }
     }
 }

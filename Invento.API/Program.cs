@@ -250,11 +250,10 @@ if (builder.Environment.IsProduction())
     }
 }
 
-builder.Services.AddPersistenceServices(
-    builder.Configuration);
+builder.Services.AddPersistenceServices(builder.Configuration);
 
-builder.Services.AddInfrastructureServices(
-    builder.Configuration);
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
 builder.Services.AddScoped<StockMovementService>();
 
 builder.Services.AddScoped<CashTransactionService>();
