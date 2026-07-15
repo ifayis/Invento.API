@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Common.Services;
 using Invento.Application.Features.Receivables.DTOs;
 using Invento.Application.Interfaces;
@@ -17,15 +19,18 @@ namespace Invento.Application.Features.Receivables.Commands
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
         private readonly CashTransactionService _cashTransactionService;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public RecordCustomerPaymentCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant,
-            CashTransactionService cashTransactionService)
+            CashTransactionService cashTransactionService,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
             _cashTransactionService = cashTransactionService;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<CustomerPaymentDto>> Handle(
@@ -178,6 +183,14 @@ namespace Invento.Application.Features.Receivables.Commands
 
                         await _context.SaveChangesAsync(
                             cancellationToken);
+
+                        await _cacheVersionService.InvalidateAsync(
+                                tenantId,
+                                CacheGroups.Receivables,
+                                CacheGroups.Sales,
+                                CacheGroups.Balance,
+                                CacheGroups.Reports,
+                                CacheGroups.Dashboard);
 
                         await transaction.CommitAsync(
                             cancellationToken);

@@ -1,7 +1,10 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Extensions;
+using Invento.Application.Common.Caching;
 using Invento.Application.Common.Security;
 using Invento.Application.Interfaces;
+using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invento.Application.Features.Users.Commands
@@ -13,19 +16,27 @@ namespace Invento.Application.Features.Users.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentUserService _currentUser;
+        private readonly ICurrentTenantService _currentTenant;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public DeleteUserCommandHandler(
             IApplicationDbContext context,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            ICurrentTenantService currentTenant,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentUser = currentUser;
+            _currentTenant = currentTenant;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<string>> Handle(
             DeleteUserCommand request,
             CancellationToken cancellationToken)
         {
+            var tenantId = _currentTenant.TenantId;
+
             if (!Guid.TryParse(
                 _currentUser.UserId,
                 out var currentUserId))
@@ -97,6 +108,11 @@ namespace Invento.Application.Features.Users.Commands
 
             await _context.SaveChangesAsync(
                 cancellationToken);
+
+            await _cacheVersionService.InvalidateAsync(
+                    tenantId,
+                    CacheGroups.Users);
+
 
             return ApiResponse<string>
                 .SuccessResponse(

@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Features.Products.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
@@ -14,13 +16,16 @@ namespace Invento.Application.Features.Products.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public CreateProductCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<ProductDto>> Handle(
@@ -71,6 +76,12 @@ namespace Invento.Application.Features.Products.Commands
 
             await _context.SaveChangesAsync(
                 cancellationToken);
+
+            await _cacheVersionService.InvalidateAsync(
+                tenantId,
+                CacheGroups.Products,
+                CacheGroups.Reports,
+                CacheGroups.Dashboard);
 
             var response =
                 new ProductDto

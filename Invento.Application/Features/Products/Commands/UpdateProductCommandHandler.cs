@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Extensions;
+using Invento.Application.Common.Caching;
 using Invento.Application.Features.Products.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
@@ -12,19 +14,24 @@ namespace Invento.Application.Features.Products.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public UpdateProductCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<ProductDto>> Handle(
             UpdateProductCommand request,
             CancellationToken cancellationToken)
         {
+            var tenantId = _currentTenant.TenantId;
+
             var product = await _context.Products
                 .FirstOrDefaultAsync(x =>
                 x.Id == request.Id
@@ -70,6 +77,12 @@ namespace Invento.Application.Features.Products.Commands
             product.CriticalStockThreshold = request.CriticalStockThreshold;
 
             await _context.SaveChangesAsync(cancellationToken);
+
+            await _cacheVersionService.InvalidateAsync(
+                    tenantId,
+                    CacheGroups.Products,
+                    CacheGroups.Reports,
+                    CacheGroups.Dashboard);
 
             return ApiResponse<ProductDto>
                 .SuccessResponse(

@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Common.Services;
 using Invento.Application.Features.Purchases.DTOs;
 using Invento.Application.Features.Purchases.Extensions;
@@ -18,15 +20,18 @@ namespace Invento.Application.Features.Purchases.Commands
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
         private readonly StockMovementService _stockMovementService;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public UpdatePurchaseCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant,
-            StockMovementService stockMovementService)
+            StockMovementService stockMovementService,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
             _stockMovementService = stockMovementService;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<PurchaseDto>> Handle(
@@ -377,6 +382,15 @@ namespace Invento.Application.Features.Purchases.Commands
                 await _context.SaveChangesAsync(
                     cancellationToken);
 
+                await _cacheVersionService.InvalidateAsync(
+                        tenantId,
+                        CacheGroups.Purchases,
+                        CacheGroups.Payables,
+                        CacheGroups.Balance,
+                        CacheGroups.Products,
+                        CacheGroups.Reports,
+                        CacheGroups.Dashboard);
+
                 purchase.PurchaseItems.Clear();
 
                 purchase.SupplierId =
@@ -456,6 +470,15 @@ namespace Invento.Application.Features.Purchases.Commands
 
                 await _context.SaveChangesAsync(
                     cancellationToken);
+
+                await _cacheVersionService.InvalidateAsync(
+                        tenantId,
+                        CacheGroups.Purchases,
+                        CacheGroups.Payables,
+                        CacheGroups.Balance,
+                        CacheGroups.Products,
+                        CacheGroups.Reports,
+                        CacheGroups.Dashboard);
 
                 await transaction.CommitAsync(
                     cancellationToken);

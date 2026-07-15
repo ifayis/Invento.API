@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Features.Targets.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
@@ -11,21 +13,25 @@ namespace Invento.Application.Features.Targets.Commands
         : ICommandHandler<UpdateTenantTargetsCommand, ApiResponse<TenantTargetDto>>
     {
         private readonly IApplicationDbContext _context;
-
         private readonly ICurrentTenantService _currentTenant;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public UpdateTenantTargetsCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<TenantTargetDto>> Handle(
                 UpdateTenantTargetsCommand request,
                 CancellationToken cancellationToken)
         {
+            var tenantId = _currentTenant.TenantId;
+
             var settings = await _context.TenantSettings
                 .FirstOrDefaultAsync(x =>
                     x.TenantId
@@ -51,6 +57,12 @@ namespace Invento.Application.Features.Targets.Commands
             settings.MonthlyProfitTarget = request.MonthlyProfitTarget;
 
             await _context.SaveChangesAsync(cancellationToken);
+
+            await _cacheVersionService.InvalidateAsync(
+                    tenantId,
+                    CacheGroups.Targets,
+                    CacheGroups.Reports,
+                    CacheGroups.Dashboard);
 
             return ApiResponse<TenantTargetDto>
                 .SuccessResponse(

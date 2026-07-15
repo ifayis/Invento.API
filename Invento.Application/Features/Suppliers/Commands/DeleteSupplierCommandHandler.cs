@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Features.Suppliers.DTOs;
 using Invento.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -13,19 +15,24 @@ namespace Invento.Application.Features.Suppliers.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public DeleteSupplierCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<SupplierDto>> Handle(
             DeleteSupplierCommand request,
             CancellationToken cancellationToken)
         {
+            var tenantId = _currentTenant.TenantId;
+
             var supplier = await _context.Suppliers
                 .FirstOrDefaultAsync(
                     x =>
@@ -48,6 +55,13 @@ namespace Invento.Application.Features.Suppliers.Commands
 
             await _context.SaveChangesAsync(
                 cancellationToken);
+
+            await _cacheVersionService.InvalidateAsync(
+                    tenantId,
+                    CacheGroups.Suppliers,
+                    CacheGroups.Payables,
+                    CacheGroups.Reports,
+                    CacheGroups.Dashboard);
 
             return ApiResponse<SupplierDto>
                 .SuccessResponse(

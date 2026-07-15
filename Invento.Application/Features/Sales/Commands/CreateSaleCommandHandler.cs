@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Common.Services;
 using Invento.Application.Features.Sales.Command;
 using Invento.Application.Features.Sales.DTOs;
@@ -21,19 +23,22 @@ namespace Invento.Application.Features.Sales.Commands
         private readonly StockMovementService _stockMovementService;
         private readonly CashTransactionService _cashTransactionService;
         private readonly IDocumentNumberService _documentNumberService;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public CreateSaleCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant,
             StockMovementService stockMovementService,
             CashTransactionService cashTransactionService,
-            IDocumentNumberService documentNumberService)
+            IDocumentNumberService documentNumberService,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
             _stockMovementService = stockMovementService;
             _cashTransactionService = cashTransactionService;
             _documentNumberService = documentNumberService;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<SaleDetailsDto>> Handle(
@@ -400,6 +405,15 @@ namespace Invento.Application.Features.Sales.Commands
 
                         await _context.SaveChangesAsync(
                             cancellationToken);
+
+                        await _cacheVersionService.InvalidateAsync(
+                                tenantId,
+                                CacheGroups.Sales,
+                                CacheGroups.Balance,
+                                CacheGroups.Receivables,
+                                CacheGroups.Products,
+                                CacheGroups.Reports,
+                                CacheGroups.Dashboard);
 
                         await transaction.CommitAsync(
                             cancellationToken);

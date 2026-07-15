@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Features.Customer.Commands;
 using Invento.Application.Features.Customers.DTOs;
 using Invento.Application.Interfaces;
@@ -12,19 +14,24 @@ namespace Invento.Application.Features.Customers.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public DeleteCustomerCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<CustomerDeleteDto>> Handle(
             DeleteCustomerCommand request,
             CancellationToken cancellationToken)
         {
+            var tenantId = _currentTenant.TenantId;
+
             var customer = await _context.Customers
                 .FirstOrDefaultAsync(x =>
                     x.Id == request.Id &&
@@ -45,6 +52,13 @@ namespace Invento.Application.Features.Customers.Commands
             customer.IsDeleted = true;
 
             await _context.SaveChangesAsync(cancellationToken);
+
+            await _cacheVersionService.InvalidateAsync(
+                    tenantId,
+                    CacheGroups.Customers,
+                    CacheGroups.Receivables,
+                    CacheGroups.Reports,
+                    CacheGroups.Dashboard);
 
             return ApiResponse<CustomerDeleteDto>
                 .SuccessResponse(

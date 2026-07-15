@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Common.Services;
 using Invento.Application.Features.Sales.DTOs;
 using Invento.Application.Interfaces;
@@ -16,15 +18,18 @@ namespace Invento.Application.Features.Sales.Commands
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
         private readonly StockMovementService _stockMovementService;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public RestoreSaleCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant,
-            StockMovementService stockMovementService)
+            StockMovementService stockMovementService,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
             _stockMovementService = stockMovementService;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<DeleteSaleDto>> Handle(
@@ -180,6 +185,15 @@ namespace Invento.Application.Features.Sales.Commands
 
                         await _context.SaveChangesAsync(
                             cancellationToken);
+
+                        await _cacheVersionService.InvalidateAsync(
+                                tenantId,
+                                CacheGroups.Sales,
+                                CacheGroups.Receivables,
+                                CacheGroups.Balance,
+                                CacheGroups.Products,
+                                CacheGroups.Reports,
+                                CacheGroups.Dashboard);
 
                         await transaction.CommitAsync(
                             cancellationToken);

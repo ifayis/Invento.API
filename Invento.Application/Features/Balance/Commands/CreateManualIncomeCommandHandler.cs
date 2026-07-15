@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Features.Balance.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
@@ -14,19 +16,24 @@ namespace Invento.Application.Features.Balance.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public CreateManualIncomeCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<CashTransactionDto>> Handle(
             CreateManualIncomeCommand request,
             CancellationToken cancellationToken)
         {
+            var tenantId = _currentTenant.TenantId;
+
             var transaction = new CashTransaction
             {
                 TenantId = _currentTenant.TenantId,
@@ -42,6 +49,12 @@ namespace Invento.Application.Features.Balance.Commands
 
             await _context.SaveChangesAsync(
                 cancellationToken);
+
+            await _cacheVersionService.InvalidateAsync(
+                    tenantId,
+                    CacheGroups.Balance,
+                    CacheGroups.Reports,
+                    CacheGroups.Dashboard);
 
             return ApiResponse<CashTransactionDto>
                 .SuccessResponse(

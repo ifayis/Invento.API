@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Caching;
+using Invento.Application.Common.Extensions;
 using Invento.Application.Common.Services;
 using Invento.Application.Features.Purchases.DTOs;
 using Invento.Application.Features.Purchases.Extensions;
@@ -19,17 +21,20 @@ namespace Invento.Application.Features.Purchases.Commands
         private readonly ICurrentTenantService _currentTenant;
         private readonly StockMovementService _stockMovementService;
         private readonly IDocumentNumberService _documentNumberService;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public CreatePurchaseCommandHandler(
             IApplicationDbContext context,
             ICurrentTenantService currentTenant,
             StockMovementService stockMovementService,
-            IDocumentNumberService documentNumberService)
+            IDocumentNumberService documentNumberService,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
             _stockMovementService = stockMovementService;
             _documentNumberService = documentNumberService;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<PurchaseDetailsDto>> Handle(
@@ -331,6 +336,15 @@ namespace Invento.Application.Features.Purchases.Commands
 
                         await _context.SaveChangesAsync(
                             cancellationToken);
+
+                        await _cacheVersionService.InvalidateAsync(
+                                tenantId,
+                                CacheGroups.Purchases,
+                                CacheGroups.Payables,
+                                CacheGroups.Balance,
+                                CacheGroups.Products,
+                                CacheGroups.Reports,
+                                CacheGroups.Dashboard);
 
                         await transaction.CommitAsync(
                             cancellationToken);

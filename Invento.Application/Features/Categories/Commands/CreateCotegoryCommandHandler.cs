@@ -1,5 +1,7 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
+using Invento.Application.Common.Extensions;
+using Invento.Application.Common.Caching;
 using Invento.Application.Features.Categories.DTOs;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
@@ -12,19 +14,24 @@ namespace Invento.Application.Features.Categories.Commands
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
+        private readonly ICacheVersionService _cacheVersionService;
 
         public CreateCategoryCommandHandler(
             IApplicationDbContext context,
-            ICurrentTenantService currentTenant)
+            ICurrentTenantService currentTenant,
+            ICacheVersionService cacheVersionService)
         {
             _context = context;
             _currentTenant = currentTenant;
+            _cacheVersionService = cacheVersionService;
         }
 
         public async Task<ApiResponse<CategoryDto>> Handle(
             CreateCategoryCommand request,
             CancellationToken cancellationToken)
         {
+            var tenantId = _currentTenant.TenantId;
+
             var exists = await _context.Categories
                 .AnyAsync(x =>
                     x.Name == request.Name
@@ -56,6 +63,13 @@ namespace Invento.Application.Features.Categories.Commands
             );
 
             await _context.SaveChangesAsync(cancellationToken);
+
+            await _cacheVersionService.InvalidateAsync(
+                    tenantId,
+                    CacheGroups.Categories,
+                    CacheGroups.Products,
+                    CacheGroups.Reports,
+                    CacheGroups.Dashboard);
 
             return ApiResponse<CategoryDto>
                 .SuccessResponse(
