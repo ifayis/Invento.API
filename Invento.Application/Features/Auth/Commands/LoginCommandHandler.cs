@@ -12,12 +12,11 @@ namespace Invento.Application.Features.Auth.Commands
         : ICommandHandler<LoginCommand, ApiResponse<AuthResponseDto>>
     {
         private readonly IApplicationDbContext _context;
+        private readonly IJwtTokenGenerator _jwtTokenGenerator;
+        private readonly JwtSettings _jwtSettings;
 
-        private readonly IJwtTokenGenerator
-            _jwtTokenGenerator;
-
-        private readonly JwtSettings
-            _jwtSettings;
+        private const string DummyPasswordHash =
+            "$2a$12$C6UzMDM.H6dfI/f/IKcEeO8G6QxYj5mY0xX2VNfzOExgkt1Pyf7yK";
 
         public LoginCommandHandler(
             IApplicationDbContext context,
@@ -37,7 +36,10 @@ namespace Invento.Application.Features.Auth.Commands
                 LoginCommand request,
                 CancellationToken cancellationToken)
         {
-            var normalizedEmail = request.Email.Trim().ToLower();
+            var normalizedEmail =
+                request.Email
+                    .Trim()
+                    .ToLowerInvariant();
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(x =>
@@ -47,14 +49,17 @@ namespace Invento.Application.Features.Auth.Commands
 
             if (user is null)
             {
+                PasswordHasher.Verify(
+                    request.Password,
+                    DummyPasswordHash);
+
                 return ApiResponse<AuthResponseDto>
                     .FailureResponse(
                         new List<string>
                         {
-                        "Invalid credentials"
+                            "Invalid credentials"
                         },
-                        "Login failed"
-                    );
+                        "Login failed");
             }
 
             if (!user.IsActive)
@@ -63,7 +68,7 @@ namespace Invento.Application.Features.Auth.Commands
                     .FailureResponse(
                         new()
                         {
-                "Your account has been deactivated."
+                        "Your account has been deactivated."
                         },
                         "Login failed");
             }

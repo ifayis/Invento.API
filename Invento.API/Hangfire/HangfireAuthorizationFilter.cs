@@ -1,4 +1,5 @@
 ﻿using Hangfire.Dashboard;
+using Invento.Application.Common;
 
 namespace Invento.API.Hangfire
 {
@@ -20,7 +21,14 @@ namespace Invento.API.Hangfire
                 return false;
             }
 
-            return user.IsInRole("Admin");
+            return
+                user.Identity?.IsAuthenticated == true
+                &&
+                user.IsInRole("Admin")
+                &&
+                user.HasClaim(
+                    "Permission",
+                    Permissions.Dashboard);
         }
     }
 }

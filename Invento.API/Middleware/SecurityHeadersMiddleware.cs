@@ -53,6 +53,15 @@
                         "object-src 'none'";
                 }
 
+                headers["Cross-Origin-Opener-Policy"] =
+                    "same-origin";
+
+                headers["Cross-Origin-Resource-Policy"] =
+                    "same-origin";
+
+                headers["Cross-Origin-Embedder-Policy"] =
+                    "require-corp";
+
                 headers.Remove("Server");
                 headers.Remove("X-Powered-By");
 
