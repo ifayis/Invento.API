@@ -15,9 +15,13 @@ using Invento.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.IO.Compression;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +38,15 @@ builder.Services.AddHsts(options =>
 
 builder.WebHost.ConfigureKestrel(options =>
 {
+    options.Limits.MaxRequestBodySize =
+        10 * 1024 * 1024;
+
+    options.Limits.RequestHeadersTimeout =
+        TimeSpan.FromSeconds(30);
+
+    options.Limits.KeepAliveTimeout =
+        TimeSpan.FromMinutes(2);
+
     options.AddServerHeader = false;
 });
 
@@ -117,7 +130,21 @@ builder.Services.AddRateLimiter(options =>
         });
 });
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions
+            .DefaultIgnoreCondition =
+            JsonIgnoreCondition.WhenWritingNull;
+
+        options.JsonSerializerOptions
+            .PropertyNamingPolicy =
+            JsonNamingPolicy.CamelCase;
+
+        options.JsonSerializerOptions
+            .WriteIndented = false;
+    });
 
 var allowedOrigins =
     builder.Configuration
@@ -195,6 +222,17 @@ builder.Services.AddSwaggerGen();
 builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 
 builder.Services.AddApplicationServices();
+
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+
+    options.Providers.Add<
+        BrotliCompressionProvider>();
+
+    options.Providers.Add<
+        GzipCompressionProvider>();
+});
 
 var defaultConnectionString =
     builder.Configuration.GetConnectionString(
@@ -313,6 +351,23 @@ if (jwtSettings.RefreshTokenExpirationDays <= 0)
         "JwtSettings:RefreshTokenExpirationDays " +
         "must be greater than zero.");
 }
+
+builder.Services.Configure<
+    BrotliCompressionProviderOptions>(
+    options =>
+    {
+        options.Level =
+            CompressionLevel.Fastest;
+    });
+
+builder.Services.Configure<
+    GzipCompressionProviderOptions>(
+    options =>
+    {
+        options.Level =
+            CompressionLevel.Fastest;
+    });
+
 builder.Services
     .AddAuthentication(
         JwtBearerDefaults.AuthenticationScheme)
@@ -453,9 +508,9 @@ if (httpsRedirectionEnabled)
     app.UseHttpsRedirection();
 }
 
-app.UseMiddleware<SecurityHeadersMiddleware>();
-
 app.UseResponseCompression();
+
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseCors("FrontendPolicy");
 
