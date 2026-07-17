@@ -57,6 +57,14 @@ namespace Invento.Persistence.Configurations
                 new
                 {
                     x.TenantId,
+                    x.DueAmount,
+                    x.IsDeleted
+                });
+
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
                     x.SupplierId,
                     x.IsDeleted,
                     x.PurchaseDate,

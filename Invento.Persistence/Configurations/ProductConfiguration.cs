@@ -48,6 +48,14 @@ namespace Invento.Persistence.Configurations
                 new
                 {
                     x.TenantId,
+                    x.CategoryId,
+                    x.IsDeleted
+                });
+
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
                     x.SKU
                 })
                 .IsUnique();

@@ -30,6 +30,22 @@ namespace Invento.Persistence.Configurations
                 .HasForeignKey(x => x.SaleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.CustomerId,
+                    x.IsDeleted
+                });
+
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.SaleId,
+                    x.IsDeleted
+                });
+
             builder.HasQueryFilter(x => !x.IsDeleted);
         }
     }

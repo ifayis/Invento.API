@@ -29,6 +29,14 @@ namespace Invento.Persistence.Configurations
                     x.Id
                 });
 
+            builder.HasIndex(x =>
+                new
+                {
+                    x.TenantId,
+                    x.TransactionType,
+                    x.IsDeleted
+                });
+
             builder.HasQueryFilter(
                 x => !x.IsDeleted);
         }
