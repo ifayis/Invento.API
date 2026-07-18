@@ -14,18 +14,38 @@ namespace Invento.Persistence.Configurations
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.ImageUrl)
-                .HasMaxLength(2048)
+            builder.Property(x => x.FileName)
+                .HasMaxLength(260)
                 .IsRequired();
+
+            builder.Property(x => x.OriginalFileName)
+                .HasMaxLength(260)
+                .IsRequired();
+
+            builder.Property(x => x.ContentType)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            builder.Property(x => x.ImageUrl)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            builder.Property(x => x.FileSize)
+                .IsRequired();
+
+            builder.Property(x => x.IsPrimary)
+                .HasDefaultValue(false);
 
             builder.HasOne(x => x.Product)
                 .WithMany(x => x.Images)
                 .HasForeignKey(x => x.ProductId)
-                .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasQueryFilter(
-                x => !x.Product.IsDeleted);
+            builder.HasIndex(x => new
+            {
+                x.ProductId,
+                x.IsPrimary
+            });
         }
     }
 }

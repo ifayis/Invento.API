@@ -16,6 +16,8 @@ namespace Invento.Application.Interfaces
 
         DbSet<Product> Products { get; }
 
+        DbSet<ProductImage> ProductImages { get; }
+
         DbSet<Category> Categories { get; }
 
         DbSet<StockMovement> StockMovements { get; }

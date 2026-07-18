@@ -25,5 +25,7 @@
         public int LowStockThreshold { get; set; }
 
         public int CriticalStockThreshold { get; set; }
+
+        public string? PrimaryImageUrl { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using Invento.Infrastructure.Auth;
 using Invento.Infrastructure.Caching;
 using Invento.Infrastructure.Email;
 using Invento.Infrastructure.Jobs;
+using Invento.Infrastructure.Storage;
 using Invento.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -73,6 +74,10 @@ namespace Invento.Infrastructure.Extensions
             services.AddScoped<
                 ICurrentUserService,
                 CurrentUserService>();
+
+            services.AddScoped<
+                IFileStorageService,
+                LocalFileStorageService>();
 
             services.AddHangfire(config =>
             {

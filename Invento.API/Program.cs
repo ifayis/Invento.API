@@ -516,6 +516,8 @@ app.UseCors("FrontendPolicy");
 
 app.UseRateLimiter();
 
+app.UseStaticFiles();
+
 app.UseAuthentication();
 
 app.UseRequestLoggingMiddleware();

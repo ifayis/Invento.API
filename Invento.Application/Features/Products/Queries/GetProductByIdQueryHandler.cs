@@ -40,6 +40,7 @@ namespace Invento.Application.Features.Products.Queries
                     p.SellingPrice,
                     p.CurrentStock,
                     p.IsDeleted,
+                    pi.ImageUrl AS PrimaryImageUrl,
                     c.Name AS CategoryName,
                     p.CreatedAt,
                     p.LowStockThreshold,
@@ -49,6 +50,10 @@ namespace Invento.Application.Features.Products.Queries
                     ON c.Id = p.CategoryId
                     AND c.TenantId = @TenantId
                     AND c.IsDeleted = 0
+                LEFT JOIN ProductImages pi
+                    ON pi.ProductId = p.Id
+                    AND pi.IsPrimary = 1
+                    AND pi.IsDeleted = 0
                 WHERE
                     p.Id = @Id
                     AND p.TenantId = @TenantId

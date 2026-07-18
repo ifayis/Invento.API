@@ -64,6 +64,63 @@ namespace Invento.API.Controllers
             return Ok(result);
         }
 
+        [HttpPost("{productId:guid}/images")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadImage(
+            Guid productId,
+            IFormFile image)
+        {
+            var command =
+                new UploadProductImageCommand
+                {
+                    ProductId = productId,
+                    Image = image
+                };
+
+            var result =
+                await _mediator.Send(command);
+
+            return Ok(result);
+        }
+
+
+        [HttpGet("{productId:guid}/images")]
+        public async Task<IActionResult> GetImages(
+            Guid productId)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetProductImagesQuery
+                    {
+                        ProductId = productId
+                    }));
+        }
+
+
+        [HttpDelete("images/{imageId:guid}")]
+        public async Task<IActionResult> DeleteImage(
+            Guid imageId)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new DeleteProductImageCommand
+                    {
+                        ImageId = imageId
+                    }));
+        }
+
+        [HttpPut("images/{imageId:guid}/primary")]
+        public async Task<IActionResult> SetPrimary(
+            Guid imageId)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new SetPrimaryProductImageCommand
+                    {
+                        ImageId = imageId
+                    }));
+        }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
