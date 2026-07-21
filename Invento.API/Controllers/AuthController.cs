@@ -28,7 +28,8 @@ namespace Invento.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterCommand command)
         {
-            var result = await _mediator.Send(command);
+            var result = 
+                await _mediator.Send(command);
 
             if (!result.Success)
             {
@@ -44,7 +45,8 @@ namespace Invento.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginCommand command)
         {
-            var result = await _mediator.Send(command);
+            var result = 
+                await _mediator.Send(command);
 
             if (!result.Success)
             {
@@ -60,7 +62,8 @@ namespace Invento.API.Controllers
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(RefreshTokenCommand command)
         {
-            var result = await _mediator.Send(command);
+            var result = 
+                await _mediator.Send(command);
 
             if (!result.Success)
             {
@@ -76,7 +79,8 @@ namespace Invento.API.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(LogoutCommand command)
         {
-            var result = await _mediator.Send(command);
+            var result = 
+                await _mediator.Send(command);
 
             if (!result.Success)
             {
@@ -92,7 +96,8 @@ namespace Invento.API.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand command)
         {
-            var result = await _mediator.Send(command);
+            var result = 
+                await _mediator.Send(command);
 
             if (!result.Success)
             {
