@@ -31,14 +31,15 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpPut]
-        public async Task<IActionResult> Update(UpdateSaleCommand command)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id,UpdateSaleCommand command)
         {
+            command.Id = id;
             return Ok(await _mediator.Send(command));
         }
 
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             return Ok(await _mediator.Send(
@@ -50,7 +51,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpPut("{id}/restore")]
+        [HttpPut("{id:guid}/restore")]
         public async Task<IActionResult> Restore(Guid id)
         {
             return Ok(await _mediator.Send(
@@ -62,7 +63,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             return Ok(await _mediator.Send(
@@ -120,7 +121,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpGet("customer/{customerId}")]
+        [HttpGet("customer/{customerId:guid}")]
         public async Task<IActionResult> GetCustomerSales(Guid customerId)
         {
             return Ok(await _mediator.Send(

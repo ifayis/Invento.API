@@ -44,12 +44,9 @@ namespace Invento.API.Controllers
             var result =
                 await _mediator.Send(command);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result);
         }
     }
 }

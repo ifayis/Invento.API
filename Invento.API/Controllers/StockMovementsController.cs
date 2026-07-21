@@ -37,7 +37,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             return Ok(await _mediator.Send(
@@ -62,7 +62,7 @@ namespace Invento.API.Controllers
 
         [HttpGet("fast-moving")]
         public async Task<IActionResult> FastMoving(
-                [FromQuery] int top = 10)
+        [FromQuery] int top = 10)
         {
             return Ok(
                 await _mediator.Send(
@@ -77,7 +77,7 @@ namespace Invento.API.Controllers
 
         [HttpGet("dead-stock")]
         public async Task<IActionResult> DeadStock(
-    [FromQuery] int days = 90)
+        [FromQuery] int days = 90)
         {
             return Ok(
                 await _mediator.Send(

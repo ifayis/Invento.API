@@ -39,7 +39,7 @@ namespace Invento.API.Controllers
                     new GetCustomerOutstandingQuery()));
         }
 
-        [HttpGet("customer/{customerId}/history")]
+        [HttpGet("customer/{customerId:guid}/history")]
         public async Task<IActionResult> PaymentHistory(
             Guid customerId)
         {

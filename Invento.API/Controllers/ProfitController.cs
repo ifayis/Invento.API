@@ -75,7 +75,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpGet("product/{productId}")]
+        [HttpGet("product/{productId:guid}")]
         public async Task<IActionResult> ProductProfit(Guid productId)
         {
             return Ok(await _mediator.Send(

@@ -30,9 +30,10 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpPut]
-        public async Task<IActionResult> Update(UpdateCategoryCommand command)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id,UpdateCategoryCommand command)
         {
+            command.Id = id;
             return Ok(await _mediator.Send(command));
         }
 

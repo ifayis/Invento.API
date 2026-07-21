@@ -39,7 +39,7 @@ namespace Invento.API.Controllers
                     new GetSupplierOutstandingQuery()));
         }
 
-        [HttpGet("supplier/{supplierId}/history")]
+        [HttpGet("supplier/{supplierId:guid}/history")]
         public async Task<IActionResult> PaymentHistory(
             Guid supplierId)
         {

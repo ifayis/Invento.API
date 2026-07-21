@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Invento.API.Controllers
 {
-
+    [EnableRateLimiting("AuthPolicy")]
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
@@ -23,7 +23,6 @@ namespace Invento.API.Controllers
         }
 
 
-        [EnableRateLimiting("AuthPolicy")]
         [Authorize(Policy = Permissions.Users)]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterCommand command)
@@ -40,7 +39,6 @@ namespace Invento.API.Controllers
         }
 
 
-        [EnableRateLimiting("AuthPolicy")]
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginCommand command)
@@ -57,7 +55,6 @@ namespace Invento.API.Controllers
         }
 
 
-        [EnableRateLimiting("AuthPolicy")]
         [AllowAnonymous]
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(RefreshTokenCommand command)
@@ -74,7 +71,6 @@ namespace Invento.API.Controllers
         }
 
 
-        [EnableRateLimiting("AuthPolicy")]
         [AllowAnonymous]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(LogoutCommand command)
@@ -91,7 +87,6 @@ namespace Invento.API.Controllers
         }
 
 
-        [EnableRateLimiting("AuthPolicy")]
         [Authorize]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand command)
@@ -108,7 +103,6 @@ namespace Invento.API.Controllers
         }
 
 
-        [EnableRateLimiting("AuthPolicy")]
         [AllowAnonymous]
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(ResetPasswordCommand command)
@@ -123,7 +117,6 @@ namespace Invento.API.Controllers
 
             return Ok(result);
         }
-
 
         [HttpPost("change-password")]
         [AllowAnonymous]
