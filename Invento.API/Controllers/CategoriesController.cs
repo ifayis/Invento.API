@@ -37,7 +37,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             return Ok(await _mediator.Send(
@@ -48,7 +48,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpPut("{id}/restore")]
+        [HttpPut("{id:guid}/restore")]
         public async Task<IActionResult> Restore(Guid id)
         {
             return Ok(
@@ -62,7 +62,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             return Ok(await _mediator.Send(
