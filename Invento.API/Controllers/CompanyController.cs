@@ -34,7 +34,10 @@ namespace Invento.API.Controllers
         [HttpPut]
         public async Task<IActionResult> Update(UpdateCompanyProfileCommand command)
         {
-            return Ok(await _mediator.Send(command));
+            var result =
+                await _mediator.Send(command);
+
+            return Ok(result);
         }
     }
 }
