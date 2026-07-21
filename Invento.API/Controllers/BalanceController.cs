@@ -39,7 +39,7 @@ namespace Invento.API.Controllers
                 await _mediator.Send(query));
         }
 
-        [HttpGet("transactions/{id}")]
+        [HttpGet("transactions/{id:guid}")]
         public async Task<IActionResult> TransactionById(
             Guid id)
         {
