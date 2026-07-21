@@ -23,7 +23,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _mediator.Send(
@@ -56,13 +56,15 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpPut]
-        public async Task<IActionResult> Update(UpdateProductCommand command)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id,UpdateProductCommand command)
         {
             var result = await _mediator.Send(command);
+            command.Id = id;
 
             return Ok(result);
         }
+
 
         [HttpPost("{productId:guid}/images")]
         [Consumes("multipart/form-data")]
@@ -109,6 +111,7 @@ namespace Invento.API.Controllers
                     }));
         }
 
+
         [HttpPut("images/{imageId:guid}/primary")]
         public async Task<IActionResult> SetPrimary(
             Guid imageId)
@@ -122,7 +125,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _mediator.Send(
@@ -136,7 +139,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [HttpPut("{id}/restore")]
+        [HttpPut("{id:guid}/restore")]
         public async Task<IActionResult> Unhide(Guid id)
         {
             var result = await _mediator.Send(
