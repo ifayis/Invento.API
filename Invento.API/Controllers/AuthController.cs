@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Invento.Application.Common;
 using Invento.Application.Features.Auth.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,9 @@ namespace Invento.API.Controllers
             _mediator = mediator;
         }
 
+
         [EnableRateLimiting("AuthPolicy")]
+        [Authorize(Policy = Permissions.Users)]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterCommand command)
         {
@@ -35,7 +38,9 @@ namespace Invento.API.Controllers
             return Ok(result);
         }
 
+
         [EnableRateLimiting("AuthPolicy")]
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginCommand command)
         {
@@ -49,7 +54,9 @@ namespace Invento.API.Controllers
             return Ok(result);
         }
 
+
         [EnableRateLimiting("AuthPolicy")]
+        [AllowAnonymous]
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(RefreshTokenCommand command)
         {
@@ -64,6 +71,8 @@ namespace Invento.API.Controllers
         }
 
 
+        [EnableRateLimiting("AuthPolicy")]
+        [AllowAnonymous]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(LogoutCommand command)
         {
@@ -77,6 +86,9 @@ namespace Invento.API.Controllers
             return Ok(result);
         }
 
+
+        [EnableRateLimiting("AuthPolicy")]
+        [Authorize]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand command)
         {
@@ -91,6 +103,8 @@ namespace Invento.API.Controllers
         }
 
 
+        [EnableRateLimiting("AuthPolicy")]
+        [AllowAnonymous]
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(ResetPasswordCommand command)
         {
@@ -107,6 +121,7 @@ namespace Invento.API.Controllers
 
 
         [HttpPost("change-password")]
+        [AllowAnonymous]
         [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordCommand command)
         {
