@@ -223,6 +223,14 @@ builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 
 builder.Services.AddApplicationServices();
 
+builder.Services.AddPersistenceServices(builder.Configuration);
+
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+builder.Services.AddPermissionPolicies();
+
+builder.Services.AddHealthCheckServices(builder.Configuration);
+
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
@@ -287,18 +295,6 @@ if (builder.Environment.IsProduction())
             "must not use localhost.");
     }
 }
-
-builder.Services.AddPersistenceServices(builder.Configuration);
-
-builder.Services.AddInfrastructureServices(builder.Configuration);
-
-builder.Services.AddScoped<StockMovementService>();
-
-builder.Services.AddScoped<CashTransactionService>();
-
-builder.Services.AddPermissionPolicies();
-
-builder.Services.AddHealthCheckServices(builder.Configuration);
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));

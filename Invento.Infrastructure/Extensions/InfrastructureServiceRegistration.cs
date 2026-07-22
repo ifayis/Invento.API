@@ -22,8 +22,6 @@ namespace Invento.Infrastructure.Extensions
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            services.AddHttpContextAccessor();
-
             services.AddScoped<
                 IJwtTokenGenerator, 
                 JwtTokenGenerator>();
