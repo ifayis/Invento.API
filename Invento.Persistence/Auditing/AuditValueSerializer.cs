@@ -84,7 +84,7 @@ namespace Invento.Persistence.Auditing
             return SerializeOrNull(values);
         }
 
-        public static string? GetCreatedValues(
+        public static string? GetDeletedValues(
             EntityEntry entry)
         {
             var values =

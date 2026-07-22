@@ -124,7 +124,7 @@ namespace Invento.Persistence.Data
 
                                     NewValues =
                                         AuditValueSerializer
-                                            .GetCreatedValues(entry),
+                                            .GetDeletedValues(entry),
 
                                     CreatedAt = now
                                 });
@@ -211,7 +211,7 @@ namespace Invento.Persistence.Data
 
                                     OldValues =
                                         AuditValueSerializer
-                                            .GetCreatedValues(entry),
+                                            .GetDeletedValues(entry),
 
                                     NewValues = null,
 
@@ -250,7 +250,7 @@ namespace Invento.Persistence.Data
 
                                     NewValues =
                                         AuditValueSerializer
-                                            .GetCreatedValues(entry),
+                                            .GetDeletedValues(entry),
 
                                     CreatedAt = now
                                 });
@@ -279,7 +279,7 @@ namespace Invento.Persistence.Data
 
                                     OldValues =
                                         AuditValueSerializer
-                                            .GetCreatedValues(entry),
+                                            .GetDeletedValues(entry),
 
                                     NewValues = null,
 
@@ -318,7 +318,7 @@ namespace Invento.Persistence.Data
 
                                     NewValues =
                                         AuditValueSerializer
-                                            .GetCreatedValues(entry),
+                                            .GetDeletedValues(entry),
 
                                     CreatedAt = now
                                 });
@@ -347,7 +347,7 @@ namespace Invento.Persistence.Data
 
                                     OldValues =
                                         AuditValueSerializer
-                                            .GetCreatedValues(entry),
+                                            .GetDeletedValues(entry),
 
                                     NewValues = null,
 
