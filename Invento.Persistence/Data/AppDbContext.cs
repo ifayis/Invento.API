@@ -388,47 +388,6 @@ namespace Invento.Persistence.Data
             ChangeTracker.Clear();
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.ApplyConfigurationsFromAssembly(
-                typeof(AppDbContext).Assembly);
-
-            modelBuilder.Entity<Category>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<Sale>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<StockMovement>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<Supplier>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<Purchase>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<CashTransaction>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<CustomerPayment>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<SupplierPayment>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<Customer>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<User>()
-                .HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<AuditLog>()
-                .HasIndex(x => x.TenantId);
-        }
-
         public async Task<IDbContextTransaction> BeginTransactionAsync(
             CancellationToken cancellationToken = default)
         {

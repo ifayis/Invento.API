@@ -530,7 +530,8 @@ app.UseHangfireDashboard(
         [
             new HangfireAuthorizationFilter()
         ]
-    });
+    }
+);
 
 app.MapControllers();
 
