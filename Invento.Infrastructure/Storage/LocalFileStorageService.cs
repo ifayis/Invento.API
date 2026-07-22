@@ -16,6 +16,14 @@ namespace Invento.Infrastructure.Storage
                 ".webp"
             };
 
+        private static readonly string[]
+            AllowedContentTypes =
+            {
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            };
+
         private const long
             MaxFileSize =
                 5 * 1024 * 1024;
@@ -57,6 +65,13 @@ namespace Invento.Infrastructure.Storage
                     "Only jpg, jpeg, png and webp images are allowed.");
             }
 
+            if (!AllowedContentTypes.Contains(
+                    file.ContentType.ToLowerInvariant()))
+            {
+                throw new InvalidOperationException(
+                    "Invalid image format.");
+            }
+
             var uploadsRoot =
                 Path.Combine(
                     _environment.WebRootPath,
@@ -69,7 +84,7 @@ namespace Invento.Infrastructure.Storage
                 uploadsRoot);
 
             var fileName =
-                $"{Guid.NewGuid()}{extension}";
+                $"{Guid.NewGuid():N}{extension}";
 
             var fullPath =
                 Path.Combine(
@@ -79,7 +94,11 @@ namespace Invento.Infrastructure.Storage
             await using var stream =
                 new FileStream(
                     fullPath,
-                    FileMode.Create);
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 81920,
+                    useAsync: true);
 
             await file.CopyToAsync(
                 stream,
@@ -103,10 +122,19 @@ namespace Invento.Infrastructure.Storage
                 return Task.CompletedTask;
             }
 
+            if (Path.IsPathRooted(relativePath) ||
+                relativePath.Contains(".."))
+            {
+                throw new InvalidOperationException(
+                    "Invalid file path.");
+            }
+
             var fullPath =
                 Path.Combine(
                     _environment.WebRootPath,
-                    relativePath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                    relativePath.Replace(
+                        "/",
+                        Path.DirectorySeparatorChar.ToString()));
 
             if (File.Exists(fullPath))
             {
