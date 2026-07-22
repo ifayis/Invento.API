@@ -516,9 +516,9 @@ app.UseStaticFiles();
 
 app.UseAuthentication();
 
-app.UseRequestLoggingMiddleware();
-
 app.UseCustomExceptionMiddleware();
+
+app.UseRequestLoggingMiddleware();
 
 app.UseAuthorization();
 

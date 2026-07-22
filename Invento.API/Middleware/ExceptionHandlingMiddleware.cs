@@ -1,7 +1,8 @@
-﻿using Invento.API.Common;
+﻿using FluentValidation;
+using Invento.API.Common;
+using Invento.Shared.Exceptions;
 using System.Net;
 using System.Text.Json;
-using FluentValidation;
 
 namespace Invento.API.Middleware
 {
@@ -30,6 +31,18 @@ namespace Invento.API.Middleware
             try
             {
                 await _next(context);
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Resource not found");
+
+                await WriteResponse(
+                    context,
+                    HttpStatusCode.NotFound,
+                    new ErrorResponse
+                    {
+                        Message = ex.Message
+                    });
             }
             catch (ValidationException ex)
             {
