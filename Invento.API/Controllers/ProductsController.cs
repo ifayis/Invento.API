@@ -125,6 +125,45 @@ namespace Invento.API.Controllers
         }
 
 
+        [HttpGet("{productId:guid}/stock-history")]
+        public async Task<IActionResult> StockHistory(
+            Guid productId)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetProductStockHistoryQuery
+                    {
+                        ProductId = productId
+                    }));
+        }
+
+
+        [HttpGet("{productId:guid}/sales-history")]
+        public async Task<IActionResult> SalesHistory(
+            Guid productId)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetProductSalesHistoryQuery
+                    {
+                        ProductId = productId
+                    }));
+        }
+
+
+        [HttpGet("{productId:guid}/purchase-history")]
+        public async Task<IActionResult> PurchaseHistory(
+            Guid productId)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetProductPurchaseHistoryQuery
+                    {
+                        ProductId = productId
+                    }));
+        }
+
+
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
