@@ -96,6 +96,19 @@ namespace Invento.API.Controllers
         }
 
 
+        [HttpGet("{customerId:guid}/ledger")]
+        public async Task<IActionResult> Ledger(
+            Guid customerId)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetCustomerLedgerQuery
+                    {
+                        CustomerId = customerId
+                    }));
+        }
+
+
         [HttpGet("{customerId:guid}/sales-summary")]
         public async Task<IActionResult> SalesSummary(
             Guid customerId)
