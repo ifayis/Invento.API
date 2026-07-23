@@ -71,6 +71,20 @@ namespace Invento.API.Controllers
                 await _mediator.Send(query));
         }
 
+
+        [HttpGet("{supplierId:guid}/ledger")]
+        public async Task<IActionResult> Ledger(
+            Guid supplierId)
+        {
+            return Ok(
+                await _mediator.Send(
+                    new GetSupplierLedgerQuery
+                    {
+                        SupplierId = supplierId
+                    }));
+        }
+
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(
             Guid id)
