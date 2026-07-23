@@ -66,5 +66,13 @@ namespace Invento.API.Controllers
             return Ok(
                 await _mediator.Send(command));
         }
+
+        [HttpGet("cashflow")]
+        public async Task<IActionResult> CashFlow(
+            [FromQuery] GetCashFlowQuery query)
+        {
+            return Ok(
+                await _mediator.Send(query));
+        }
     }
 }
