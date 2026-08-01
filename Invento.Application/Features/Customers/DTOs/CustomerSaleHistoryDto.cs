@@ -4,6 +4,8 @@
     {
         public Guid SaleId { get; set; }
 
+        public Guid CustomerId { get; set; }
+
         public string InvoiceNumber { get; set; } = string.Empty;
 
         public DateTime SaleDate { get; set; }
