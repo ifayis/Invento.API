@@ -40,7 +40,7 @@ namespace Invento.Application.Features.Balance.Commands
                 TransactionType = CashTransactionType.ManualExpense,
                 Amount = request.Amount,
                 Description = request.Description.Trim(),
-                TransactionDate = request.TransactionDate
+                TransactionDate = request.TransactionDate ?? DateTime.UtcNow
             };
 
             await _context.CashTransactions.AddAsync(

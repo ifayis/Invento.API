@@ -8,9 +8,6 @@ namespace Invento.Application.Features.Sales.Validators
     {
         public CreateSaleCommandValidator()
         {
-            RuleFor(x => x.SaleDate)
-                .NotEmpty();
-
             RuleFor(x => x.PaidAmount)
                 .GreaterThanOrEqualTo(0);
 

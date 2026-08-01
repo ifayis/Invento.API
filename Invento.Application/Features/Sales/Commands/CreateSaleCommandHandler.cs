@@ -246,7 +246,7 @@ namespace Invento.Application.Features.Sales.Commands
                                     tenantId,
                                     "SALE",
                                     "INV",
-                                    request.SaleDate,
+                                    DateTime.UtcNow,
                                     cancellationToken);
 
                         decimal subTotal = 0;
@@ -258,7 +258,7 @@ namespace Invento.Application.Features.Sales.Commands
                             TenantId = tenantId,
                             CustomerId = request.CustomerId,
                             InvoiceNumber = invoiceNumber,
-                            SaleDate = request.SaleDate,
+                            SaleDate = DateTime.UtcNow,
                             DiscountAmount = request.DiscountAmount
                         };
 
@@ -384,7 +384,7 @@ namespace Invento.Application.Features.Sales.Commands
                                     CashTransactionType.Sale,
                                     request.PaidAmount,
                                     $"Sale Payment - {sale.InvoiceNumber}",
-                                    request.SaleDate,
+                                    DateTime.UtcNow,
                                     cancellationToken);
                         }
 
@@ -398,7 +398,7 @@ namespace Invento.Application.Features.Sales.Commands
                                     CustomerId =
                                         request.CustomerId.Value,
                                     Amount = request.PaidAmount,
-                                    PaymentDate = request.SaleDate,
+                                    PaymentDate = DateTime.UtcNow,
                                     Remarks = "Initial payment"
                                 });
                         }

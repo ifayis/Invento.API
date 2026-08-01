@@ -5,6 +5,7 @@ using Invento.Shared.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
+
 namespace Invento.Persistence.Data
 {
     public class AppDbContext
@@ -398,6 +399,21 @@ namespace Invento.Persistence.Data
         public IExecutionStrategy CreateExecutionStrategy()
         {
             return Database.CreateExecutionStrategy();
+        }
+
+        protected override void OnModelCreating(
+        ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            foreach (var property in modelBuilder.Model
+                .GetEntityTypes()
+                .SelectMany(e => e.GetProperties())
+                .Where(p => p.ClrType == typeof(decimal)))
+            {
+                property.SetPrecision(18);
+                property.SetScale(2);
+            }
         }
     }
 }

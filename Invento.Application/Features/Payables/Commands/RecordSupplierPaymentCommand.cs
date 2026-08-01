@@ -11,8 +11,6 @@ namespace Invento.Application.Features.Payables.Commands
 
         public decimal Amount { get; set; }
 
-        public DateTime PaymentDate { get; set; }
-
         public string Remarks { get; set; }
             = string.Empty;
     }

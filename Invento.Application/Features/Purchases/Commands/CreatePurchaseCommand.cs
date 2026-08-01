@@ -9,8 +9,6 @@ namespace Invento.Application.Features.Purchases.Commands
     {
         public Guid SupplierId { get; set; }
 
-        public DateTime PurchaseDate { get; set; }
-
         public decimal DiscountAmount { get; set; }
 
         public List<CreatePurchaseItemDto> Items { get; set; }

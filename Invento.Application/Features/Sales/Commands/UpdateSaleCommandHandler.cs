@@ -381,7 +381,7 @@ namespace Invento.Application.Features.Sales.Commands
                 sale.SaleItems.Clear();
 
                 sale.CustomerId = request.CustomerId;
-                sale.SaleDate = request.SaleDate;
+                sale.SaleDate = request.SaleDate ?? DateTime.UtcNow;
                 sale.DiscountAmount =
                     request.DiscountAmount;
 

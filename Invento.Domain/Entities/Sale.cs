@@ -13,7 +13,7 @@ public class Sale : BaseEntity
 
     public Guid TenantId { get; set; }
 
-    public DateTime SaleDate { get; set; }
+    public DateTime SaleDate { get; set; } 
 
     public decimal SubTotal { get; set; }
 

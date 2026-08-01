@@ -12,6 +12,6 @@ namespace Invento.Application.Features.Balance.Commands
         public string Description { get; set; }
             = string.Empty;
 
-        public DateTime TransactionDate { get; set; }
+        public DateTime? TransactionDate { get; set; }
     }
 }

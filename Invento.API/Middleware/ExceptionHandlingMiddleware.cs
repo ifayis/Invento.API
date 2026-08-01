@@ -54,9 +54,10 @@ namespace Invento.API.Middleware
                     new ErrorResponse
                     {
                         Message = "Validation failed",
-                        Errors = ex.Errors
-                            .Select(x => x.ErrorMessage)
-                            .ToList()
+                        Errors = new List<string>
+{
+    ex.ToString()
+}
                     };
 
                 await WriteResponse(

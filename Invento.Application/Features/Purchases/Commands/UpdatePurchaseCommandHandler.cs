@@ -397,7 +397,7 @@ namespace Invento.Application.Features.Purchases.Commands
                     request.SupplierId;
 
                 purchase.PurchaseDate =
-                    request.PurchaseDate;
+                    request.PurchaseDate ?? DateTime.UtcNow;
 
                 purchase.DiscountAmount =
                     request.DiscountAmount;

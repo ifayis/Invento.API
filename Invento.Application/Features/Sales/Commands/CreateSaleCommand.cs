@@ -9,8 +9,6 @@ namespace Invento.Application.Features.Sales.Command
     {
         public Guid? CustomerId { get; set; }
 
-        public DateTime SaleDate { get; set; }
-
         public decimal DiscountAmount { get; set; }
 
         public decimal PaidAmount { get; set; }

@@ -229,7 +229,7 @@ namespace Invento.Application.Features.Purchases.Commands
                                     tenantId,
                                     "PURCHASE",
                                     "PUR",
-                                    request.PurchaseDate,
+                                    DateTime.UtcNow,
                                     cancellationToken);
 
                         decimal subTotal = 0;
@@ -240,7 +240,7 @@ namespace Invento.Application.Features.Purchases.Commands
                             {
                                 TenantId = tenantId,
                                 SupplierId = request.SupplierId,
-                                PurchaseDate = request.PurchaseDate,
+                                PurchaseDate = DateTime.UtcNow,
                                 PurchaseNumber = purchaseNumber,
                                 DiscountAmount =
                                     request.DiscountAmount

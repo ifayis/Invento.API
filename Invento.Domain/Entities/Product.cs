@@ -1,4 +1,5 @@
 ﻿using Invento.Shared.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace Invento.Domain.Entities
 {
@@ -24,8 +25,8 @@ namespace Invento.Domain.Entities
 
         public int CriticalStockThreshold { get; set; } = 5;
 
-        public byte[] RowVersion { get; set; } =
-            Array.Empty<byte>();
+        [Timestamp]
+        public byte[]? RowVersion { get; set; }
 
         public Category Category { get; set; } = default!;
 
