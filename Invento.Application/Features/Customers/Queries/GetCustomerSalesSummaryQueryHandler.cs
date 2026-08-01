@@ -103,6 +103,7 @@ namespace Invento.Application.Features.Customers.Queries
             SELECT TOP 10
 
                 Id AS SaleId,
+                CustomerId,
                 InvoiceNumber,
                 SaleDate,
                 TotalAmount,

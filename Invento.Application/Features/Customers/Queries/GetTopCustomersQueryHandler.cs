@@ -43,6 +43,8 @@ namespace Invento.Application.Features.Customers.Queries
 
                 c.PhoneNumber,
 
+                c.Address,
+
                 COUNT(s.Id)
                     AS TotalOrders,
 
@@ -55,6 +57,9 @@ namespace Invento.Application.Features.Customers.Queries
                     SUM(s.ProfitAmount),
                     0
                 ) AS TotalProfit,
+
+                MIN(s.SaleDate)
+                    AS FirstPurchaseDate,
 
                 MAX(s.SaleDate)
                     AS LastPurchaseDate
@@ -73,28 +78,95 @@ namespace Invento.Application.Features.Customers.Queries
                 c.Id,
                 c.Name,
                 c.Email,
-                c.PhoneNumber
+                c.PhoneNumber,
+                c.Address
 
             ORDER BY
-                SUM(s.TotalAmount) DESC
-            ";
+                SUM(s.TotalAmount) DESC;";
 
-            var result =
-                await connection.QueryAsync<
-                    CustomerSalesSummaryDto>(
-                    sql,
-                    new
-                    {
-                        TenantId =
-                            _currentTenant.TenantId,
-                        request.Top
-                    });
+            var customers =
+                (
+                    await connection.QueryAsync<
+                        CustomerSalesSummaryDto>(
+                        sql,
+                        new
+                        {
+                            TenantId =
+                                _currentTenant.TenantId,
+                            request.Top
+                        })
+                ).ToList();
+
+            var customerIds =
+                customers
+                    .Select(x => x.CustomerId)
+                    .ToArray();
+
+            if (customerIds.Length > 0)
+            {
+                var salesSql = @"
+                SELECT
+
+                    Id AS SaleId,
+
+                    CustomerId,
+
+                    InvoiceNumber,
+
+                    SaleDate,
+
+                    TotalAmount,
+
+                    ProfitAmount
+
+                FROM Sales
+
+                WHERE
+                    TenantId = @TenantId
+                    AND IsDeleted = 0
+                    AND CustomerId IN @CustomerIds
+
+                ORDER BY
+                    SaleDate DESC;";
+
+                var sales =
+                    await connection.QueryAsync<
+                        CustomerSaleHistoryDto>(
+                        salesSql,
+                        new
+                        {
+                            TenantId =
+                                _currentTenant.TenantId,
+
+                            CustomerIds =
+                                customerIds
+                        });
+
+                var groupedSales =
+                    sales
+                        .GroupBy(
+                            x => x.CustomerId)
+                        .ToDictionary(
+                            x => x.Key,
+                            x => x
+                                .Take(5)
+                                .ToList());
+
+                foreach (var customer in customers)
+                {
+                    customer.RecentSales =
+                        groupedSales.TryGetValue(
+                            customer.CustomerId,
+                            out var recentSales)
+                        ? recentSales
+                        : new List<CustomerSaleHistoryDto>();
+                }
+            }
 
             return ApiResponse<
                 List<CustomerSalesSummaryDto>>
                 .SuccessResponse(
-                    result.ToList()
-                );
+                    customers);
         }
     }
 }
