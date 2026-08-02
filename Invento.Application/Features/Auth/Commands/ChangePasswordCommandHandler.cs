@@ -26,6 +26,9 @@ namespace Invento.Application.Features.Auth.Commands
             ChangePasswordCommand request,
             CancellationToken cancellationToken)
         {
+            Console.WriteLine($"CurrentUser.UserId = {_currentUser.UserId}");
+            Console.WriteLine($"CurrentUser.Email = {_currentUser.Email}");
+
             if (!Guid.TryParse(
                 _currentUser.UserId,
                 out var userId))
@@ -38,6 +41,8 @@ namespace Invento.Application.Features.Auth.Commands
                         });
             }
 
+            Console.WriteLine($"Parsed Guid = {userId}");
+
             var user =
                 await _context.Users
                     .FirstOrDefaultAsync(
@@ -45,6 +50,10 @@ namespace Invento.Application.Features.Auth.Commands
                             x.Id == userId &&
                             !x.IsDeleted,
                         cancellationToken);
+
+            Console.WriteLine(user == null
+                ? "User = NULL"
+                : $"User found: {user.Email}");
 
             if (user is null)
             {

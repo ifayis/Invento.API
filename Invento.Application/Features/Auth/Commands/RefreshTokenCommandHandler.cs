@@ -37,9 +37,6 @@ public class RefreshTokenCommandHandler
         RefreshTokenCommand request,
         CancellationToken cancellationToken)
     {
-        using var transaction =
-            await _context.BeginTransactionAsync();
-
         try
         {
             var refreshTokenHash =
@@ -55,71 +52,72 @@ public class RefreshTokenCommandHandler
 
             if (storedToken is null)
             {
-                await transaction.RollbackAsync(
-                    cancellationToken);
+                return ApiResponse<AuthResponseDto>
+                    .FailureResponse(
+                        new List<string>
+                        {
+                    "Invalid refresh token"
+                        },
+                        "Unauthorized");
+            }
+
+            if (!storedToken.User.IsActive)
+            {
 
                 return ApiResponse<AuthResponseDto>
                     .FailureResponse(
                         new List<string>
                         {
-                        "Invalid refresh token"
+                                "User account is inactive."
                         },
                         "Unauthorized");
             }
 
             if (storedToken.IsRevoked)
-            {
-                if (storedToken.ReplacedByTokenId.HasValue)
                 {
-                    var familyTokens =
-                        await _context.RefreshTokens
-                            .Where(x =>
-                                x.UserId == storedToken.UserId
-                                && x.FamilyId == storedToken.FamilyId
-                                && !x.IsRevoked)
-                            .ToListAsync(
-                                cancellationToken);
-
-                    var revokedAt =
-                        DateTime.UtcNow;
-
-                    foreach (var familyToken in familyTokens)
+                    if (storedToken.ReplacedByTokenId.HasValue)
                     {
-                        familyToken.IsRevoked = true;
-                        familyToken.RevokedAt = revokedAt;
+                        var familyTokens =
+                            await _context.RefreshTokens
+                                .Where(x =>
+                                    x.UserId == storedToken.UserId
+                                    && x.FamilyId == storedToken.FamilyId
+                                    && !x.IsRevoked)
+                                .ToListAsync(
+                                    cancellationToken);
+
+                        var revokedAt =
+                            DateTime.UtcNow;
+
+                        foreach (var familyToken in familyTokens)
+                        {
+                            familyToken.IsRevoked = true;
+                            familyToken.RevokedAt = revokedAt;
+                        }
+
+                        await _context.SaveChangesAsync(
+                            cancellationToken);
+                    }
+                    else
+                    {
                     }
 
-                    await _context.SaveChangesAsync(
-                        cancellationToken);
-
-                    await transaction.CommitAsync(
-                        cancellationToken);
-                }
-                else
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-                }
-
-                return ApiResponse<AuthResponseDto>
-                    .FailureResponse(
-                        new List<string>
-                        {
+                    return ApiResponse<AuthResponseDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
                         "Invalid refresh token"
-                        },
-                        "Unauthorized");
-            }
+                            },
+                            "Unauthorized");
+                }
 
             if (storedToken.ExpiresAt <= DateTime.UtcNow)
             {
-                await transaction.RollbackAsync(
-                    cancellationToken);
-
                 return ApiResponse<AuthResponseDto>
                     .FailureResponse(
                         new List<string>
                         {
-                        "Refresh token expired"
+                    "Refresh token expired"
                         },
                         "Unauthorized");
             }
@@ -168,9 +166,6 @@ public class RefreshTokenCommandHandler
             await _context.SaveChangesAsync(
                 cancellationToken);
 
-            await transaction.CommitAsync(
-                cancellationToken);
-
             return ApiResponse<AuthResponseDto>
                 .SuccessResponse(
                     new AuthResponseDto
@@ -192,23 +187,22 @@ public class RefreshTokenCommandHandler
                     },
                     "Token refreshed successfully");
         }
+
         catch (DbUpdateConcurrencyException)
         {
-            await transaction.RollbackAsync(
-                cancellationToken);
+            _context.ClearChangeTracker();
 
             return ApiResponse<AuthResponseDto>
                 .FailureResponse(
                     new List<string>
                     {
-                "Refresh token is no longer valid"
+                        "Refresh token is no longer valid"
                     },
                     "Unauthorized");
         }
         catch
         {
-            await transaction.RollbackAsync(
-                cancellationToken);
+            _context.ClearChangeTracker();
 
             throw;
         }

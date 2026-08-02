@@ -81,6 +81,21 @@ namespace Invento.Application.Features.Auth.Commands
                 token.RevokedAt = DateTime.UtcNow;
             }
 
+            resetToken.User.PasswordHash =
+                PasswordHasher.Hash(request.NewPassword);
+
+            var entry = _context.Users.Entry(resetToken.User);
+
+            System.Diagnostics.Debug.WriteLine($"State = {entry.State}");
+
+            foreach (var property in entry.Properties)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"{property.Metadata.Name} : {property.IsModified}");
+            }
+
+            _context.Users.Update(resetToken.User);
+
             await _context.SaveChangesAsync(
                 cancellationToken);
 

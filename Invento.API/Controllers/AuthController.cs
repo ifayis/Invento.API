@@ -119,7 +119,6 @@ namespace Invento.API.Controllers
         }
 
         [HttpPost("change-password")]
-        [AllowAnonymous]
         [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordCommand command)
         {

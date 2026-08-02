@@ -4,6 +4,7 @@ using Invento.Persistence.Auditing;
 using Invento.Shared.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Reflection;
 
 
 namespace Invento.Persistence.Data
@@ -401,10 +402,12 @@ namespace Invento.Persistence.Data
             return Database.CreateExecutionStrategy();
         }
 
-        protected override void OnModelCreating(
-        ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.ApplyConfigurationsFromAssembly(
+                Assembly.GetExecutingAssembly());
 
             foreach (var property in modelBuilder.Model
                 .GetEntityTypes()
