@@ -6,19 +6,8 @@ using Invento.Application.Features.Dashboard.DTOs;
 namespace Invento.Application.Features.Dashboard.Queries
 {
     public class GetMonthlyProfitChartQuery
-    : IQuery<ApiResponse<List<MonthlyChartDto>>>,
-        ICacheableQuery
+    : IQuery<ApiResponse<List<MonthlyChartDto>>>
     {
-        public TimeSpan Expiration =>
-            CacheDurations.Short;
-
-        public string CacheGroup =>
-            CacheGroups.Dashboard;
-
-        public string GetCacheKey()
-        {
-            return CacheKeys.Dashboard();
-        }
 
     }
 }

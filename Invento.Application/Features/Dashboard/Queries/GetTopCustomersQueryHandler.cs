@@ -42,7 +42,7 @@ namespace Invento.Application.Features.Dashboard.Queries
                     s.TenantId = @TenantId
                     AND s.CustomerId IS NOT NULL
                 GROUP BY c.Id, c.Name
-                ORDER BY TotalSpent DESC";
+                ORDER BY SUM(s.TotalAmount) DESC";
 
             var result = (await connection.QueryAsync<TopCustomerDto>(
                 sql,

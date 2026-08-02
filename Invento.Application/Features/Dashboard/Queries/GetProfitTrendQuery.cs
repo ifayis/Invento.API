@@ -6,18 +6,18 @@ using Invento.Application.Features.Dashboard.DTOs;
 namespace Invento.Application.Features.Dashboard.Queries
 {
     public class GetProfitTrendQuery
-        : IQuery<ApiResponse<List<ProfitTrendDto>>>,
-        ICacheableQuery
+        : IQuery<ApiResponse<List<ProfitTrendDto>>>
+        //ICacheableQuery
     {
-        public TimeSpan Expiration =>
-            CacheDurations.Short;
+        //public TimeSpan Expiration =>
+        //    CacheDurations.Short;
 
-        public string CacheGroup =>
-            CacheGroups.Dashboard;
+        //public string CacheGroup =>
+        //    CacheGroups.Dashboard;
 
-        public string GetCacheKey()
-        {
-            return CacheKeys.Dashboard();
-        }
+        //public string GetCacheKey()
+        //{
+        //    return CacheKeys.Dashboard();
+        //}
     }
 }

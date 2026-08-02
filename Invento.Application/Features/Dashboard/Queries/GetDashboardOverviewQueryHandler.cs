@@ -31,6 +31,21 @@ namespace Invento.Application.Features.Dashboard.Queries
             using var connection =
                 _connectionFactory.CreateConnection();
 
+            var today =
+                DateTime.UtcNow.Date;
+
+            var tomorrow =
+                today.AddDays(1);
+
+            var monthStart =
+                new DateTime(
+                    today.Year,
+                    today.Month,
+                    1);
+
+            var nextMonthStart =
+                monthStart.AddMonths(1);
+
             var sql = @"
             SELECT
 
@@ -41,7 +56,8 @@ namespace Invento.Application.Features.Dashboard.Queries
                     WHERE
                         TenantId = @TenantId
                         AND IsDeleted = 0
-                        AND CAST(SaleDate AS DATE) = CAST(GETUTCDATE() AS DATE)
+                        AND SaleDate >= @Today
+                        AND SaleDate < @Tomorrow
                 ),
                 0
                 ) AS TodaySales,
@@ -53,8 +69,8 @@ namespace Invento.Application.Features.Dashboard.Queries
                     WHERE
                         TenantId = @TenantId
                         AND IsDeleted = 0
-                        AND YEAR(SaleDate) = YEAR(GETUTCDATE())
-                        AND MONTH(SaleDate) = MONTH(GETUTCDATE())
+                        AND SaleDate >= @MonthStart
+                        AND SaleDate < @NextMonthStart
                 ),
                 0
                 ) AS MonthlySales,
@@ -66,8 +82,8 @@ namespace Invento.Application.Features.Dashboard.Queries
                     WHERE
                         TenantId = @TenantId
                         AND IsDeleted = 0
-                        AND YEAR(SaleDate) = YEAR(GETUTCDATE())
-                        AND MONTH(SaleDate) = MONTH(GETUTCDATE())
+                        AND SaleDate >= @MonthStart
+                        AND SaleDate < @NextMonthStart
                 ),
                 0
                 ) AS MonthlyProfit,
@@ -79,8 +95,8 @@ namespace Invento.Application.Features.Dashboard.Queries
                     WHERE
                         TenantId = @TenantId
                         AND IsDeleted = 0
-                        AND YEAR(PurchaseDate) = YEAR(GETUTCDATE())
-                        AND MONTH(PurchaseDate) = MONTH(GETUTCDATE())
+                        AND PurchaseDate >= @MonthStart
+                        AND PurchaseDate < @NextMonthStart
                 ),
                 0
                 ) AS MonthlyPurchases,
@@ -148,7 +164,7 @@ namespace Invento.Application.Features.Dashboard.Queries
                     WHERE
                         TenantId = @TenantId
                         AND IsDeleted = 0
-                        AND CurrentStock <= 5
+                        AND CurrentStock <= CriticalStockThreshold
                 ) AS CriticalStockProducts;
             ";
 
@@ -157,7 +173,11 @@ namespace Invento.Application.Features.Dashboard.Queries
                     sql,
                     new
                     {
-                        TenantId = _currentTenant.TenantId
+                        TenantId = _currentTenant.TenantId,
+                        Today = today,
+                        Tomorrow = tomorrow,
+                        MonthStart = monthStart,
+                        NextMonthStart = nextMonthStart
                     });
 
             return ApiResponse<DashboardOverviewDto>
