@@ -89,6 +89,7 @@ namespace Invento.Application.Features.Products.Commands
                     new ProductDto
                     {
                         Id = product.Id,
+                        CategoryId = product.CategoryId,
                         Name = product.Name,
                         SKU = product.SKU,
                         CostPrice = product.CostPrice,
