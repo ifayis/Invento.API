@@ -105,7 +105,7 @@ namespace Invento.Application.Features.StockMovements.Queries
                     p.TenantId = @TenantId
                     AND p.IsDeleted = 0
                     AND p.CurrentStock
-                        <= ts.CriticalStockThreshold
+                        <= p.CriticalStockThreshold
             ) AS CriticalStockProducts
             ";
 

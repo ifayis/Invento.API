@@ -41,120 +41,27 @@ namespace Invento.Application.Features.Sales.Commands
         {
             var tenantId = _currentTenant.TenantId;
 
-            await using var transaction =
-                await _context.BeginTransactionAsync(
-                    cancellationToken);
+            var strategy =
+                _context.CreateExecutionStrategy();
 
-            try
+            return await strategy.ExecuteAsync(async () =>
             {
-                var sale =
-                    await _context.Sales
-                        .Include(x => x.SaleItems)
-                        .FirstOrDefaultAsync(
-                            x =>
-                                x.Id == request.Id
-                                && x.TenantId == tenantId
-                                && !x.IsDeleted,
-                            cancellationToken);
+                await using var transaction =
+                    await _context.BeginTransactionAsync(cancellationToken);
 
-                if (sale is null)
+                try
                 {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                "Sale not found"
-                            });
-                }
-
-                if (request.Items is null
-                    || request.Items.Count == 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                "At least one sale item is required"
-                            });
-                }
-
-                if (request.DiscountAmount < 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                "Discount amount cannot be negative"
-                            });
-                }
-
-                if (request.Items.Any(
-                    x => x.Quantity <= 0))
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                "All item quantities must be " +
-                                "greater than zero"
-                            });
-                }
-
-                var duplicateProductIds =
-                    request.Items
-                        .GroupBy(x => x.ProductId)
-                        .Where(x => x.Count() > 1)
-                        .Select(x => x.Key)
-                        .ToList();
-
-                if (duplicateProductIds.Count > 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                "Duplicate products are not allowed " +
-                                "in the same sale request"
-                            });
-                }
-
-                if (request.CustomerId.HasValue)
-                {
-                    var customerExists =
-                        await _context.Customers
-                            .AnyAsync(
+                    var sale =
+                        await _context.Sales
+                            .Include(x => x.SaleItems)
+                            .FirstOrDefaultAsync(
                                 x =>
-                                    x.Id == request.CustomerId.Value
+                                    x.Id == request.Id
                                     && x.TenantId == tenantId
                                     && !x.IsDeleted,
                                 cancellationToken);
 
-                    if (!customerExists)
+                    if (sale is null)
                     {
                         await transaction.RollbackAsync(
                             cancellationToken);
@@ -165,100 +72,12 @@ namespace Invento.Application.Features.Sales.Commands
                             .FailureResponse(
                                 new List<string>
                                 {
-                                    "Customer not found"
+                                "Sale not found"
                                 });
                     }
-                }
 
-                var oldItems =
-                    sale.SaleItems.ToList();
-
-                var requiredProductIds =
-                    oldItems
-                        .Select(x => x.ProductId)
-                        .Concat(
-                            request.Items.Select(
-                                x => x.ProductId))
-                        .Distinct()
-                        .ToList();
-
-                var products =
-                    await _context.Products
-                        .Where(
-                            x =>
-                                requiredProductIds.Contains(x.Id)
-                                && x.TenantId == tenantId)
-                        .ToListAsync(cancellationToken);
-
-                var productById =
-                    products.ToDictionary(x => x.Id);
-
-                var missingNewProductIds =
-                    request.Items
-                        .Select(x => x.ProductId)
-                        .Distinct()
-                        .Where(
-                            productId =>
-                                !productById.TryGetValue(
-                                    productId,
-                                    out var product)
-                                || product.IsDeleted)
-                        .ToList();
-
-                if (missingNewProductIds.Count > 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            missingNewProductIds
-                                .Select(
-                                    id =>
-                                        $"Product not found: {id}")
-                                .ToList());
-                }
-
-                var missingOldProductIds =
-                    oldItems
-                        .Select(x => x.ProductId)
-                        .Distinct()
-                        .Where(
-                            productId =>
-                                !productById.ContainsKey(productId))
-                        .ToList();
-
-                if (missingOldProductIds.Count > 0)
-                {
-                    throw new InvalidOperationException(
-                        "Existing sale references product records " +
-                        "that could not be loaded for this tenant.");
-                }
-
-                var effectiveStockByProductId =
-                    products.ToDictionary(
-                        x => x.Id,
-                        x => x.CurrentStock);
-
-                foreach (var oldItem in oldItems)
-                {
-                    effectiveStockByProductId[
-                        oldItem.ProductId] +=
-                        oldItem.Quantity;
-                }
-
-                foreach (var item in request.Items)
-                {
-                    var product =
-                        productById[item.ProductId];
-
-                    var availableStock =
-                        effectiveStockByProductId[
-                            item.ProductId];
-
-                    if (availableStock < item.Quantity)
+                    if (request.Items is null
+                        || request.Items.Count == 0)
                     {
                         await transaction.RollbackAsync(
                             cancellationToken);
@@ -269,244 +88,430 @@ namespace Invento.Application.Features.Sales.Commands
                             .FailureResponse(
                                 new List<string>
                                 {
+                                "At least one sale item is required"
+                                });
+                    }
+
+                    if (request.DiscountAmount < 0)
+                    {
+                        await transaction.RollbackAsync(
+                            cancellationToken);
+
+                        _context.ClearChangeTracker();
+
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
+                                "Discount amount cannot be negative"
+                                });
+                    }
+
+                    if (request.Items.Any(
+                        x => x.Quantity <= 0))
+                    {
+                        await transaction.RollbackAsync(
+                            cancellationToken);
+
+                        _context.ClearChangeTracker();
+
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
+                                "All item quantities must be " +
+                                "greater than zero"
+                                });
+                    }
+
+                    var duplicateProductIds =
+                        request.Items
+                            .GroupBy(x => x.ProductId)
+                            .Where(x => x.Count() > 1)
+                            .Select(x => x.Key)
+                            .ToList();
+
+                    if (duplicateProductIds.Count > 0)
+                    {
+                        await transaction.RollbackAsync(
+                            cancellationToken);
+
+                        _context.ClearChangeTracker();
+
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
+                                "Duplicate products are not allowed " +
+                                "in the same sale request"
+                                });
+                    }
+
+                    if (request.CustomerId.HasValue)
+                    {
+                        var customerExists =
+                            await _context.Customers
+                                .AnyAsync(
+                                    x =>
+                                        x.Id == request.CustomerId.Value
+                                        && x.TenantId == tenantId
+                                        && !x.IsDeleted,
+                                    cancellationToken);
+
+                        if (!customerExists)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
+
+                            _context.ClearChangeTracker();
+
+                            return ApiResponse<SaleDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
+                                    "Customer not found"
+                                    });
+                        }
+                    }
+
+                    var oldItems =
+                        sale.SaleItems.ToList();
+
+                    var requiredProductIds =
+                        oldItems
+                            .Select(x => x.ProductId)
+                            .Concat(
+                                request.Items.Select(
+                                    x => x.ProductId))
+                            .Distinct()
+                            .ToList();
+
+                    var products =
+                        await _context.Products
+                            .Where(
+                                x =>
+                                    requiredProductIds.Contains(x.Id)
+                                    && x.TenantId == tenantId)
+                            .ToListAsync(cancellationToken);
+
+                    var productById =
+                        products.ToDictionary(x => x.Id);
+
+                    var missingNewProductIds =
+                        request.Items
+                            .Select(x => x.ProductId)
+                            .Distinct()
+                            .Where(
+                                productId =>
+                                    !productById.TryGetValue(
+                                        productId,
+                                        out var product)
+                                    || product.IsDeleted)
+                            .ToList();
+
+                    if (missingNewProductIds.Count > 0)
+                    {
+                        await transaction.RollbackAsync(
+                            cancellationToken);
+
+                        _context.ClearChangeTracker();
+
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                missingNewProductIds
+                                    .Select(
+                                        id =>
+                                            $"Product not found: {id}")
+                                    .ToList());
+                    }
+
+                    var missingOldProductIds =
+                        oldItems
+                            .Select(x => x.ProductId)
+                            .Distinct()
+                            .Where(
+                                productId =>
+                                    !productById.ContainsKey(productId))
+                            .ToList();
+
+                    if (missingOldProductIds.Count > 0)
+                    {
+                        throw new InvalidOperationException(
+                            "Existing sale references product records " +
+                            "that could not be loaded for this tenant.");
+                    }
+
+                    var effectiveStockByProductId =
+                        products.ToDictionary(
+                            x => x.Id,
+                            x => x.CurrentStock);
+
+                    foreach (var oldItem in oldItems)
+                    {
+                        effectiveStockByProductId[
+                            oldItem.ProductId] +=
+                            oldItem.Quantity;
+                    }
+
+                    foreach (var item in request.Items)
+                    {
+                        var product =
+                            productById[item.ProductId];
+
+                        var availableStock =
+                            effectiveStockByProductId[
+                                item.ProductId];
+
+                        if (availableStock < item.Quantity)
+                        {
+                            await transaction.RollbackAsync(
+                                cancellationToken);
+
+                            _context.ClearChangeTracker();
+
+                            return ApiResponse<SaleDto>
+                                .FailureResponse(
+                                    new List<string>
+                                    {
                                     $"Insufficient stock for " +
                                     $"'{product.Name}'. " +
                                     $"Available: {availableStock}, " +
                                     $"requested: {item.Quantity}"
+                                    });
+                        }
+
+                        effectiveStockByProductId[
+                            item.ProductId] -=
+                            item.Quantity;
+                    }
+
+                    decimal subTotal = 0;
+                    decimal totalTax = 0;
+                    decimal totalCost = 0;
+
+                    foreach (var item in request.Items)
+                    {
+                        var product =
+                            productById[item.ProductId];
+
+                        var itemSubTotal =
+                            product.SellingPrice
+                            * item.Quantity;
+
+                        var taxAmount =
+                            (itemSubTotal * product.TaxRate)
+                            / 100;
+
+                        subTotal += itemSubTotal;
+                        totalTax += taxAmount;
+                        totalCost +=
+                            product.CostPrice
+                            * item.Quantity;
+                    }
+
+                    var totalAmount =
+                        subTotal
+                        + totalTax
+                        - request.DiscountAmount;
+
+                    if (totalAmount < 0)
+                    {
+                        await transaction.RollbackAsync(
+                            cancellationToken);
+
+                        _context.ClearChangeTracker();
+
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
+                                "Discount amount cannot exceed " +
+                                "the sale total"
                                 });
                     }
 
-                    effectiveStockByProductId[
-                        item.ProductId] -=
-                        item.Quantity;
-                }
+                    if (sale.PaidAmount > totalAmount)
+                    {
+                        await transaction.RollbackAsync(
+                            cancellationToken);
 
-                decimal subTotal = 0;
-                decimal totalTax = 0;
-                decimal totalCost = 0;
+                        _context.ClearChangeTracker();
 
-                foreach (var item in request.Items)
-                {
-                    var product =
-                        productById[item.ProductId];
-
-                    var itemSubTotal =
-                        product.SellingPrice
-                        * item.Quantity;
-
-                    var taxAmount =
-                        (itemSubTotal * product.TaxRate)
-                        / 100;
-
-                    subTotal += itemSubTotal;
-                    totalTax += taxAmount;
-                    totalCost +=
-                        product.CostPrice
-                        * item.Quantity;
-                }
-
-                var totalAmount =
-                    subTotal
-                    + totalTax
-                    - request.DiscountAmount;
-
-                if (totalAmount < 0)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
-                                "Discount amount cannot exceed " +
-                                "the sale total"
-                            });
-                }
-
-                if (sale.PaidAmount > totalAmount)
-                {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
-
-                    _context.ClearChangeTracker();
-
-                    return ApiResponse<SaleDto>
-                        .FailureResponse(
-                            new List<string>
-                            {
+                        return ApiResponse<SaleDto>
+                            .FailureResponse(
+                                new List<string>
+                                {
                                 "Updated sale total cannot be less " +
                                 "than the amount already paid"
-                            });
-                }
+                                });
+                    }
 
-                foreach (var oldItem in oldItems)
-                {
-                    var oldProduct =
-                        productById[oldItem.ProductId];
-
-                    oldProduct.CurrentStock +=
-                        oldItem.Quantity;
-
-                    await _stockMovementService
-                        .CreateMovement(
-                            oldProduct.Id,
-                            oldItem.Quantity,
-                            StockMovementType
-                                .SaleRestore
-                                .ToString(),
-                            oldProduct.CurrentStock,
-                            "Sale updated - old sale reversed",
-                            sale.InvoiceNumber,
-                            cancellationToken);
-                }
-
-                _context.SaleItems.RemoveRange(
-                    oldItems);
-
-                await _context.SaveChangesAsync(
-                    cancellationToken);
-
-                await _cacheVersionService.InvalidateAsync(
-                        tenantId,
-                        CacheGroups.Balance,
-                        CacheGroups.Sales,
-                        CacheGroups.Receivables,
-                        CacheGroups.Products,
-                        CacheGroups.Reports,
-                        CacheGroups.Dashboard);
-
-                sale.SaleItems.Clear();
-
-                sale.CustomerId = request.CustomerId;
-                sale.SaleDate = request.SaleDate ?? DateTime.UtcNow;
-                sale.DiscountAmount =
-                    request.DiscountAmount;
-
-                foreach (var item in request.Items)
-                {
-                    var product =
-                        productById[item.ProductId];
-
-                    product.CurrentStock -=
-                        item.Quantity;
-
-                    await _stockMovementService
-                        .CreateMovement(
-                            product.Id,
-                            item.Quantity,
-                            StockMovementType
-                                .Sale
-                                .ToString(),
-                            product.CurrentStock,
-                            "Sale updated - new sale applied",
-                            sale.InvoiceNumber,
-                            cancellationToken);
-
-                    var itemSubTotal =
-                        product.SellingPrice
-                        * item.Quantity;
-
-                    var taxAmount =
-                        (itemSubTotal * product.TaxRate)
-                        / 100;
-
-                    var totalPrice =
-                        itemSubTotal + taxAmount;
-
-                    var itemCost =
-                        product.CostPrice
-                        * item.Quantity;
-
-                    var profit =
-                        itemSubTotal - itemCost;
-
-                    var saleItem = new SaleItem
+                    foreach (var oldItem in oldItems)
                     {
-                        TenantId = tenantId,
-                        SaleId = sale.Id,
-                        ProductId = product.Id,
-                        Quantity = item.Quantity,
-                        UnitPrice = product.SellingPrice,
-                        CostPrice = product.CostPrice,
-                        TaxRate = product.TaxRate,
-                        TaxAmount = taxAmount,
-                        TotalPrice = totalPrice,
-                        ProfitAmount = profit
-                    };
+                        var oldProduct =
+                            productById[oldItem.ProductId];
 
-                    await _context.SaleItems.AddAsync(
-                        saleItem,
+                        oldProduct.CurrentStock +=
+                            oldItem.Quantity;
+
+                        await _stockMovementService
+                            .CreateMovement(
+                                oldProduct.Id,
+                                oldItem.Quantity,
+                                StockMovementType
+                                    .SaleRestore
+                                    .ToString(),
+                                oldProduct.CurrentStock,
+                                "Sale updated - old sale reversed",
+                                sale.InvoiceNumber,
+                                cancellationToken);
+                    }
+
+                    _context.SaleItems.RemoveRange(
+                        oldItems);
+
+                    await _context.SaveChangesAsync(
                         cancellationToken);
-                }
 
-                sale.SubTotal = subTotal;
-                sale.TaxAmount = totalTax;
-                sale.TotalAmount = totalAmount;
+                    await _cacheVersionService.InvalidateAsync(
+                            tenantId,
+                            CacheGroups.Balance,
+                            CacheGroups.Sales,
+                            CacheGroups.Receivables,
+                            CacheGroups.Products,
+                            CacheGroups.Reports,
+                            CacheGroups.Dashboard);
 
-                sale.DueAmount =
-                    sale.TotalAmount
-                    - sale.PaidAmount;
+                    sale.SaleItems.Clear();
 
-                sale.PaymentStatus =
-                    sale.DueAmount == 0
-                        ? PaymentStatus.Paid
-                        : sale.PaidAmount == 0
-                            ? PaymentStatus.Unpaid
-                            : PaymentStatus.PartiallyPaid;
+                    sale.CustomerId = request.CustomerId;
+                    sale.SaleDate = request.SaleDate ?? DateTime.UtcNow;
+                    sale.DiscountAmount =
+                        request.DiscountAmount;
 
-                sale.ProfitAmount =
-                    (sale.TotalAmount - sale.TaxAmount)
-                    - totalCost;
+                    foreach (var item in request.Items)
+                    {
+                        var product =
+                            productById[item.ProductId];
 
-                await _context.SaveChangesAsync(
-                    cancellationToken);
+                        product.CurrentStock -=
+                            item.Quantity;
 
-                await _cacheVersionService.InvalidateAsync(
-                        tenantId,
-                        CacheGroups.Sales,
-                        CacheGroups.Receivables,
-                        CacheGroups.Balance,
-                        CacheGroups.Products,
-                        CacheGroups.Reports,
-                        CacheGroups.Dashboard);
+                        await _stockMovementService
+                            .CreateMovement(
+                                product.Id,
+                                item.Quantity,
+                                StockMovementType
+                                    .Sale
+                                    .ToString(),
+                                product.CurrentStock,
+                                "Sale updated - new sale applied",
+                                sale.InvoiceNumber,
+                                cancellationToken);
 
-                await transaction.CommitAsync(
-                    cancellationToken);
+                        var itemSubTotal =
+                            product.SellingPrice
+                            * item.Quantity;
 
-                return ApiResponse<SaleDto>
-                    .SuccessResponse(
-                        sale.ToSaleDto(),
-                        "Sale updated successfully");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                await transaction.RollbackAsync(
-                    CancellationToken.None);
+                        var taxAmount =
+                            (itemSubTotal * product.TaxRate)
+                            / 100;
 
-                _context.ClearChangeTracker();
+                        var totalPrice =
+                            itemSubTotal + taxAmount;
 
-                return ApiResponse<SaleDto>
-                    .FailureResponse(
-                        new List<string>
+                        var itemCost =
+                            product.CostPrice
+                            * item.Quantity;
+
+                        var profit =
+                            itemSubTotal - itemCost;
+
+                        var saleItem = new SaleItem
                         {
+                            TenantId = tenantId,
+                            SaleId = sale.Id,
+                            ProductId = product.Id,
+                            Quantity = item.Quantity,
+                            UnitPrice = product.SellingPrice,
+                            CostPrice = product.CostPrice,
+                            TaxRate = product.TaxRate,
+                            TaxAmount = taxAmount,
+                            TotalPrice = totalPrice,
+                            ProfitAmount = profit
+                        };
+
+                        await _context.SaleItems.AddAsync(
+                            saleItem,
+                            cancellationToken);
+                    }
+
+                    sale.SubTotal = subTotal;
+                    sale.TaxAmount = totalTax;
+                    sale.TotalAmount = totalAmount;
+
+                    sale.DueAmount =
+                        sale.TotalAmount
+                        - sale.PaidAmount;
+
+                    sale.PaymentStatus =
+                        sale.DueAmount == 0
+                            ? PaymentStatus.Paid
+                            : sale.PaidAmount == 0
+                                ? PaymentStatus.Unpaid
+                                : PaymentStatus.PartiallyPaid;
+
+                    sale.ProfitAmount =
+                        (sale.TotalAmount - sale.TaxAmount)
+                        - totalCost;
+
+                    await _context.SaveChangesAsync(
+                        cancellationToken);
+
+                    await _cacheVersionService.InvalidateAsync(
+                            tenantId,
+                            CacheGroups.Sales,
+                            CacheGroups.Receivables,
+                            CacheGroups.Balance,
+                            CacheGroups.Products,
+                            CacheGroups.Reports,
+                            CacheGroups.Dashboard);
+
+                    await transaction.CommitAsync(
+                        cancellationToken);
+
+                    return ApiResponse<SaleDto>
+                        .SuccessResponse(
+                            sale.ToSaleDto(),
+                            "Sale updated successfully");
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    await transaction.RollbackAsync(
+                        CancellationToken.None);
+
+                    _context.ClearChangeTracker();
+
+                    return ApiResponse<SaleDto>
+                        .FailureResponse(
+                            new List<string>
+                            {
                             "Stock changed while the sale was " +
                             "being updated. Reload the latest " +
                             "data and try again."
-                        },
-                        "Concurrency conflict");
-            }
-            catch
-            {
-                await transaction.RollbackAsync(
-                    CancellationToken.None);
+                            },
+                            "Concurrency conflict");
+                }
+                catch
+                {
+                    await transaction.RollbackAsync(
+                        CancellationToken.None);
 
-                _context.ClearChangeTracker();
+                    _context.ClearChangeTracker();
 
-                throw;
-            }
+                    throw;
+                }
+            });
         }
     }
 }
