@@ -327,8 +327,7 @@ namespace Invento.Application.Features.Purchases.Commands
                         purchase.TotalAmount = totalAmount;
                         purchase.PaidAmount = 0;
                         purchase.DueAmount = totalAmount;
-                        purchase.PaymentStatus =
-                            PaymentStatus.Unpaid;
+                        purchase.PaymentStatus = PaymentStatus.Unpaid;
 
                         await _context.Purchases.AddAsync(
                             purchase,

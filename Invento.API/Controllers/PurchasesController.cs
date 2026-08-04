@@ -35,8 +35,7 @@ namespace Invento.API.Controllers
             UpdatePurchaseCommand command)
         {
             command.Id = id;
-            return Ok(
-                await _mediator.Send(command));
+            return Ok(await _mediator.Send(command));
         }
 
         [HttpDelete("{id:guid}")]

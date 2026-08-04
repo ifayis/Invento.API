@@ -1,12 +1,14 @@
 ﻿using Invento.Application.Abstractions;
 using Invento.Application.Common;
 using Invento.Application.Features.Purchases.DTOs;
+using System.Text.Json.Serialization;
 
 namespace Invento.Application.Features.Purchases.Commands
 {
     public class UpdatePurchaseCommand
         : ICommand<ApiResponse<PurchaseDto>>
     {
+        [JsonIgnore]
         public Guid Id { get; set; }
 
         public Guid SupplierId { get; set; }
