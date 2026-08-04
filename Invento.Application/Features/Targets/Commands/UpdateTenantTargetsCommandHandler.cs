@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Invento.Application.Features.Targets.Commands
 {
     public class UpdateTenantTargetsCommandHandler
-        : ICommandHandler<UpdateTenantTargetsCommand, ApiResponse<TenantTargetDto>>
+        : ICommandHandler<UpdateTenantTargetsCommand, ApiResponse<SetTenantTargetDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentTenantService _currentTenant;
@@ -26,7 +26,7 @@ namespace Invento.Application.Features.Targets.Commands
             _cacheVersionService = cacheVersionService;
         }
 
-        public async Task<ApiResponse<TenantTargetDto>> Handle(
+        public async Task<ApiResponse<SetTenantTargetDto>> Handle(
                 UpdateTenantTargetsCommand request,
                 CancellationToken cancellationToken)
         {
@@ -64,9 +64,9 @@ namespace Invento.Application.Features.Targets.Commands
                     CacheGroups.Reports,
                     CacheGroups.Dashboard);
 
-            return ApiResponse<TenantTargetDto>
+            return ApiResponse<SetTenantTargetDto>
                 .SuccessResponse(
-                new TenantTargetDto
+                new SetTenantTargetDto
                 {
                     MonthlyProfitTarget = settings.MonthlyProfitTarget,
                     MonthlySalesTarget = settings.MonthlySalesTarget

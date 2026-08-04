@@ -35,7 +35,7 @@ namespace Invento.Application.Features.Targets.Queries
                 c.Name AS CategoryName,
                 p.CurrentStock,
                 p.LowStockThreshold,
-                ts.CriticalStockThreshold,
+                p.CriticalStockThreshold,
                 p.IsDeleted,
                 'LOW' AS Status
 
@@ -44,16 +44,13 @@ namespace Invento.Application.Features.Targets.Queries
             INNER JOIN Categories c
                 ON p.CategoryId = c.Id
 
-            INNER JOIN TenantSettings ts
-                ON p.TenantId = ts.TenantId
-
             WHERE
                 p.TenantId = @TenantId
                 AND p.IsDeleted = 0
 
                 AND p.CurrentStock <= p.LowStockThreshold
 
-                AND p.CurrentStock > ts.CriticalStockThreshold
+                AND p.CurrentStock > p.CriticalStockThreshold
 
             ORDER BY p.CurrentStock ASC
             ";

@@ -5,7 +5,7 @@ using Invento.Application.Features.Targets.DTOs;
 namespace Invento.Application.Features.Targets.Commands
 {
     public class UpdateTenantTargetsCommand
-        : ICommand<ApiResponse<TenantTargetDto>>
+        : ICommand<ApiResponse<SetTenantTargetDto>>
     {
         public decimal MonthlySalesTarget { get; set; }
 
