@@ -1,5 +1,9 @@
 ﻿# Caching Strategy
 
+# Cache Flow
+
+![Cache Flow](images/cache-flow.png)
+
 ## Overview
 
 Invento uses **Redis Distributed Cache** to improve API response times and reduce unnecessary database queries.

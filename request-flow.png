@@ -1,0 +1,25 @@
+﻿HTTP Request
+      │
+      ▼
+Controller
+      │
+      ▼
+MediatR
+      │
+      ▼
+Handler
+      │
+      ▼
+Business Rules
+      │
+      ▼
+EF Core / Dapper
+      │
+      ▼
+SQL Server
+      │
+      ▼
+Response DTO
+      │
+      ▼
+Client

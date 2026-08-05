@@ -1,0 +1,25 @@
+﻿Client
+   │
+   ▼
+Query Handler
+   │
+   ▼
+Redis
+   │
+┌──┴───────────┐
+│ Cache Hit?   │
+└──┬───────────┘
+   │Yes
+   ▼
+Return Cached Data
+
+No
+ │
+ ▼
+SQL Server
+ │
+ ▼
+Store Cache
+ │
+ ▼
+Return Response

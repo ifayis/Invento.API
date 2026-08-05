@@ -1,0 +1,29 @@
+﻿User
+ │
+ ▼
+Login
+ │
+ ▼
+Validate Credentials
+ │
+ ▼
+Generate Access Token
+Generate Refresh Token
+ │
+ ▼
+Return Tokens
+ │
+ ▼
+Protected APIs
+ │
+ ▼
+Access Token Expired
+ │
+ ▼
+Refresh Token
+ │
+ ▼
+New Access Token
+ │
+ ▼
+Continue

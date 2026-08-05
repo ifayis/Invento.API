@@ -1,0 +1,35 @@
+﻿                    Client Applications
+        ┌─────────────────────────────────┐
+        │ React │ Mobile │ Swagger │ API │
+        └─────────────────────────────────┘
+                      │
+                      ▼
+             ASP.NET Core Web API
+                      │
+      ┌───────────────┼────────────────┐
+      ▼               ▼                ▼
+ Authentication   Middleware     Controllers
+                      │
+                      ▼
+                MediatR (CQRS)
+          ┌───────────┴───────────┐
+          ▼                       ▼
+      Commands                Queries
+          │                       │
+          ▼                       ▼
+      Business Logic        Read Operations
+          │                       │
+          └───────────┬───────────┘
+                      ▼
+                 Domain Layer
+                      │
+      ┌───────────────┼─────────────────┐
+      ▼               ▼                 ▼
+ Persistence     Infrastructure     Shared
+      │               │
+      ▼               ▼
+ EF Core        JWT
+ Dapper         Redis
+ SQL Server     Hangfire
+                SMTP
+                Serilog

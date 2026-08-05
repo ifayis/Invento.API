@@ -1,0 +1,28 @@
+﻿Create Sale
+      │
+      ▼
+Validate Customer
+      │
+      ▼
+Validate Product Stock
+      │
+      ▼
+Reduce Inventory
+      │
+      ▼
+Create Sale Items
+      │
+      ▼
+Create Stock Movements
+      │
+      ▼
+Calculate Profit
+      │
+      ▼
+Update Receivables
+      │
+      ▼
+Invalidate Cache
+      │
+      ▼
+Return Sale DTO

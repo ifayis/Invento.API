@@ -1,0 +1,28 @@
+﻿Create Purchase
+        │
+        ▼
+Validate Supplier
+        │
+        ▼
+Validate Products
+        │
+        ▼
+Increase Product Stock
+        │
+        ▼
+Create Purchase Items
+        │
+        ▼
+Create Stock Movements
+        │
+        ▼
+Update Purchase Totals
+        │
+        ▼
+Update Payables
+        │
+        ▼
+Invalidate Redis Cache
+        │
+        ▼
+Return Purchase DTO

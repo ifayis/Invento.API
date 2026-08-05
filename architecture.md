@@ -1,5 +1,17 @@
 ﻿# Architecture
 
+# System Architecture
+
+![System Architecture](images/architecture.png)
+
+# Request Flow
+
+![Request Flow](images/request-flow.png)
+
+# Solution Structure
+
+![Solution Structure](images/folder-structure.png)
+
 ## Overview
 
 Invento follows **Clean Architecture** to create a scalable, maintainable, and testable backend application. The solution separates business rules from infrastructure concerns, allowing each layer to evolve independently.

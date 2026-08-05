@@ -1,5 +1,9 @@
 ﻿# Authentication & Authorization
 
+# Authentication Flow
+
+![Authentication Flow](images/authentication-flow.png)
+
 ## Overview
 
 Invento implements a secure authentication and authorization system using **JSON Web Tokens (JWT)** and **Refresh Tokens**. The design focuses on security, scalability, and a seamless user experience while following common practices for ASP.NET Core applications.

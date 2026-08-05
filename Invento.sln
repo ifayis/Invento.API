@@ -33,6 +33,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{02EA681E-C
 		security.md = security.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{55FBE53A-8AA9-4FA1-9EE5-09AD0FD42818}"
+	ProjectSection(SolutionItems) = preProject
+		architecture.png = architecture.png
+		authentication-flow.png = authentication-flow.png
+		cache-flow.png = cache-flow.png
+		er-diagram.png = er-diagram.png
+		folder-structure.png = folder-structure.png
+		purchase-workflow.png = purchase-workflow.png
+		request-flow.png = request-flow.png
+		sales-workflow.png = sales-workflow.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -118,6 +130,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{55FBE53A-8AA9-4FA1-9EE5-09AD0FD42818} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9E34F4C0-DB8E-4703-A83C-BF3E83DD709A}

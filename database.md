@@ -1,5 +1,9 @@
 ﻿# Database Design
 
+# Entity Relationship Diagram
+
+![ER Diagram](images/er-diagram.png)
+
 ## Overview
 
 Invento uses **Microsoft SQL Server** as its primary relational database.

@@ -1,0 +1,30 @@
+﻿Invento
+│
+├── Invento.API
+│
+├── Invento.Application
+│   ├── Features
+│   ├── Common
+│   ├── Interfaces
+│   ├── Behaviors
+│   └── Abstractions
+│
+├── Invento.Domain
+│   ├── Entities
+│   ├── Enums
+│   └── Constants
+│
+├── Invento.Infrastructure
+│   ├── Authentication
+│   ├── Cache
+│   ├── Email
+│   ├── Logging
+│   └── Services
+│
+├── Invento.Persistence
+│   ├── Data
+│   ├── Configurations
+│   ├── Migrations
+│   └── Connections
+│
+└── Invento.Shared

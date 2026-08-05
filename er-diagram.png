@@ -1,0 +1,54 @@
+﻿Tenant
+ │
+ ├──────────────┐
+ │              │
+ ▼              ▼
+Users      Categories
+ │              │
+ ▼              ▼
+Refresh     Products
+Tokens          │
+Password        │
+Reset           │
+Tokens          ▼
+            PurchaseItems
+                 ▲
+Purchases────────┘
+     │
+     ▼
+Suppliers
+
+Products
+     │
+     ▼
+SaleItems
+     ▲
+Sales
+ │
+ ▼
+Customers
+
+Customers
+ │
+ ▼
+CustomerPayments
+
+Suppliers
+ │
+ ▼
+SupplierPayments
+
+Products
+ │
+ ▼
+StockMovements
+
+Tenant
+ │
+ ▼
+CashTransactions
+
+Tenant
+ │
+ ▼
+TenantSettings
