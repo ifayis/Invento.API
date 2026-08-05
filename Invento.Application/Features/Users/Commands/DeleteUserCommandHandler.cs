@@ -103,6 +103,7 @@ namespace Invento.Application.Features.Users.Commands
             }
 
             targetUser.IsDeleted = true;
+            targetUser.IsActive = false;
             targetUser.DeletedAt = DateTime.UtcNow;
             targetUser.DeletedBy = currentUser.Id.ToString();
 

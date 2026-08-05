@@ -189,7 +189,9 @@ namespace Invento.Application.Features.Users.Commands
                         MustChangePassword =
                             user.MustChangePassword,
 
-                        CreatedAt = user.CreatedAt
+                        CreatedAt = user.CreatedAt,
+
+                        TenantId = user.TenantId
                     },
                     "User created successfully."
                 );

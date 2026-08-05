@@ -43,21 +43,21 @@ namespace Invento.Application.Features.Users.Queries
                 _connectionFactory.CreateConnection();
 
             const string sql = @"
-SELECT
-    Id,
-    TenantId,
-    FullName,
-    Email,
-    Role,
-    IsActive,
-    MustChangePassword,
-    CreatedAt,
-    CreatedBy,
-    CreatedByUserId
-FROM Users
-WHERE
-    Id = @Id
-    AND IsDeleted = 0;";
+            SELECT
+                Id,
+                TenantId,
+                FullName,
+                Email,
+                Role,
+                IsActive,
+                MustChangePassword,
+                CreatedAt,
+                CreatedBy,
+                CreatedByUserId
+            FROM Users
+            WHERE
+                Id = @Id
+                AND IsDeleted = 0;";
 
             var user =
                 await connection.QuerySingleOrDefaultAsync<UserDto>(
