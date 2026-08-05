@@ -154,23 +154,23 @@ The project follows **Clean Architecture**, ensuring clear separation of concern
 
 ```text
                 Client
-                   ?
-                   ?
+                   │
+                   ▼
           ASP.NET Core API
-                   ?
-                   ?
+                   │
+                   ▼
          Application Layer
       (CQRS + MediatR)
-                   ?
-                   ?
+                   │
+                   ▼
             Domain Layer
-                   ?
-          ???????????????????
-          ?                 ?
+                   │
+          ┌────────┴────────┐
+          ▼                 ▼
  Persistence          Infrastructure
 (EF Core/Dapper)     JWT/Redis/Hangfire
-          ?
-          ?
+          │
+          ▼
       SQL Server
 ```
 
