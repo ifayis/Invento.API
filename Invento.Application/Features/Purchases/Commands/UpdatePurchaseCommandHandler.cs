@@ -463,6 +463,18 @@ namespace Invento.Application.Features.Purchases.Commands
                                  !x.IsDeleted,
                             cancellationToken);
 
+                    if (supplier is null)
+                    {
+                        return ApiResponse<PurchaseDto>
+                            .FailureResponse(
+                            new()
+                            {
+                                "Supplier Not Found."
+                            });
+                    }
+
+                    var supplierName = supplier.Name;
+
                     purchase.SubTotal = subTotal;
                     purchase.TaxAmount = totalTax;
                     purchase.TotalAmount = totalAmount;

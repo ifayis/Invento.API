@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-    <PackageReference Include="Hangfire" Version="1.8.23" />
+    <PackageReference Include="Hangfire" Version="1.8.24" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.24" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.8.24" />
     <PackageReference Include="MailKit" Version="4.16.0" />
@@ -22,6 +22,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+	  <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
 
 	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
 	  <NoWarn>$(NoWarn);1591</NoWarn>
