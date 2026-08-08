@@ -1,0 +1,6605 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Invento API",
+    "description": "Invento is a multi-tenant business management API\r\nfor inventory, purchasing, sales, customers,\r\nsuppliers, payments, stock tracking and analytics.\r\n\r\nAuthentication uses JWT access tokens and rotating\r\nrefresh tokens.\r\n\r\nTenant isolation is enforced by the authenticated\r\ntenant context.\r\n\r\nUse the Authorize button for protected endpoints.\r\nEnter the JWT access token only; Swagger adds the\r\nBearer scheme automatically.",
+    "contact": {
+      "name": "Invento API Support"
+    },
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/v1/Auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.RegisterCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.RegisterCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.RegisterCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.LoginCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.LoginCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.LoginCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        }
+      }
+    },
+    "/api/v1/Auth/refresh-token": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.RefreshTokenCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.RefreshTokenCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.RefreshTokenCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        }
+      }
+    },
+    "/api/v1/Auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.LogoutCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.LogoutCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.LogoutCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        }
+      }
+    },
+    "/api/v1/Auth/forgot-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.ForgotPasswordCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.ForgotPasswordCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.ForgotPasswordCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Auth/reset-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.ResetPasswordCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.ResetPasswordCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.ResetPasswordCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        }
+      }
+    },
+    "/api/v1/Auth/change-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.ChangePasswordCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.ChangePasswordCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Auth.Commands.ChangePasswordCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Balance/dashboard": {
+      "get": {
+        "tags": [
+          "Balance"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Balance/transactions": {
+      "get": {
+        "tags": [
+          "Balance"
+        ],
+        "parameters": [
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Balance/transactions/{id}": {
+      "get": {
+        "tags": [
+          "Balance"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Balance/income": {
+      "post": {
+        "tags": [
+          "Balance"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Balance.Commands.CreateManualIncomeCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Balance.Commands.CreateManualIncomeCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Balance.Commands.CreateManualIncomeCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Balance/expense": {
+      "post": {
+        "tags": [
+          "Balance"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Balance.Commands.CreateManualExpenseCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Balance.Commands.CreateManualExpenseCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Balance.Commands.CreateManualExpenseCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Balance/cashflow": {
+      "get": {
+        "tags": [
+          "Balance"
+        ],
+        "parameters": [
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Categories": {
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Categories.Commands.CreateCategoryCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Categories.Commands.CreateCategoryCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Categories.Commands.CreateCategoryCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Categories/{id}": {
+      "put": {
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Categories.Commands.UpdateCategoryCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Categories.Commands.UpdateCategoryCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Categories.Commands.UpdateCategoryCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Categories/{id}/restore": {
+      "put": {
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Company": {
+      "get": {
+        "tags": [
+          "Company"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Company"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Company.Commands.UpdateCompanyProfileCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Company.Commands.UpdateCompanyProfileCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Company.Commands.UpdateCompanyProfileCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Customers": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Customer.Commands.CreateCustomerCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Customer.Commands.CreateCustomerCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Customer.Commands.CreateCustomerCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Customers/{id}": {
+      "put": {
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Customer.Commands.UpdateCustomerCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Customer.Commands.UpdateCustomerCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Customer.Commands.UpdateCustomerCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Customers/{id}/restore": {
+      "put": {
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Customers/top-customers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "top",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Customers/{customerId}/ledger": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Customers/{customerId}/sales-summary": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Customers/inactive": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Customers/dashboard": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/summary": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/recent-sales": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/recent-purchases": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/top-products": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/top-customers": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/top-suppliers": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/monthly-sales-chart": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/monthly-purchases-chart": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/monthly-profit-chart": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/sales-trend": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/overview": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/cashflow-trend": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Dashboard/profit-trend": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Payables/payment": {
+      "post": {
+        "tags": [
+          "Payables"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Payables.Commands.RecordSupplierPaymentCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Payables.Commands.RecordSupplierPaymentCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Payables.Commands.RecordSupplierPaymentCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Payables/outstanding": {
+      "get": {
+        "tags": [
+          "Payables"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Payables/supplier/{supplierId}/history": {
+      "get": {
+        "tags": [
+          "Payables"
+        ],
+        "parameters": [
+          {
+            "name": "supplierId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Products/{id}": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Products.Commands.UpdateProductCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Products.Commands.UpdateProductCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Products.Commands.UpdateProductCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Products": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Products.Commands.CreateProductCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Products.Commands.CreateProductCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Products.Commands.CreateProductCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Products/{productId}/images": {
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "image": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Products/images/{imageId}": {
+      "delete": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Products/images/{imageId}/primary": {
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Products/{productId}/stock-history": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Products/{productId}/sales-history": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Products/{productId}/purchase-history": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Products/{id}/restore": {
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Profile"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.UpdateMyProfileCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.UpdateMyProfileCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.UpdateMyProfileCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Profit/net": {
+      "get": {
+        "tags": [
+          "Profit"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Profit/range": {
+      "get": {
+        "tags": [
+          "Profit"
+        ],
+        "parameters": [
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Profit/lastday": {
+      "get": {
+        "tags": [
+          "Profit"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Profit/lastweek": {
+      "get": {
+        "tags": [
+          "Profit"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Profit/lastmonth": {
+      "get": {
+        "tags": [
+          "Profit"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Profit/product/{productId}": {
+      "get": {
+        "tags": [
+          "Profit"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Profit/dashboard": {
+      "get": {
+        "tags": [
+          "Profit"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Purchases": {
+      "post": {
+        "tags": [
+          "Purchases"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Purchases.Commands.CreatePurchaseCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Purchases.Commands.CreatePurchaseCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Purchases.Commands.CreatePurchaseCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Purchases"
+        ],
+        "parameters": [
+          {
+            "name": "Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SupplierId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Purchases/{id}": {
+      "put": {
+        "tags": [
+          "Purchases"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Purchases.Commands.UpdatePurchaseCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Purchases.Commands.UpdatePurchaseCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Purchases.Commands.UpdatePurchaseCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Purchases"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Purchases"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Purchases/{id}/restore": {
+      "put": {
+        "tags": [
+          "Purchases"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Receivables/payment": {
+      "post": {
+        "tags": [
+          "Receivables"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Receivables.Commands.RecordCustomerPaymentCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Receivables.Commands.RecordCustomerPaymentCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Receivables.Commands.RecordCustomerPaymentCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Receivables/outstanding": {
+      "get": {
+        "tags": [
+          "Receivables"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Receivables/customer/{customerId}/history": {
+      "get": {
+        "tags": [
+          "Receivables"
+        ],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Reports/sales-summary": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Reports/purchase-summary": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Reports/inventory-summary": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Reports/low-stock-products": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Reports/stock-movements": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "ProductId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Reports/financial-dashboard": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Reports/customer-sales-report": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Reports/supplier-purchase-report": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Reports/top-selling-products": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "parameters": [
+          {
+            "name": "Top",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Sales": {
+      "post": {
+        "tags": [
+          "Sales"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Sales.Command.CreateSaleCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Sales.Command.CreateSaleCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Sales.Command.CreateSaleCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "name": "Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Sales/{id}": {
+      "put": {
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Sales.Command.UpdateSaleCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Sales.Command.UpdateSaleCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Sales.Command.UpdateSaleCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Sales/{id}/restore": {
+      "put": {
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Sales/today": {
+      "get": {
+        "tags": [
+          "Sales"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Sales/lastweek": {
+      "get": {
+        "tags": [
+          "Sales"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Sales/lastmonth": {
+      "get": {
+        "tags": [
+          "Sales"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Sales/customer/{customerId}": {
+      "get": {
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/StockMovements": {
+      "post": {
+        "tags": [
+          "StockMovements"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.StockMovements.Commands.CreateStockMovementCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.StockMovements.Commands.CreateStockMovementCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.StockMovements.Commands.CreateStockMovementCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "StockMovements"
+        ],
+        "parameters": [
+          {
+            "name": "ProductId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MovementType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/StockMovements/{id}": {
+      "get": {
+        "tags": [
+          "StockMovements"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/StockMovements/dashboard": {
+      "get": {
+        "tags": [
+          "StockMovements"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/StockMovements/fast-moving": {
+      "get": {
+        "tags": [
+          "StockMovements"
+        ],
+        "parameters": [
+          {
+            "name": "top",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/StockMovements/dead-stock": {
+      "get": {
+        "tags": [
+          "StockMovements"
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 90
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Suppliers": {
+      "post": {
+        "tags": [
+          "Suppliers"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Suppliers.Commands.CreateSupplierCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Suppliers.Commands.CreateSupplierCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Suppliers.Commands.CreateSupplierCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Suppliers"
+        ],
+        "parameters": [
+          {
+            "name": "Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Suppliers/{id}": {
+      "put": {
+        "tags": [
+          "Suppliers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Suppliers.Commands.UpdateSupplierCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Suppliers.Commands.UpdateSupplierCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Suppliers.Commands.UpdateSupplierCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Suppliers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Suppliers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Suppliers/{id}/restore": {
+      "put": {
+        "tags": [
+          "Suppliers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Suppliers/{supplierId}/ledger": {
+      "get": {
+        "tags": [
+          "Suppliers"
+        ],
+        "parameters": [
+          {
+            "name": "supplierId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Targets/low-stock": {
+      "get": {
+        "tags": [
+          "Targets"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Targets/critical-stock": {
+      "get": {
+        "tags": [
+          "Targets"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Targets/monthly": {
+      "get": {
+        "tags": [
+          "Targets"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Targets"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Targets.Commands.UpdateTenantTargetsCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Targets.Commands.UpdateTenantTargetsCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Targets.Commands.UpdateTenantTargetsCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Targets/dashboard": {
+      "get": {
+        "tags": [
+          "Targets"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Targets/reorder-products": {
+      "get": {
+        "tags": [
+          "Targets"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Users": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.CreateUserCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.CreateUserCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.CreateUserCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "Expiration",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-span"
+            }
+          },
+          {
+            "name": "CacheGroup",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.UpdateUserCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.UpdateUserCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.UpdateUserCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Users/{id}/status": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.SetUserStatusCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.SetUserStatusCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.SetUserStatusCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/Users/{id}/role": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.ChangeUserRoleCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.ChangeUserRoleCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invento.Application.Features.Users.Commands.ChangeUserRoleCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized. A valid access token is required."
+          },
+          "403": {
+            "description": "Forbidden. The authenticated user does not have sufficient permission."
+          },
+          "400": {
+            "description": "Bad Request. The request is invalid or validation failed."
+          },
+          "429": {
+            "description": "Too Many Requests. The configured rate limit was exceeded."
+          },
+          "500": {
+            "description": "Internal Server Error. An unexpected server error occurred."
+          },
+          "409": {
+            "description": "Conflict. The request conflicts with the current resource state."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Invento.Application.Features.Auth.Commands.ChangePasswordCommand": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "nullable": true,
+            "example": "StrongPassword123!"
+          },
+          "newPassword": {
+            "type": "string",
+            "nullable": true,
+            "example": "StrongPassword123!"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "nullable": true,
+            "example": "StrongPassword123!"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Auth.Commands.ForgotPasswordCommand": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Auth.Commands.LoginCommand": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "nullable": true,
+            "example": "StrongPassword123!"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Auth.Commands.LogoutCommand": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Auth.Commands.RefreshTokenCommand": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Auth.Commands.RegisterCommand": {
+        "type": "object",
+        "properties": {
+          "companyName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "nullable": true,
+            "example": "StrongPassword123!"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Auth.Commands.ResetPasswordCommand": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "newPassword": {
+            "type": "string",
+            "nullable": true,
+            "example": "StrongPassword123!"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "nullable": true,
+            "example": "StrongPassword123!"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Balance.Commands.CreateManualExpenseCommand": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2026-07-07T12:00:00Z"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Balance.Commands.CreateManualIncomeCommand": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2026-07-07T12:00:00Z"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Categories.Commands.CreateCategoryCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Categories.Commands.UpdateCategoryCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Company.Commands.UpdateCompanyProfileCommand": {
+        "type": "object",
+        "properties": {
+          "companyName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "+919876543210"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "taxNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "website": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Customer.Commands.CreateCustomerCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "+919876543210"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Customer.Commands.UpdateCustomerCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "+919876543210"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Payables.Commands.RecordSupplierPaymentCommand": {
+        "type": "object",
+        "properties": {
+          "purchaseId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Products.Commands.CreateProductCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true,
+            "example": "SKU-001"
+          },
+          "sellingPrice": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "lowStockThreshold": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
+          "criticalStockThreshold": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Products.Commands.UpdateProductCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true,
+            "example": "SKU-001"
+          },
+          "sellingPrice": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "lowStockThreshold": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
+          "criticalStockThreshold": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Purchases.Commands.CreatePurchaseCommand": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Invento.Application.Features.Purchases.DTOs.CreatePurchaseItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Purchases.Commands.UpdatePurchaseCommand": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "purchaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2026-07-07T12:00:00Z"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Invento.Application.Features.Purchases.DTOs.CreatePurchaseItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Purchases.DTOs.CreatePurchaseItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
+          "unitCost": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "taxRate": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Receivables.Commands.RecordCustomerPaymentCommand": {
+        "type": "object",
+        "properties": {
+          "saleId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Sales.Command.CreateSaleCommand": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "paidAmount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Invento.Application.Features.Sales.DTOs.CreateSaleItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Sales.Command.UpdateSaleCommand": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "saleDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2026-07-07T12:00:00Z"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "paidAmount": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Invento.Application.Features.Sales.DTOs.CreateSaleItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Sales.DTOs.CreateSaleItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.StockMovements.Commands.CreateStockMovementCommand": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
+          "movementType": {
+            "$ref": "#/components/schemas/Invento.Domain.Enums.StockMovementType"
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Suppliers.Commands.CreateSupplierCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "contactPerson": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "+919876543210"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "taxRegistrationNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Suppliers.Commands.UpdateSupplierCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "contactPerson": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "+919876543210"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          },
+          "taxRegistrationNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example value"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Targets.Commands.UpdateTenantTargetsCommand": {
+        "type": "object",
+        "properties": {
+          "monthlySalesTarget": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          },
+          "monthlyProfitTarget": {
+            "type": "number",
+            "format": "double",
+            "example": 100
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Users.Commands.ChangeUserRoleCommand": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/Invento.Domain.Enums.UserRole"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Users.Commands.CreateUserCommand": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "nullable": true,
+            "example": "StrongPassword123!"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Invento.Domain.Enums.UserRole"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Users.Commands.SetUserStatusCommand": {
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Users.Commands.UpdateMyProfileCommand": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Application.Features.Users.Commands.UpdateUserCommand": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Example Name"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "user@example.com"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invento.Domain.Enums.StockMovementType": {
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Invento.Domain.Enums.UserRole": {
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "JWT Bearer authentication. Enter the access token only.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
