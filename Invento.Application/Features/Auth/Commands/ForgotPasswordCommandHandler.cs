@@ -5,6 +5,7 @@ using Invento.Application.Common;
 using Invento.Application.Interfaces;
 using Invento.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Invento.Application.Features.Auth.Commands
 {
@@ -14,15 +15,17 @@ namespace Invento.Application.Features.Auth.Commands
             ApiResponse<string>>
     {
         private readonly IApplicationDbContext _context;
-
+        private readonly FrontendSettings _frontendSettings;
         private readonly IEmailService _emailService;
 
         public ForgotPasswordCommandHandler(
             IApplicationDbContext context,
-            IEmailService emailService)
+            IEmailService emailService,
+            IOptions<FrontendSettings> frontendOptions)
         {
             _context = context;
             _emailService = emailService;
+            _frontendSettings = frontendOptions.Value;
         }
 
         public async Task<ApiResponse<string>> Handle(
@@ -88,25 +91,142 @@ namespace Invento.Application.Features.Auth.Commands
                     passwordResetToken,
                     cancellationToken);
 
+            var frontendUrl =
+                _frontendSettings.Url.TrimEnd('/');
+
+            var resetLink =
+                $"{frontendUrl}/reset-password?token=" +
+                Uri.EscapeDataString(rawToken);
+
             var body = $@"
-                <h2>Password Reset</h2>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset=""UTF-8"" />
+                <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" />
+                <title>Invento Password Reset</title>
+            </head>
 
-                <p>Hello {user.FullName},</p>
+            <body style=""
+                margin: 0;
+                padding: 0;
+                background-color: #f8fafc;
+                font-family: Arial, Helvetica, sans-serif;
+            "">
 
-                <p>
-                Use the following token to reset your password.
-                </p>
+                <div style=""
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 40px 20px;
+                "">
 
-                <h3>{rawToken}</h3>
+                    <div style=""
+                        background-color: #ffffff;
+                        border-radius: 16px;
+                        padding: 40px;
+                        border: 1px solid #e2e8f0;
+                    "">
 
-                <p>
-                This token expires in <b>30 minutes</b>.
-                </p>
+                        <h2 style=""
+                            margin: 0 0 20px;
+                            color: #0f172a;
+                        "">
+                            Reset your INVENTO password
+                        </h2>
 
-                <p>
-                If you didn't request this reset,
-                please ignore this email.
-                </p>";
+                        <p style=""
+                            color: #475569;
+                            line-height: 1.6;
+                        "">
+                            Hello {System.Net.WebUtility.HtmlEncode(user.FullName)},
+                        </p>
+
+                        <p style=""
+                            color: #475569;
+                            line-height: 1.6;
+                        "">
+                            We received a request to reset the password
+                            for your INVENTO account.
+                        </p>
+
+                        <div style=""
+                            margin: 30px 0;
+                            text-align: center;
+                        "">
+
+                            <a
+                                href=""{resetLink}""
+                                style=""
+                                    display: inline-block;
+                                    padding: 14px 24px;
+                                    background-color: #0f172a;
+                                    color: #ffffff;
+                                    text-decoration: none;
+                                    border-radius: 10px;
+                                    font-weight: 600;
+                                ""
+                            >
+                                Reset Password
+                            </a>
+
+                        </div>
+
+                        <p style=""
+                            color: #64748b;
+                            font-size: 14px;
+                            line-height: 1.6;
+                        "">
+                            This password reset link expires in
+                            <strong>30 minutes</strong>.
+                        </p>
+
+                        <p style=""
+                            color: #64748b;
+                            font-size: 14px;
+                            line-height: 1.6;
+                        "">
+                            If you did not request a password reset,
+                            you can safely ignore this email.
+                        </p>
+
+                        <hr style=""
+                            border: 0;
+                            border-top: 1px solid #e2e8f0;
+                            margin: 30px 0;
+                        "" />
+
+                        <p style=""
+                            color: #94a3b8;
+                            font-size: 12px;
+                            line-height: 1.5;
+                        "">
+                            If the button does not work, copy and paste
+                            the following URL into your browser:
+                        </p>
+
+                        <p style=""
+                            color: #64748b;
+                            font-size: 12px;
+                            word-break: break-all;
+                        "">
+                            {System.Net.WebUtility.HtmlEncode(resetLink)}
+                        </p>
+
+                    </div>
+
+                    <p style=""
+                        text-align: center;
+                        color: #94a3b8;
+                        font-size: 12px;
+                        margin-top: 20px;
+                    "">
+                        © {DateTime.UtcNow.Year} INVENTO
+                    </p>
+
+                </div>
+
+            </body>
+            </html>";
 
             await _emailService.SendEmailAsync(
                 user.Email,

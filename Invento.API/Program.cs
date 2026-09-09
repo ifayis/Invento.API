@@ -299,11 +299,43 @@ if (builder.Environment.IsProduction())
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
 
+builder.Services.Configure<FrontendSettings>(
+    builder.Configuration.GetSection("FrontendSettings"));
+
 var jwtSettings = builder.Configuration
     .GetSection("JwtSettings")
     .Get<JwtSettings>()
     ?? throw new InvalidOperationException(
         "JwtSettings configuration is missing.");
+
+var frontendSettings = builder.Configuration
+    .GetSection("FrontendSettings")
+    .Get<FrontendSettings>()
+    ?? throw new InvalidOperationException(
+        "FrontendSettings configuration is missing.");
+
+if (string.IsNullOrWhiteSpace(
+    frontendSettings.Url))
+{
+    throw new InvalidOperationException(
+        "FrontendSettings:Url is not configured.");
+}
+
+if (!Uri.TryCreate(
+        frontendSettings.Url,
+        UriKind.Absolute,
+        out var frontendUri))
+{
+    throw new InvalidOperationException(
+        "FrontendSettings:Url must be a valid absolute URL.");
+}
+
+if (builder.Environment.IsProduction() &&
+    frontendUri.Scheme != Uri.UriSchemeHttps)
+{
+    throw new InvalidOperationException(
+        "Production FrontendSettings:Url must use HTTPS.");
+}
 
 if (string.IsNullOrWhiteSpace(
     jwtSettings.SecretKey))

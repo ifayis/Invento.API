@@ -14,6 +14,8 @@
 
         public string FromName { get; set; } = string.Empty;
 
+        public string FrontendUrl { get; set; } = string.Empty;
+
         public bool EnableSsl { get; set; } = true;
     }
 }
