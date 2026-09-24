@@ -99,142 +99,79 @@ namespace Invento.Application.Features.Auth.Commands
                 Uri.EscapeDataString(rawToken);
 
             var body = $@"
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset=""UTF-8"" />
-                <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" />
-                <title>Invento Password Reset</title>
-            </head>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Invento Password Reset</title>
+</head>
 
-            <body style=""
-                margin: 0;
-                padding: 0;
-                background-color: #f8fafc;
-                font-family: Arial, Helvetica, sans-serif;
-            "">
+<body style=""margin:0; padding:0; background-color:#f8fafc; font-family:Arial, Helvetica, sans-serif;"">
 
-                <div style=""
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 40px 20px;
-                "">
+    <div style=""max-width:600px; margin:0 auto; padding:40px 20px;"">
 
-                    <div style=""
-                        background-color: #ffffff;
-                        border-radius: 16px;
-                        padding: 40px;
-                        border: 1px solid #e2e8f0;
-                    "">
+        <div style=""background-color:#ffffff; border-radius:16px; padding:40px; border:1px solid #e2e8f0;"">
 
-                        <h2 style=""
-                            margin: 0 0 20px;
-                            color: #0f172a;
-                        "">
-                            Reset your INVENTO password
-                        </h2>
+            <h2 style=""margin:0 0 20px; color:#0f172a;"">
+                Reset your INVENTO password
+            </h2>
 
-                        <p style=""
-                            color: #475569;
-                            line-height: 1.6;
-                        "">
-                            Hello {System.Net.WebUtility.HtmlEncode(user.FullName)},
-                        </p>
+            <p style=""color:#475569; line-height:1.6;"">
+                Hello {System.Net.WebUtility.HtmlEncode(user.FullName)},
+            </p>
 
-                        <p style=""
-                            color: #475569;
-                            line-height: 1.6;
-                        "">
-                            We received a request to reset the password
-                            for your INVENTO account.
-                        </p>
+            <p style=""color:#475569; line-height:1.6;"">
+                We received a request to reset the password for your INVENTO account.
+            </p>
 
-                        <div style=""
-                            margin: 30px 0;
-                            text-align: center;
-                        "">
+            <div style=""margin:30px 0; text-align:center;"">
 
-                            <a
-                                href=""{resetLink}""
-                                style=""
-                                    display: inline-block;
-                                    padding: 14px 24px;
-                                    background-color: #0f172a;
-                                    color: #ffffff;
-                                    text-decoration: none;
-                                    border-radius: 10px;
-                                    font-weight: 600;
-                                ""
-                            >
-                                Reset Password
-                            </a>
+                <a
+                    href=""{System.Net.WebUtility.HtmlEncode(resetLink)}""
+                    style=""display:inline-block; padding:14px 24px; background-color:#0f172a; color:#ffffff; text-decoration:none; border-radius:10px; font-weight:600;""
+                >
+                    Reset Password
+                </a>
 
-                        </div>
+            </div>
 
-                        <p style=""
-                            color: #64748b;
-                            font-size: 14px;
-                            line-height: 1.6;
-                        "">
-                            This password reset link expires in
-                            <strong>30 minutes</strong>.
-                        </p>
+            <p style=""color:#64748b; font-size:14px; line-height:1.6;"">
+                This password reset link expires in
+                <strong>30 minutes</strong>.
+            </p>
 
-                        <p style=""
-                            color: #64748b;
-                            font-size: 14px;
-                            line-height: 1.6;
-                        "">
-                            If you did not request a password reset,
-                            you can safely ignore this email.
-                        </p>
+            <p style=""color:#64748b; font-size:14px; line-height:1.6;"">
+                If you did not request a password reset,
+                you can safely ignore this email.
+            </p>
 
-                        <hr style=""
-                            border: 0;
-                            border-top: 1px solid #e2e8f0;
-                            margin: 30px 0;
-                        "" />
+            <hr style=""border:0; border-top:1px solid #e2e8f0; margin:30px 0;"">
 
-                        <p style=""
-                            color: #94a3b8;
-                            font-size: 12px;
-                            line-height: 1.5;
-                        "">
-                            If the button does not work, copy and paste
-                            the following URL into your browser:
-                        </p>
+            <p style=""color:#94a3b8; font-size:12px; line-height:1.5;"">
+                If the button does not work, copy and paste this link into your browser:
+            </p>
 
-                        <p style=""
-                            color: #64748b;
-                            font-size: 12px;
-                            word-break: break-all;
-                        "">
-                            {System.Net.WebUtility.HtmlEncode(resetLink)}
-                        </p>
+            <p style=""color:#64748b; font-size:12px; word-break:break-all;"">
+                {System.Net.WebUtility.HtmlEncode(resetLink)}
+            </p>
 
-                    </div>
+        </div>
 
-                    <p style=""
-                        text-align: center;
-                        color: #94a3b8;
-                        font-size: 12px;
-                        margin-top: 20px;
-                    "">
-                        © {DateTime.UtcNow.Year} INVENTO
-                    </p>
+    </div>
 
-                </div>
+</body>
+</html>";
 
-            </body>
-            </html>";
+            await _context.SaveChangesAsync(
+                cancellationToken);
 
             await _emailService.SendEmailAsync(
                 user.Email,
                 "Invento Password Reset",
                 body);
 
-            await _context.SaveChangesAsync(
-                cancellationToken);
+
 
             return ApiResponse<string>
                 .SuccessResponse(

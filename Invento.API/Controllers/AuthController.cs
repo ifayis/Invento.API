@@ -23,7 +23,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [Authorize(Policy = Permissions.Users)]
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterCommand command)
         {
@@ -87,7 +87,7 @@ namespace Invento.API.Controllers
         }
 
 
-        [Authorize]
+        [AllowAnonymous]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand command)
         {
