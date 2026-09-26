@@ -34,10 +34,11 @@ public class UpdateCategoryCommandHandler
         var tenantId = _currentTenant.TenantId;
 
         var category = await _context.Categories
-            .FirstOrDefaultAsync(x =>
-                x.Id == request.Id
-                && x.TenantId == _currentTenant.TenantId
-                && !x.IsDeleted,
+            .FirstOrDefaultAsync(
+                x =>
+                    x.Id == request.Id &&
+                    x.TenantId == tenantId &&
+                    !x.IsDeleted,
                 cancellationToken);
 
         if (category is null)
@@ -46,16 +47,29 @@ public class UpdateCategoryCommandHandler
                 .FailureResponse(
                     new List<string>
                     {
-                "Category not found"
+                    "Category not found"
+                    });
+        }
+
+        var categoryName = request.Name?.Trim();
+
+        if (string.IsNullOrWhiteSpace(categoryName))
+        {
+            return ApiResponse<CategoryDto>
+                .FailureResponse(
+                    new List<string>
+                    {
+                    "Category name is required"
                     });
         }
 
         var exists = await _context.Categories
-            .AnyAsync(x =>
-                x.Name == request.Name
-                && x.Id != request.Id
-                && x.TenantId == _currentTenant.TenantId
-                && !x.IsDeleted,
+            .AnyAsync(
+                x =>
+                    x.Id != request.Id &&
+                    x.TenantId == tenantId &&
+                    !x.IsDeleted &&
+                    x.Name == categoryName,
                 cancellationToken);
 
         if (exists)
@@ -64,21 +78,20 @@ public class UpdateCategoryCommandHandler
                 .FailureResponse(
                     new List<string>
                     {
-                "Category name already exists"
+                    "Category name already exists"
                     });
         }
 
-        category.Name = request.Name.Trim();
+        category.Name = categoryName;
 
-        await _context.SaveChangesAsync(
-            cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
         await _cacheVersionService.InvalidateAsync(
-                tenantId,
-                CacheGroups.Categories,
-                CacheGroups.Products,
-                CacheGroups.Reports,
-                CacheGroups.Dashboard);
+            tenantId,
+            CacheGroups.Categories,
+            CacheGroups.Products,
+            CacheGroups.Reports,
+            CacheGroups.Dashboard);
 
         return ApiResponse<CategoryDto>
             .SuccessResponse(

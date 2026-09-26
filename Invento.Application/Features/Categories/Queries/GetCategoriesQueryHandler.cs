@@ -35,43 +35,53 @@ namespace Invento.Application.Features.Categories.Queries
                 string.IsNullOrWhiteSpace(request.Search)
                     ? null
                     : request.Search.Trim();
-
             const string sql = """
-                SELECT
-                    Id,
-                    Name,
-                    CreatedAt
-                FROM Categories
-                WHERE
-                    TenantId = @TenantId
-                    AND IsDeleted = 0
-                    AND
-                    (
-                        @Search IS NULL
-                        OR Name LIKE '%' + @Search + '%'
-                    )
-                ORDER BY
-                    CreatedAt DESC,
-                    Id DESC
-                OFFSET @Offset ROWS
-                FETCH NEXT @PageSize ROWS ONLY;
+            SELECT
+                Id,
+                Name,
+                CreatedAt,
+                IsDeleted
+            FROM Categories
+            WHERE
+                TenantId = @TenantId
+                AND
+                (
+                    @IncludeDeleted = 1
+                    OR IsDeleted = 0
+                )
+                AND
+                (
+                    @Search IS NULL
+                    OR Name LIKE '%' + @Search + '%'
+                )
+            ORDER BY
+                IsDeleted ASC,
+                CreatedAt DESC,
+                Id DESC
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
 
-                SELECT COUNT(*)
-                FROM Categories
-                WHERE
-                    TenantId = @TenantId
-                    AND IsDeleted = 0
-                    AND
-                    (
-                        @Search IS NULL
-                        OR Name LIKE '%' + @Search + '%'
-                    );
-                """;
+            SELECT COUNT(*)
+            FROM Categories
+            WHERE
+                TenantId = @TenantId
+                AND
+                (
+                    @IncludeDeleted = 1
+                    OR IsDeleted = 0
+                )
+                AND
+                (
+                    @Search IS NULL
+                    OR Name LIKE '%' + @Search + '%'
+                );
+            """;
 
             var parameters = new
             {
                 TenantId = _currentTenant.TenantId,
                 Search = search,
+                IncludeDeleted = request.IncludeDeleted,
                 Offset =
                     (request.PageNumber - 1)
                     * request.PageSize,
