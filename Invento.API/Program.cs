@@ -544,7 +544,14 @@ app.UseCors("FrontendPolicy");
 
 app.UseRateLimiter();
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context =>
+    {
+        context.Context.Response.Headers["Cross-Origin-Resource-Policy"] =
+            "cross-origin";
+    }
+});
 
 app.UseAuthentication();
 
