@@ -37,27 +37,30 @@ namespace Invento.Application.Features.Categories.Queries
                     : request.Search.Trim();
             const string sql = """
             SELECT
-                Id,
-                Name,
-                CreatedAt,
-                IsDeleted
-            FROM Categories
+                c.Id,
+                c.Name,
+                c.CreatedAt,
+                COUNT(p.Id) AS ProductCount
+            FROM Categories c
+            LEFT JOIN Products p
+                ON p.CategoryId = c.Id
+                AND p.TenantId = @TenantId
+                AND p.IsDeleted = 0
             WHERE
-                TenantId = @TenantId
-                AND
-                (
-                    @IncludeDeleted = 1
-                    OR IsDeleted = 0
-                )
+                c.TenantId = @TenantId
+                AND c.IsDeleted = 0
                 AND
                 (
                     @Search IS NULL
-                    OR Name LIKE '%' + @Search + '%'
+                    OR c.Name LIKE '%' + @Search + '%'
                 )
+            GROUP BY
+                c.Id,
+                c.Name,
+                c.CreatedAt
             ORDER BY
-                IsDeleted ASC,
-                CreatedAt DESC,
-                Id DESC
+                c.CreatedAt DESC,
+                c.Id DESC
             OFFSET @Offset ROWS
             FETCH NEXT @PageSize ROWS ONLY;
 

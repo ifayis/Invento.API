@@ -69,8 +69,8 @@ namespace Invento.Application.Features.Products.Commands
                     );
             }
 
-            product.Name = request.Name;
-            product.SKU = request.SKU;
+            product.Name = request.Name.Trim();
+            product.SKU = request.SKU.Trim();
             product.SellingPrice = request.SellingPrice;
             product.CategoryId = request.CategoryId;
             product.LowStockThreshold = request.LowStockThreshold;
