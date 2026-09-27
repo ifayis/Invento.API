@@ -531,6 +531,15 @@ var httpsRedirectionEnabled =
     builder.Configuration.GetValue<bool>(
         "HttpsRedirection:Enabled");
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context =>
+    {
+        context.Context.Response.Headers["Cross-Origin-Resource-Policy"] =
+            "cross-origin";
+    }
+});
+
 if (httpsRedirectionEnabled)
 {
     app.UseHttpsRedirection();
@@ -543,15 +552,6 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseCors("FrontendPolicy");
 
 app.UseRateLimiter();
-
-app.UseStaticFiles(new StaticFileOptions
-{
-    OnPrepareResponse = context =>
-    {
-        context.Context.Response.Headers["Cross-Origin-Resource-Policy"] =
-            "cross-origin";
-    }
-});
 
 app.UseAuthentication();
 

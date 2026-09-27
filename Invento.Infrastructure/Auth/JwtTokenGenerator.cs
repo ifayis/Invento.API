@@ -30,6 +30,7 @@ public class JwtTokenGenerator
         {
             new("Name", user.Id.ToString()),
             new("TenantId", user.TenantId.ToString()),
+            new("FullName", user.FullName),
             new("Email", user.Email),
             new("Role", user.Role.ToString())
         };
