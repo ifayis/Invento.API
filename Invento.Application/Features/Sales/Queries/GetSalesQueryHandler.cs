@@ -37,62 +37,69 @@ namespace Invento.Application.Features.Sales.Queries
                     : request.Search.Trim();
 
             const string sql = """
-                SELECT
-                    Id,
-                    CustomerId,
-                    InvoiceNumber,
-                    SaleDate,
-                    TotalAmount,
-                    ProfitAmount,
-                    IsDeleted
-                FROM Sales
-                WHERE
-                    TenantId = @TenantId
-                    AND IsDeleted = 0
-                    AND
-                    (
-                        @Search IS NULL
-                        OR InvoiceNumber
-                            LIKE '%' + @Search + '%'
-                    )
-                    AND
-                    (
-                        @FromDate IS NULL
-                        OR SaleDate >= @FromDate
-                    )
-                    AND
-                    (
-                        @ToDate IS NULL
-                        OR SaleDate <= @ToDate
-                    )
-                ORDER BY
-                    SaleDate DESC,
-                    Id DESC
-                OFFSET @Offset ROWS
-                FETCH NEXT @PageSize ROWS ONLY;
+            SELECT
+                s.Id,
+                s.CustomerId,
+                c.Name AS CustomerName,
+                s.InvoiceNumber,
+                s.SaleDate,
+                s.TotalAmount,
+                s.ProfitAmount,
+                s.IsDeleted
+            FROM Sales s
+            LEFT JOIN Customers c
+                ON c.Id = s.CustomerId
+                AND c.TenantId = s.TenantId
+            WHERE
+                s.TenantId = @TenantId
+                AND s.IsDeleted = 0
+                AND
+                (
+                    @Search IS NULL
+                    OR s.InvoiceNumber LIKE '%' + @Search + '%'
+                    OR c.Name LIKE '%' + @Search + '%'
+                )
+                AND
+                (
+                    @FromDate IS NULL
+                    OR s.SaleDate >= @FromDate
+                )
+                AND
+                (
+                    @ToDate IS NULL
+                    OR s.SaleDate <= @ToDate
+                )
+            ORDER BY
+                s.SaleDate DESC,
+                s.Id DESC
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
 
-                SELECT COUNT(*)
-                FROM Sales
-                WHERE
-                    TenantId = @TenantId
-                    AND IsDeleted = 0
-                    AND
-                    (
-                        @Search IS NULL
-                        OR InvoiceNumber
-                            LIKE '%' + @Search + '%'
-                    )
-                    AND
-                    (
-                        @FromDate IS NULL
-                        OR SaleDate >= @FromDate
-                    )
-                    AND
-                    (
-                        @ToDate IS NULL
-                        OR SaleDate <= @ToDate
-                    );
-                """;
+            SELECT COUNT(*)
+            FROM Sales s
+            LEFT JOIN Customers c
+                ON c.Id = s.CustomerId
+                AND c.TenantId = s.TenantId
+            WHERE
+                s.TenantId = @TenantId
+                AND s.IsDeleted = 0
+                AND
+                (
+                    @Search IS NULL
+                    OR s.InvoiceNumber LIKE '%' + @Search + '%'
+                    OR c.Name LIKE '%' + @Search + '%'
+                )
+                AND
+                (
+                    @FromDate IS NULL
+                    OR s.SaleDate >= @FromDate
+                )
+                AND
+                (
+                    @ToDate IS NULL
+                    OR s.SaleDate <= @ToDate
+                );
+            """;
 
             var parameters = new
             {
