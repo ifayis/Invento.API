@@ -47,7 +47,10 @@ namespace Invento.Application.Features.Customers.Queries
                 FROM Customers
                 WHERE
                     TenantId = @TenantId
-                    AND IsDeleted = 0
+                    AND (
+                    @IncludeDeleted = 1
+                    OR IsDeleted = 0
+                    )
                     AND
                     (
                         @Search IS NULL
@@ -65,7 +68,10 @@ namespace Invento.Application.Features.Customers.Queries
                 FROM Customers
                 WHERE
                     TenantId = @TenantId
-                    AND IsDeleted = 0
+                    AND (
+                    @IncludeDeleted = 1
+                    OR IsDeleted = 0
+                    )
                     AND
                     (
                         @Search IS NULL
@@ -79,6 +85,7 @@ namespace Invento.Application.Features.Customers.Queries
             {
                 TenantId = _currentTenant.TenantId,
                 Search = search,
+                IncludeDeleted = request.IncludeDeleted,
                 Offset =
                     (request.PageNumber - 1)
                     * request.PageSize,

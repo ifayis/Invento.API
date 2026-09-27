@@ -16,6 +16,8 @@ namespace Invento.Application.Features.Customers.Queries
 
         public int PageSize { get; set; } = 10;
 
+        public bool IncludeDeleted { get; set; } = false;
+
         public TimeSpan Expiration =>
             CacheDurations.Short;
 

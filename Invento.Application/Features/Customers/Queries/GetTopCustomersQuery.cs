@@ -15,7 +15,7 @@ namespace Invento.Application.Features.Customers.Queries
             CacheDurations.Short;
 
         public string CacheGroup =>
-            CacheGroups.Categories;
+            CacheGroups.Customers;
 
         public string GetCacheKey()
         {
